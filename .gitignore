@@ -3,6 +3,7 @@ lex_program
 parser_program
 xsm_expl
 lex.yy.c
+Xsm
 y.tab.c
 *.txt
 *.sh
