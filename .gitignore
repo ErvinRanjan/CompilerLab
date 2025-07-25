@@ -1,7 +1,9 @@
 input.txt
 lex_program
-.c 
-.txt 
-.sh 
-.gz 
-.h 
+parser_program
+xsm_expl
+*.c
+*.txt
+*.sh
+*.gz
+*.h

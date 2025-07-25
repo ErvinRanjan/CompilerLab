@@ -5,18 +5,24 @@
     extern FILE* yyin;
 %}
 
-%token NUM
-%left '+' 
+%union{
+    char name[100];
+}
+
+%token operand
+%type <name> operand 
+
+%left '+'
 %left '*'
 
 %%
 
 
-program : expr '\n' {printf("\nProgram Completed");}
+program : expr '\n' {printf("%s\n",$<name>1);}
         ;
-expr : expr '+' expr {printf("+ ");}
-     | expr '*' expr {printf("* ");}
-     | NUM {printf("%d ",$1);}
+expr : expr '+' expr {sprintf($<name>$,"%s%s%s","+",$<name>1,$<name>3);}
+     | expr '*' expr {sprintf($<name>$,"%s%s%s","*",$<name>1,$<name>3);}
+     | operand {sprintf($<name>$,"%s",$<name>1);}
      ;
 
 %%

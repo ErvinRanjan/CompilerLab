@@ -8,9 +8,9 @@
 %%
 
 [\n+*] { return *yytext; }
-[0-9]+ {
-            yylval = atoi(yytext);
-            return NUM; 
+[^ +*\r\t]+ {
+            sprintf(yylval.name,"%s",yytext);
+            return operand; 
         }
 . { }
 
