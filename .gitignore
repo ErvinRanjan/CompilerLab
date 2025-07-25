@@ -2,7 +2,8 @@ input.txt
 lex_program
 parser_program
 xsm_expl
-*.c
+lex.yy.c
+y.tab.c
 *.txt
 *.sh
 *.gz
