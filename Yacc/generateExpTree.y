@@ -1,8 +1,10 @@
 %{
     #include "tree.h"
+    #include "codegen.h"
     #include <stdio.h>
-    void print(struct tNode* root);
+    #include <stdlib.h>
     extern FILE* yyin;
+    FILE* out;
 %}
 
 %union{
@@ -17,7 +19,7 @@
 %%
 
 S : E '\n' {
-                print($<node>1);
+                codeGen(out,$<node>1);
             }
   ;
 E : E '+' E {
@@ -33,27 +35,18 @@ E : E '+' E {
 
 %%
 
-void print(struct tNode* root){
-    if(root == NULL) return;
-
-    print(root->left);
-    print(root->right);
-
-    if(root->isLeaf){
-        printf("%d ",root->val);
-    } else {
-        printf("%s ",root->op);
-    }
-}
-
 int yyerror(const char* s){
     printf("Error: %s",s);
     return 0;
 }
 
 int main(int argc,char** argv){
-    if(argc > 1){
+    if(argc > 2){
         yyin = fopen(argv[1],"r"); 
+        out = fopen(argv[2],"w");
+    } else{
+        printf("Insufficient Args: <exe> <input> <output>\n");
+        exit(EXIT_FAILURE);
     }
     yyparse();
     return 0;
