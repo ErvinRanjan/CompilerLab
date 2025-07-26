@@ -14,7 +14,8 @@
 %token NUM 
 %type <node> NUM S E 
 
-%left '+'
+%left '+' '-'
+%left '*' '/'
 
 %%
 
@@ -24,6 +25,15 @@ S : E '\n' {
   ;
 E : E '+' E {
                 $<node>$ = createOperatorNode("+",$<node>1,$<node>3);
+            }
+  | E '*' E {
+                $<node>$ = createOperatorNode("*",$<node>1,$<node>3);
+            }
+  | E '-' E {
+                $<node>$ = createOperatorNode("-",$<node>1,$<node>3);
+            }
+  | E '/' E {
+                $<node>$ = createOperatorNode("/",$<node>1,$<node>3);
             }
   | '(' E ')' {
                  $<node>$ = $<node>2;

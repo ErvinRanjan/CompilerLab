@@ -7,6 +7,15 @@ void operatorCodeGen(FILE* out, char* op, int reg1, int reg2) {
     if (strcmp(op, "+") == 0) {
         fprintf(out, "ADD R%d, R%d\n", reg1, reg2);
     }
+    else if (strcmp(op, "*") == 0) {
+        fprintf(out, "MUL R%d, R%d\n", reg1, reg2);
+    }
+    else if (strcmp(op, "-") == 0) {
+        fprintf(out, "SUB R%d, R%d\n", reg1, reg2);
+    }
+    else if (strcmp(op, "/") == 0) {
+        fprintf(out, "DIV R%d, R%d\n", reg1, reg2);
+    }
 }
 
 void generateHeader(FILE* out, int xmagic, int entryPoint, int textSize, int dataSize, int heapSize, int stackSize, int libFlag) {
