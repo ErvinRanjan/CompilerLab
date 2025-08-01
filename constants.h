@@ -1,0 +1,41 @@
+/**
+ * @brief header file to store constants
+ */
+
+#ifndef CONSTANTS_H 
+#define CONSTANTS_H 
+
+ // constants for operators
+
+#define OP_ADD 1 
+#define OP_SUB 2
+#define OP_MUL 3 
+#define OP_DIV 4 
+#define OP_READ 5 
+#define OP_WRITE 6 
+#define OP_ASSIGN 7
+#define LEAF_ID 8
+#define LEAF_NUM 10
+#define OP_STMTLIST 11
+
+// constants for types
+
+#define INT 9 
+
+// limits 
+
+#define MAX_VARNAME_LEN 1001
+
+// general constants
+
+#define ENTRY_POINT 2056 
+#define INIT_SP 4112
+
+// file descriptors 
+
+#define XSM_STDOUT -2
+#define XSM_STDIN -1
+
+#endif 
+
+
