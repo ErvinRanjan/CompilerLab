@@ -4,6 +4,22 @@
 
 int regIndex = 0;
 
+int pushContext(FILE* out) {
+    for (int i = 0;i < regIndex;i++) {
+        fprintf(out, "PUSH R%d\n", i);
+    }
+    return regIndex;
+}
+
+void popContext(FILE* out, int till) {
+    for (int i = 0;i < till;i++) {
+        fprintf(out, "POP R%d\n", i);
+    }
+}
+
+/**
+ * @brief gets the min index register available
+ */
 int getReg() {
     int reg = regIndex++;
     if (reg >= 20) {
@@ -13,6 +29,9 @@ int getReg() {
     return reg;
 }
 
+/**
+ * @brief frees the max index register used
+ */
 void freeReg() {
     if (regIndex == 0) {
         printf("Error: No register to free\n");

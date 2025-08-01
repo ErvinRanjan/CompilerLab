@@ -1,21 +1,43 @@
 %{
     #include "y.tab.h"
     #include "tree.h"
+    #include "constants.h"
     #include <stdlib.h>
 %}
 
 %%
 
+"begin" {
+            return BLOCK_BEGIN;
+        }
+
+"end"   {
+            return BLOCK_END;
+        }
+
+"read"  {
+            return READ;
+        }
+
+"write" {
+            return WRITE;
+        }
+
 [0-9]+ { 
-            yylval.node = createLeafNode(atoi(yytext)); 
+            yylval.node = createLeafNode(atoi(yytext),NULL,INT); 
             return NUM;
        }
 
-[\n+*/\-()]  {
+[a-z]   {
+            yylval.node = createLeafNode(0,yytext,INT);
+            return ID;
+       }
+
+[+*/\-()=;]  {
             return *yytext;
         }
 
-[ \t\r] {}
+[ \n\t\r]+ {}
 
 %%
 
