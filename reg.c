@@ -4,6 +4,10 @@
 
 int regIndex = 0;
 
+/**
+ * @brief used to save all registers
+ * @param out output file pointer
+ */
 int pushContext(FILE* out) {
     for (int i = 0;i < regIndex;i++) {
         fprintf(out, "PUSH R%d\n", i);
@@ -11,6 +15,11 @@ int pushContext(FILE* out) {
     return regIndex;
 }
 
+/**
+ * @brief restores saved values of registers
+ * @param out output file pointer
+ * @param till register till which we must restore context
+ */
 void popContext(FILE* out, int till) {
     for (int i = 0;i < till;i++) {
         fprintf(out, "POP R%d\n", i);
