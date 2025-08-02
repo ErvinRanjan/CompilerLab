@@ -4,6 +4,7 @@
 #include "mem.h"
 #include <stdio.h>
 #include <string.h>
+#include "params.h"
 
 
 /**
@@ -61,7 +62,7 @@ void generateHeader(FILE* out, int xmagic, int entryPoint, int textSize, int dat
  * @param fileDescriptor fileDesscriptor to read from
  * @param addr buffer address
  */
-int libRead(FILE* out, int fileDescriptor, int addr) {
+struct params* libRead(FILE* out, int fileDescriptor, int addr) {
     int reg = getReg();
 
     int regs = pushContext(out);
@@ -82,7 +83,7 @@ int libRead(FILE* out, int fileDescriptor, int addr) {
     fprintf(out, "MOV R%d, [%d]\n", reg, addr);
     popContext(out, regs);
 
-    return reg;
+    return makeParams(reg, -1);
 }
 
 /**
@@ -146,7 +147,7 @@ void libExit(FILE* out) {
  * @param varName optional - only for identifiers
  * @param val optional - value for numbers
  */
-int leafCodeGen(FILE* out, int nodeType, char* varName, int val) {
+struct params* leafCodeGen(FILE* out, int nodeType, char* varName, int val) {
     int reg = getReg();
     switch (nodeType) {
     case LEAF_ID:
@@ -158,28 +159,28 @@ int leafCodeGen(FILE* out, int nodeType, char* varName, int val) {
         break;
     default:
     }
-    return reg;
+    return makeParams(reg, -1);
 }
 
 /**
  * @brief recursively iterates through Abstract Syntax Tree (AST) and generates machine code
  *  @param out output file pointer
  * @param root root of AST
- * @return register where result is stored if any
+ * @return register where result is stored if any and label if any
  */
-int codeGenHelper(FILE* out, struct tNode* root) {
+struct params* codeGenHelper(FILE* out, struct tNode* root) {
     if (root == NULL) {
-        return -1;
+        return makeParams(-1, -1);
     }
 
     if (root->nodeType == LEAF_ID || root->nodeType == LEAF_NUM) {
         return leafCodeGen(out, root->nodeType, root->varName, root->val);
     }
 
-    int reg1 = codeGenHelper(out, root->left);
-    int reg2 = codeGenHelper(out, root->right);
+    int reg1 = codeGenHelper(out, root->left)->reg;
+    int reg2 = codeGenHelper(out, root->right)->reg;
     operatorCodeGen(out, root->nodeType, reg1, reg2, root->left->varName);
-    return reg1;
+    return makeParams(reg1, -1);
 }
 
 /**
@@ -194,7 +195,7 @@ void initParams(FILE* out) {
  * @param out output file pointer
  * @param root root of AST
  */
-int codeGen(FILE* out, struct tNode* root) {
+void codeGen(FILE* out, struct tNode* root) {
     generateHeader(out, 0, ENTRY_POINT, 0, 0, 0, 0, 0);
     initParams(out);
     codeGenHelper(out, root);
