@@ -2,6 +2,7 @@
     #include "tree.h"
     #include "codegen.h"
     #include "constants.h"
+    #include "label.h"
     #include <stdio.h>
     #include <stdlib.h>
     extern FILE* yyin;
@@ -13,8 +14,8 @@
     struct tNode* node;
 };
 
-%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE
-%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt E ID
+%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ
+%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt B E ID
 
 %nonassoc '='
 %left '+' '-'
@@ -30,8 +31,9 @@ Program : BLOCK_BEGIN Slist BLOCK_END  {
                                 }
         ;
 
-Slist : Slist Stmt { 
-                        $<node>$ = createOperatorNode(OP_STMTLIST,$<node>1,$<node>2); 
+Slist : Slist Stmt {    
+                        $<node>$ = createOperatorNode(OP_STMTLIST,$<node>1,$<node>2,NULL,-1);
+                        $<node>$->label = $<node>1->label;
                     }
       | Stmt { 
                 $<node>$ = $<node>1;
@@ -41,38 +43,79 @@ Slist : Slist Stmt {
 Stmt : InputStmt 
      | OutputStmt 
      | AsgStmt 
-       {
+     | Ifstmt
+     | Whilestmt
+       {   
         $<node>$ = $<node>1;
        }     
      ;
 
+Ifstmt : IF '(' B ')' THEN Slist ELSE Slist ENDIF { 
+                                                        int label = getLabel();
+                                                        $<node>$ = createOperatorNode(OP_IF,$<node>3,$<node>6,$<node>8,label);
+                                                  }
+        |  IF '(' B ')' THEN Slist ENDIF {     
+                                            int label = getLabel();
+                                            $<node>$ = createOperatorNode(OP_IF,$<node>3,$<node>6,NULL,label);
+                                        }
+     ;
+
+
+Whilestmt : WHILE '(' B ')' DO Slist ENDWHILE {   
+                                                    int label = getLabel();
+                                                    $<node>$ = createOperatorNode(OP_WHILE,$<node>3,$<node>6,NULL,label);
+                                                }
+          ;
+
 InputStmt : READ '(' ID ')' ';' {
-                                
-                                $<node>$ = createOperatorNode(OP_READ,$<node>3,NULL);
+                                int label = getLabel();
+                                $<node>$ = createOperatorNode(OP_READ,$<node>3,NULL,NULL,label);
                             }
           ;
 
 OutputStmt : WRITE '(' E ')' ';' {
-                                $<node>$ = createOperatorNode(OP_WRITE,$<node>3,NULL);
+                                int label = getLabel();
+                                $<node>$ = createOperatorNode(OP_WRITE,$<node>3,NULL,NULL,label);
                             }
             ;
 
 AsgStmt : ID '=' E ';' {
-                      $<node>$ = createOperatorNode(OP_ASSIGN,$<node>1,$<node>3);
+                      int label = getLabel();
+                      $<node>$ = createOperatorNode(OP_ASSIGN,$<node>1,$<node>3,NULL,label);
                     }
         ;
+
+B : E '<' E {
+                $<node>$ = createOperatorNode(OP_LT,$<node>1,$<node>3,NULL,-1);
+            }
+  | E '>' E {
+                $<node>$ = createOperatorNode(OP_GT,$<node>1,$<node>3,NULL,-1);
+            }
+  | E GE E {
+                $<node>$ = createOperatorNode(OP_GE,$<node>1,$<node>3,NULL,-1);
+            }
+  | E LE E {
+                $<node>$ = createOperatorNode(OP_LE,$<node>1,$<node>3,NULL,-1);
+            }
+  | E NE E {
+                $<node>$ = createOperatorNode(OP_NE,$<node>1,$<node>3,NULL,-1);
+            }
+  | E EQ E {
+                $<node>$ = createOperatorNode(OP_EQ,$<node>1,$<node>3,NULL,-1);
+            }
+  ;
  
 E : E '+' E {
-                $<node>$ = createOperatorNode(OP_ADD,$<node>1,$<node>3);
+                $<node>$ = createOperatorNode(OP_ADD,$<node>1,$<node>3,NULL,-1);
             }
   | E '*' E {
-                $<node>$ = createOperatorNode(OP_MUL,$<node>1,$<node>3);
+                $<node>$ = createOperatorNode(OP_MUL,$<node>1,$<node>3,NULL,-1);
             }
   | E '-' E {
-                $<node>$ = createOperatorNode(OP_SUB,$<node>1,$<node>3);
+                $<node>$ = createOperatorNode(OP_SUB,$<node>1,$<node>3,NULL,-1);
             }
   | E '/' E {
-                $<node>$ = createOperatorNode(OP_DIV,$<node>1,$<node>3);
+                $<node>$ = createOperatorNode(OP_DIV,$<node>1,$<node>3,NULL,-1);
             }
   | '(' E ')' {
                  $<node>$ = $<node>2;

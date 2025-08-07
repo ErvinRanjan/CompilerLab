@@ -7,8 +7,6 @@
 
 #include <stdio.h>
 
-int pushContext(FILE* out);
-void popContext(FILE* out, int till);
 int getReg();
 void freeReg();
 

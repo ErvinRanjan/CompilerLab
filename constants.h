@@ -14,13 +14,22 @@
 #define OP_READ 5 
 #define OP_WRITE 6 
 #define OP_ASSIGN 7
-#define LEAF_ID 8
-#define LEAF_NUM 10
-#define OP_STMTLIST 11
+#define OP_STMTLIST 8
+#define OP_IF 9
+#define OP_WHILE 10
+#define OP_GT 11 
+#define OP_LT 12 
+#define OP_GE 13 
+#define OP_LE 14
+#define OP_NE 15
+#define OP_EQ 16
+#define OP_END 17
+#define LEAF_ID 18
+#define LEAF_NUM 19
 
 // constants for types
 
-#define INT 9 
+#define INT 1
 
 // limits 
 

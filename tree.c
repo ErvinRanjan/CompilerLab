@@ -7,7 +7,7 @@
 /**
  * @brief acts as a constructor for tNode
  */
-struct tNode* createNode(int val, int nodeType, char* varName, int type, struct tNode* left, struct tNode* right) {
+struct tNode* createNode(int val, int nodeType, char* varName, int type, struct tNode* left, struct tNode* right, struct tNode* middle, int label) {
     struct tNode* newNode = malloc(sizeof(struct tNode));
     newNode->val = val;
     newNode->nodeType = nodeType;
@@ -23,6 +23,8 @@ struct tNode* createNode(int val, int nodeType, char* varName, int type, struct 
     newNode->type = type;
     newNode->left = left;
     newNode->right = right;
+    newNode->middle = middle;
+    newNode->label = label;
     return newNode;
 }
 
@@ -34,12 +36,12 @@ struct tNode* createLeafNode(int val, char* varName, int type) {
     if (varName == NULL) {
         nodeType = LEAF_NUM;
     }
-    return createNode(val, nodeType, varName, type, NULL, NULL);
+    return createNode(val, nodeType, varName, type, NULL, NULL, NULL, -1);
 }
 
 /**
  * @brief creates operatorNode given params
  */
-struct tNode* createOperatorNode(int opCode, struct tNode* left, struct tNode* right) {
-    return createNode(0, opCode, NULL, 0, left, right);
+struct tNode* createOperatorNode(int opCode, struct tNode* left, struct tNode* middle, struct tNode* right, int label) {
+    return createNode(0, opCode, NULL, 0, left, right, middle, label);
 }

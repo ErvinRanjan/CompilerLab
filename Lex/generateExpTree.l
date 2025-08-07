@@ -7,6 +7,50 @@
 
 %%
 
+"<=" {
+        return LE;
+    }
+
+">=" {
+        return GE;
+     }
+
+"==" {
+        return EQ;
+    }
+
+"!=" {
+        return NE;
+     }
+
+"if" {
+        return IF;
+     }
+
+"else" {
+            return ELSE;
+        }
+
+"then" {
+            return THEN;
+        }
+
+"endif" {
+            return ENDIF;
+        }
+
+"while" {
+            return WHILE;
+        }
+
+"do"    {
+            return DO;
+        }
+
+"endwhile" {
+                return ENDWHILE;
+            }
+
 "begin" {
             return BLOCK_BEGIN;
         }
@@ -33,7 +77,7 @@
             return ID;
        }
 
-[+*/\-()=;]  {
+[+*/\-()=;<>]  {
             return *yytext;
         }
 
