@@ -21,18 +21,16 @@
      }
 
 "L"[0-9]+":\n" {  
-                char labelNumberAsStr[10];
-                strncpy(labelNumberAsStr,yytext + 1,strlen(yytext) - 3);
-                int labelNumber = atoi(labelNumberAsStr);
+                int labelNumber;
+                sscanf(yytext,"L%d",&labelNumber);
                 if(!once){
                     labelToAddr[labelNumber] = baseAddr + 2*lines;
                 }
             }
 
 "L"[0-9]+ {     
-                char labelNumberAsStr[10];
-                strncpy(labelNumberAsStr,yytext + 1,strlen(yytext) - 1);
-                int labelNumber = atoi(labelNumberAsStr);
+                int labelNumber;
+                sscanf(yytext,"L%d",&labelNumber);
                 if(once){
                     fprintf(out,"%d",labelToAddr[labelNumber]);
                 }
