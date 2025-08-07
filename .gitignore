@@ -5,7 +5,6 @@ label_translator
 xsm_expl
 lex.yy.c
 y.tab.c
-Xsm/test.xsm
 y.tab.h
 *.txt
 *.sh

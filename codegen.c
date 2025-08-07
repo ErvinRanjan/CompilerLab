@@ -217,7 +217,7 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent)
     }
 
 
-    int label1 = root->label;
+    int label1 = root->left != NULL ? root->left->label : next;
     int label2 = root->middle != NULL ? root->middle->label : next;
     int label3 = root->right != NULL ? root->right->label : next;
 
