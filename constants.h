@@ -26,6 +26,8 @@
 #define OP_END 17
 #define LEAF_ID 18
 #define LEAF_NUM 19
+#define LEAF_BREAK 20 
+#define LEAF_CONTINUE 21
 
 // constants for types
 
@@ -34,6 +36,7 @@
 // limits 
 
 #define MAX_VARNAME_LEN 1001
+#define MAX_ARR_LEN 1001
 
 // general constants
 

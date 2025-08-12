@@ -6,10 +6,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include "stack.h"
+#include <stdlib.h>
 
+struct stack* beginLabelStack, * nextLabelStack; // keeps track of latest while begin and next labels
 
 bool isNotConditionalStmt(int nodeType) {
-    return nodeType == OP_READ || nodeType == OP_WRITE || nodeType == OP_ASSIGN;
+    return nodeType == OP_READ || nodeType == OP_WRITE || nodeType == OP_ASSIGN || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE;
 }
 
 bool isConditionalStmt(int nodeType) {
@@ -34,7 +37,7 @@ bool isStmt(int nodeType) {
  * @param next next instructions label
  * @param parentNodeType type of parent node
  */
-void operatorCodeGen(FILE* out, int nodeType, int reg1, int reg2, int reg3, char* varName, int label1, int label2, int label3, int next, struct tNode* parent) {
+void operatorCodeGen(FILE* out, int nodeType, int reg1, int reg2, int reg3, char* varName, int label1, int label2, int next, struct tNode* parent) {
     int addr = getMem(varName);
     switch (nodeType) {
     case OP_ADD:
@@ -59,8 +62,8 @@ void operatorCodeGen(FILE* out, int nodeType, int reg1, int reg2, int reg3, char
         fprintf(out, "MOV [%d], R%d\n", addr, reg2);
         break;
     case OP_IF:
-        fprintf(out, "JNZ R%d, L%d\n", reg1, label2);
-        fprintf(out, "JMP L%d\n", label3);
+        fprintf(out, "JNZ R%d, L%d\n", reg1, label1);
+        fprintf(out, "JMP L%d\n", label2);
         break;
     case OP_WHILE:
         fprintf(out, "JZ R%d, L%d\n", reg1, next);
@@ -83,16 +86,17 @@ void operatorCodeGen(FILE* out, int nodeType, int reg1, int reg2, int reg3, char
     case OP_NE:
         fprintf(out, "NE R%d, R%d\n", reg1, reg2);
         break;
+    case OP_STMTLIST:
+        if (parent != NULL) {
+            if (parent->nodeType == OP_IF) {
+                fprintf(out, "JMP L%d\n", next);
+            }
+            else if (parent->nodeType == OP_WHILE) {
+                fprintf(out, "JMP L%d\n", parent->label);
+            }
+        }
+        break;
     default:
-    }
-
-    if (nodeType == OP_STMTLIST && parent != NULL) {
-        if (parent->nodeType == OP_IF) {
-            fprintf(out, "JMP L%d\n", next);
-        }
-        else if (parent->nodeType == OP_WHILE) {
-            fprintf(out, "JMP L%d\n", parent->label);
-        }
     }
 }
 
@@ -186,19 +190,41 @@ void libExit(FILE* out) {
  * @param varName optional - only for identifiers
  * @param val optional - value for numbers
  */
-int leafCodeGen(FILE* out, int nodeType, char* varName, int val) {
-    int reg = getReg();
+int leafCodeGen(FILE* out, int nodeType, char* varName, int val, int next) {
+    int reg = -1;
     switch (nodeType) {
     case LEAF_ID:
+        reg = getReg();
         int addr = getMem(varName);
         fprintf(out, "MOV R%d, [%d]\n", reg, addr);
         break;
     case LEAF_NUM:
+        reg = getReg();
         fprintf(out, "MOV R%d, %d\n", reg, val);
+        break;
+    case LEAF_BREAK:
+        if (empty(nextLabelStack)) {
+            printf("Error: break in a non while block\n");
+            exit(EXIT_FAILURE);
+        }
+        int latestNextWhileLabel = top(nextLabelStack).intValue;
+        fprintf(out, "JMP L%d\n", latestNextWhileLabel);
+        break;
+    case LEAF_CONTINUE:
+        if (empty(beginLabelStack)) {
+            printf("Error: continue in a non while block\n");
+            exit(EXIT_FAILURE);
+        }
+        int latestBeginWhileLabel = top(beginLabelStack).intValue;
+        fprintf(out, "JMP L%d\n", latestBeginWhileLabel);
         break;
     default:
     }
     return reg;
+}
+
+bool isLeaf(int nodeType) {
+    return nodeType == LEAF_ID || nodeType == LEAF_NUM || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE;
 }
 
 /**
@@ -212,34 +238,46 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent)
         return -1;
     }
 
-    if (root->nodeType == LEAF_ID || root->nodeType == LEAF_NUM) {
-        return leafCodeGen(out, root->nodeType, root->varName, root->val);
-    }
-
-
-    int label1 = root->left != NULL ? root->left->label : next;
-    int label2 = root->middle != NULL ? root->middle->label : next;
-    int label3 = root->right != NULL ? root->right->label : next;
-
     if (isStmt(root->nodeType)) {
+        if (root->nodeType == OP_WHILE) {
+            push(beginLabelStack, createGeneric(INT, &(root->label)));
+            push(nextLabelStack, createGeneric(INT, &next));
+        }
         fprintf(out, "L%d:\n", root->label);
     }
+
+    if (isLeaf(root->nodeType)) {
+        return leafCodeGen(out, root->nodeType, root->varName, root->val, next);
+    }
+
+    int label1 = root->middle != NULL ? root->middle->label : next;
+    int label2 = root->right != NULL ? root->right->label : next;
 
     int reg1 = codeGenHelper(out, root->left, root->nodeType == OP_STMTLIST ? root->middle->label : next, root);
 
     if (isConditionalStmt(root->nodeType)) {
-        operatorCodeGen(out, root->nodeType, reg1, -1, -1, root->left->varName, label1, label2, label3, next, parent);
+        operatorCodeGen(out, root->nodeType, reg1, -1, -1, root->left->varName, label1, label2, next, parent);
     }
 
-    int reg2 = codeGenHelper(out, root->middle, next, root);
+    int reg2 = codeGenHelper(out, root->middle, root->nodeType == OP_WHILE ? root->label : next, root);
     int reg3 = codeGenHelper(out, root->right, next, root);
 
     if (!isConditionalStmt(root->nodeType)) {
-        operatorCodeGen(out, root->nodeType, reg1, reg2, reg3, root->left->varName, label1, label2, label3, next, parent);
+        operatorCodeGen(out, root->nodeType, reg1, reg2, reg3, root->left->varName, label1, label2, next, parent);
         freeReg();
     }
 
+    if (root->nodeType == OP_WHILE) {
+        pop(beginLabelStack);
+        pop(nextLabelStack);
+    }
+
     return reg1;
+}
+
+void initDataStructures() {
+    beginLabelStack = createStack(MAX_ARR_LEN);
+    nextLabelStack = createStack(MAX_ARR_LEN);
 }
 
 /**
@@ -255,6 +293,7 @@ void initParams(FILE* out) {
  * @param root root of AST
  */
 void codeGen(FILE* out, struct tNode* root) {
+    initDataStructures();
     generateHeader(out, 0, ENTRY_POINT, 0, 0, 0, 0, 0);
     initParams(out);
     codeGenHelper(out, root, -1, NULL);

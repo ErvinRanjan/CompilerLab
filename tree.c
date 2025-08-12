@@ -31,12 +31,8 @@ struct tNode* createNode(int val, int nodeType, char* varName, int type, struct 
 /**
  * @brief creates leafNode given params
  */
-struct tNode* createLeafNode(int val, char* varName, int type) {
-    int nodeType = LEAF_ID;
-    if (varName == NULL) {
-        nodeType = LEAF_NUM;
-    }
-    return createNode(val, nodeType, varName, type, NULL, NULL, NULL, -1);
+struct tNode* createLeafNode(int val, char* varName, int type, int label, int nodeType) {
+    return createNode(val, nodeType, varName, type, NULL, NULL, NULL, label);
 }
 
 /**

@@ -14,8 +14,8 @@
     struct tNode* node;
 };
 
-%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ
-%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt B E ID
+%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE
+%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt B E ID BREAK CONTINUE 
 
 %nonassoc '='
 %left '+' '-'
@@ -45,6 +45,8 @@ Stmt : InputStmt
      | AsgStmt 
      | Ifstmt
      | Whilestmt
+     | BreakStmt
+     | ContinueStmt
        {   
         $<node>$ = $<node>1;
        }     
@@ -84,6 +86,13 @@ AsgStmt : ID '=' E ';' {
                       $<node>$ = createOperatorNode(OP_ASSIGN,$<node>1,$<node>3,NULL,label);
                     }
         ;
+
+BreakStmt : BREAK ';'
+ContinueStmt : CONTINUE ';' 
+        {
+            $<node>$ = $<node>1;
+        }
+        ;   
 
 B : E '<' E {
                 $<node>$ = createOperatorNode(OP_LT,$<node>1,$<node>3,NULL,-1);

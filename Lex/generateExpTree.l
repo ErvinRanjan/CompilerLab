@@ -3,6 +3,7 @@
     #include "tree.h"
     #include "constants.h"
     #include <stdlib.h>
+    #include "label.h"
 %}
 
 %%
@@ -67,13 +68,25 @@
             return WRITE;
         }
 
+"break" {
+            int label = getLabel();
+            yylval.node = createLeafNode(0,NULL,-1,label,LEAF_BREAK);
+            return BREAK;
+        }
+
+"continue" {
+                int label = getLabel();
+                yylval.node = createLeafNode(0,NULL,-1,label,LEAF_CONTINUE);
+                return CONTINUE;
+            }
+
 [0-9]+ { 
-            yylval.node = createLeafNode(atoi(yytext),NULL,INT); 
+            yylval.node = createLeafNode(atoi(yytext),NULL,INT,-1,LEAF_NUM); 
             return NUM;
        }
 
 [a-z]   {
-            yylval.node = createLeafNode(0,yytext,INT);
+            yylval.node = createLeafNode(0,yytext,INT,-1,LEAF_ID);
             return ID;
        }
 
