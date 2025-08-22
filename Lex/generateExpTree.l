@@ -104,8 +104,9 @@
        }
 
 \".*\" {
-            sprintf(yytext,"\"%s\"",yytext);
-            yylval.node = createLeafNode(-1,NULL,LEAF_TYPE_STR,-1,LEAF_STR,yytext);
+            char syytext[100];
+            strip(syytext,yytext,'"');
+            yylval.node = createLeafNode(-1,NULL,LEAF_TYPE_STR,-1,LEAF_STR,syytext);
             return CSTR;
         }
 
@@ -114,7 +115,7 @@
             return ID;
        }
 
-[+*/\-()=;<>,]  {
+[+*/\-%()=;<>,]  {
             return *yytext;
         }
 

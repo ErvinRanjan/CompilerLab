@@ -20,6 +20,7 @@
 %type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt B E ID BREAK CONTINUE Declarations DeclList Decl Type VarList CSTR
 
 %nonassoc '='
+%left '%'
 %left '+' '-'
 %left '*' '/'
 
@@ -164,6 +165,9 @@ E : E '+' E {
             }
   | E '/' E {
                 $<node>$ = createOperatorNode(OP_DIV,$<node>1,$<node>3,NULL,-1);
+            }
+  | E '%' E {
+                $<node>$ = createOperatorNode(OP_MOD,$<node>1,$<node>3,NULL,-1);
             }
   | '(' E ')' {
                  $<node>$ = $<node>2;

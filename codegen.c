@@ -60,6 +60,9 @@ void operatorCodeGen(FILE* out, int nodeType, int reg1, int reg2, int reg3, char
     case OP_DIV:
         fprintf(out, "DIV R%d, R%d\n", reg1, reg2);
         break;
+    case OP_MOD:
+        fprintf(out, "MOD R%d, R%d\n", reg1, reg2);
+        break;
     case OP_READ:
         addr = getMem(varName, symbolTable);
         libRead(out, XSM_STDIN, addr);
@@ -214,7 +217,7 @@ int leafCodeGen(FILE* out, int nodeType, char* varName, int val, char* stringVal
         break;
     case LEAF_STR:
         reg = getReg();
-        fprintf(out, "MOV R%d, %s\n", reg, stringVal);
+        fprintf(out, "MOV R%d, \"%s\"\n", reg, stringVal);
         break;
     case LEAF_BREAK:
         if (empty(nextLabelStack)) {
@@ -267,8 +270,11 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent,
     int label1 = root->middle != NULL ? root->middle->label : next;
     int label2 = root->right != NULL ? root->right->label : next;
 
-    int reg1 = codeGenHelper(out, root->left, root->nodeType == OP_STMTLIST ? root->middle->label : next, root, symbolTable);
-
+    int reg1 = -1;
+    // to prevent printing extra assembly instruction
+    if (root->nodeType != OP_ASSIGN) {
+        reg1 = codeGenHelper(out, root->left, root->nodeType == OP_STMTLIST ? root->middle->label : next, root, symbolTable);
+    }
     if (isConditionalStmt(root->nodeType)) {
         operatorCodeGen(out, root->nodeType, reg1, -1, -1, root->left->varName, label1, label2, next, parent, symbolTable);
     }

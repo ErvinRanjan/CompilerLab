@@ -40,6 +40,14 @@ int validateOperatorType(int nodeType, int typeLeft, int typeMiddle) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
+    case OP_MOD:
+        if (typeLeft == LEAF_TYPE_INT && typeMiddle == LEAF_TYPE_INT) {
+            return LEAF_TYPE_INT;
+        }
+        else {
+            printf("Error: Type Mismatch\n");
+            exit(EXIT_FAILURE);
+        }
     case OP_ASSIGN:
         if (typeLeft != typeMiddle) {
             printf("Error: Type Mismatch\n");

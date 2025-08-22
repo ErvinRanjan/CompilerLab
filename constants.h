@@ -32,6 +32,7 @@
 #define OP_DECL 23
 #define OP_DECLLIST 24 
 #define LEAF_STR 27
+#define OP_MOD 28
 
 // constants for types
 
