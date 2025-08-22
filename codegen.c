@@ -23,6 +23,14 @@ bool isStmt(int nodeType) {
     return isConditionalStmt(nodeType) || isNotConditionalStmt(nodeType);
 }
 
+int getMem(char* varName, struct symbol* symbolTable) {
+    if (varName == NULL) return -1;
+
+    struct symbol* sym = getSymbolTable(varName, symbolTable);
+
+    return sym == NULL ? -1 : sym->binding;
+}
+
 /**
  * @brief generates machine code for operators
  * @param out output file pointer
@@ -37,8 +45,8 @@ bool isStmt(int nodeType) {
  * @param next next instructions label
  * @param parentNodeType type of parent node
  */
-void operatorCodeGen(FILE* out, int nodeType, int reg1, int reg2, int reg3, char* varName, int label1, int label2, int next, struct tNode* parent) {
-    int addr = getMem(varName);
+void operatorCodeGen(FILE* out, int nodeType, int reg1, int reg2, int reg3, char* varName, int label1, int label2, int next, struct tNode* parent, struct symbol* symbolTable) {
+    int addr = -1;
     switch (nodeType) {
     case OP_ADD:
         fprintf(out, "ADD R%d, R%d\n", reg1, reg2);
@@ -53,12 +61,14 @@ void operatorCodeGen(FILE* out, int nodeType, int reg1, int reg2, int reg3, char
         fprintf(out, "DIV R%d, R%d\n", reg1, reg2);
         break;
     case OP_READ:
+        addr = getMem(varName, symbolTable);
         libRead(out, XSM_STDIN, addr);
         break;
     case OP_WRITE:
         libWrite(out, reg1, XSM_STDOUT);
         break;
     case OP_ASSIGN:
+        addr = getMem(varName, symbolTable);
         fprintf(out, "MOV [%d], R%d\n", addr, reg2);
         break;
     case OP_IF:
@@ -190,17 +200,21 @@ void libExit(FILE* out) {
  * @param varName optional - only for identifiers
  * @param val optional - value for numbers
  */
-int leafCodeGen(FILE* out, int nodeType, char* varName, int val, int next) {
+int leafCodeGen(FILE* out, int nodeType, char* varName, int val, char* stringVal, int next, struct symbol* symbolTable) {
     int reg = -1;
     switch (nodeType) {
     case LEAF_ID:
         reg = getReg();
-        int addr = getMem(varName);
+        int addr = getMem(varName, symbolTable);
         fprintf(out, "MOV R%d, [%d]\n", reg, addr);
         break;
     case LEAF_NUM:
         reg = getReg();
         fprintf(out, "MOV R%d, %d\n", reg, val);
+        break;
+    case LEAF_STR:
+        reg = getReg();
+        fprintf(out, "MOV R%d, %s\n", reg, stringVal);
         break;
     case LEAF_BREAK:
         if (empty(nextLabelStack)) {
@@ -224,7 +238,7 @@ int leafCodeGen(FILE* out, int nodeType, char* varName, int val, int next) {
 }
 
 bool isLeaf(int nodeType) {
-    return nodeType == LEAF_ID || nodeType == LEAF_NUM || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE;
+    return nodeType == LEAF_ID || nodeType == LEAF_NUM || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE || nodeType == LEAF_STR || nodeType == LEAF_TYPE_INT || nodeType == LEAF_TYPE_STR;
 }
 
 /**
@@ -233,37 +247,37 @@ bool isLeaf(int nodeType) {
  * @param root root of AST
  * @return register where result is stored
  */
-int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent) {
+int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent, struct symbol* symbolTable) {
     if (root == NULL) {
         return -1;
     }
 
     if (isStmt(root->nodeType)) {
         if (root->nodeType == OP_WHILE) {
-            push(beginLabelStack, createGeneric(INT, &(root->label)));
-            push(nextLabelStack, createGeneric(INT, &next));
+            push(beginLabelStack, createGeneric(LEAF_TYPE_INT, &(root->label)));
+            push(nextLabelStack, createGeneric(LEAF_TYPE_INT, &next));
         }
         fprintf(out, "L%d:\n", root->label);
     }
 
     if (isLeaf(root->nodeType)) {
-        return leafCodeGen(out, root->nodeType, root->varName, root->val, next);
+        return leafCodeGen(out, root->nodeType, root->varName, root->val, root->stringVal, next, symbolTable);
     }
 
     int label1 = root->middle != NULL ? root->middle->label : next;
     int label2 = root->right != NULL ? root->right->label : next;
 
-    int reg1 = codeGenHelper(out, root->left, root->nodeType == OP_STMTLIST ? root->middle->label : next, root);
+    int reg1 = codeGenHelper(out, root->left, root->nodeType == OP_STMTLIST ? root->middle->label : next, root, symbolTable);
 
     if (isConditionalStmt(root->nodeType)) {
-        operatorCodeGen(out, root->nodeType, reg1, -1, -1, root->left->varName, label1, label2, next, parent);
+        operatorCodeGen(out, root->nodeType, reg1, -1, -1, root->left->varName, label1, label2, next, parent, symbolTable);
     }
 
-    int reg2 = codeGenHelper(out, root->middle, root->nodeType == OP_WHILE ? root->label : next, root);
-    int reg3 = codeGenHelper(out, root->right, next, root);
+    int reg2 = codeGenHelper(out, root->middle, root->nodeType == OP_WHILE ? root->label : next, root, symbolTable);
+    int reg3 = codeGenHelper(out, root->right, next, root, symbolTable);
 
     if (!isConditionalStmt(root->nodeType)) {
-        operatorCodeGen(out, root->nodeType, reg1, reg2, reg3, root->left->varName, label1, label2, next, parent);
+        operatorCodeGen(out, root->nodeType, reg1, reg2, reg3, root->left->varName, label1, label2, next, parent, symbolTable);
         freeReg();
     }
 
@@ -292,11 +306,11 @@ void initParams(FILE* out) {
  * @param out output file pointer
  * @param root root of AST
  */
-void codeGen(FILE* out, struct tNode* root) {
+void codeGen(FILE* out, struct tNode* root, struct symbol* symbolTable) {
     initDataStructures();
     generateHeader(out, 0, ENTRY_POINT, 0, 0, 0, 0, 0);
     initParams(out);
-    codeGenHelper(out, root, -1, NULL);
+    codeGenHelper(out, root, -1, NULL, symbolTable);
     fprintf(out, "L%d:\n", -1);
     libExit(out);
 }

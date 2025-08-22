@@ -28,10 +28,15 @@
 #define LEAF_NUM 19
 #define LEAF_BREAK 20 
 #define LEAF_CONTINUE 21
+#define OP_VARLIST 22 
+#define OP_DECL 23
+#define OP_DECLLIST 24 
+#define LEAF_STR 27
 
 // constants for types
 
-#define INT 1
+#define LEAF_TYPE_INT 25
+#define LEAF_TYPE_STR 26 
 
 // limits 
 
@@ -41,7 +46,10 @@
 // general constants
 
 #define ENTRY_POINT 2056 
-#define INIT_SP 4112
+#define INIT_SP 4608
+#define MEM_START 4096
+#define MAX_STACK_SPACE 512
+#define MAX_CSTR_LEN 1001
 
 // file descriptors 
 

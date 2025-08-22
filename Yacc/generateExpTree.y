@@ -2,6 +2,8 @@
     #include "tree.h"
     #include "codegen.h"
     #include "constants.h"
+    #include "symbol.h"
+    #include "type.h"
     #include "label.h"
     #include <stdio.h>
     #include <stdlib.h>
@@ -14,8 +16,8 @@
     struct tNode* node;
 };
 
-%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE
-%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt B E ID BREAK CONTINUE 
+%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR
+%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt B E ID BREAK CONTINUE Declarations DeclList Decl Type VarList CSTR
 
 %nonassoc '='
 %left '+' '-'
@@ -23,12 +25,49 @@
 
 %%
 
-Program : BLOCK_BEGIN Slist BLOCK_END  {
-                                codeGen(out,$<node>2);
+Program : BLOCK_BEGIN Declarations Slist BLOCK_END  {
+                                struct symbol* symbolTable = NULL;
+                                symbolTable = populateSymbolTable($<node>2,symbolTable);
+                                typeCheck($<node>3,symbolTable);
+                                codeGen(out,$<node>3,symbolTable);
                            }
         | BLOCK_BEGIN BLOCK_END {
 
                                 }
+        ;
+
+Declarations : DECL DeclList ENDDECL {
+                                        $<node>$ = $<node>2;
+                                    }
+            | DECL ENDDECL {}
+            ;
+
+DeclList : DeclList Decl {
+                            $<node>$ = createOperatorNode(OP_DECLLIST,$<node>1,$<node>2,NULL,-1);
+                        }
+         | Decl {
+                    $<node>$ = $<node>1;
+                }
+         ;
+
+Decl : Type VarList ';' {
+                        $<node>$ = createOperatorNode(OP_DECL,$<node>1,$<node>2,NULL,-1);
+                    }
+     ;
+
+Type : INT 
+     | STR
+       {
+        $<node>$ = $<node>1;
+       }
+     ;
+
+VarList : VarList ',' ID    {
+                                $<node>$ = createOperatorNode(OP_VARLIST,$<node>1,$<node>3,NULL,-1);
+                            }
+        | ID    {
+                    $<node>$ = $<node>1;
+                }
         ;
 
 Slist : Slist Stmt {    
@@ -130,7 +169,8 @@ E : E '+' E {
                  $<node>$ = $<node>2;
               }
   | NUM 
-  | ID  
+  | ID 
+  | CSTR  
   {
     $<node>$ = $<node>1;
    }

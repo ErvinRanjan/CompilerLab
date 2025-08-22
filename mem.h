@@ -5,6 +5,6 @@
 #ifndef MEM_H
 #define MEM_H
 
-int getMem(char* varName);
+int getFreeMem(int size);
 
 #endif 

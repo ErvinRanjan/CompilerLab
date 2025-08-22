@@ -6,11 +6,12 @@
 #define CODEGEN_H
 
 #include "tree.h"
+#include "symbol.h"
 #include <stdio.h>
 
 int libRead(FILE* out, int fileDescriptor, int addr);
 void libWrite(FILE* out, int data, int fileDescriptor);
 void libExit(FILE* out);
-void codeGen(FILE* out, struct tNode* root);
+void codeGen(FILE* out, struct tNode* root, struct symbol* symbolTable);
 
 #endif

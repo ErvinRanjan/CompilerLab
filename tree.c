@@ -7,7 +7,7 @@
 /**
  * @brief acts as a constructor for tNode
  */
-struct tNode* createNode(int val, int nodeType, char* varName, int type, struct tNode* left, struct tNode* right, struct tNode* middle, int label) {
+struct tNode* createNode(int val, int nodeType, char* varName, int type, struct tNode* left, struct tNode* right, struct tNode* middle, int label, char* stringVal) {
     struct tNode* newNode = malloc(sizeof(struct tNode));
     newNode->val = val;
     newNode->nodeType = nodeType;
@@ -25,19 +25,29 @@ struct tNode* createNode(int val, int nodeType, char* varName, int type, struct 
     newNode->right = right;
     newNode->middle = middle;
     newNode->label = label;
+    newNode->symbolTableEntry = NULL;
+    if (stringVal != NULL) {
+        if (strlen(stringVal) >= MAX_CSTR_LEN) {
+            printf("Error: stringVal is greater than MAX_stringVal_LEN - %d", MAX_CSTR_LEN);
+            exit(EXIT_FAILURE);
+        }
+        else {
+            strncpy(newNode->stringVal, stringVal, strlen(stringVal));
+        }
+    }
     return newNode;
 }
 
 /**
  * @brief creates leafNode given params
  */
-struct tNode* createLeafNode(int val, char* varName, int type, int label, int nodeType) {
-    return createNode(val, nodeType, varName, type, NULL, NULL, NULL, label);
+struct tNode* createLeafNode(int val, char* varName, int type, int label, int nodeType, char* stringVal) {
+    return createNode(val, nodeType, varName, type, NULL, NULL, NULL, label, stringVal);
 }
 
 /**
  * @brief creates operatorNode given params
  */
 struct tNode* createOperatorNode(int opCode, struct tNode* left, struct tNode* middle, struct tNode* right, int label) {
-    return createNode(0, opCode, NULL, 0, left, right, middle, label);
+    return createNode(0, opCode, NULL, 0, left, right, middle, label, NULL);
 }
