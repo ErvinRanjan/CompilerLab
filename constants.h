@@ -26,18 +26,25 @@
 #define OP_END 17
 #define LEAF_ID 18
 #define LEAF_NUM 19
-#define LEAF_BREAK 20 
+#define LEAF_BREAK 0 
 #define LEAF_CONTINUE 21
 #define OP_VARLIST 22 
 #define OP_DECL 23
 #define OP_DECLLIST 24 
 #define LEAF_STR 27
 #define OP_MOD 28
+#define LEAF_ARR 31
+#define OP_BRACELIST 32
 
 // constants for types
 
 #define LEAF_TYPE_INT 25
 #define LEAF_TYPE_STR 26 
+
+// constants for types of identifiers
+
+#define PRIMITIVE 29 
+#define ARRAY 30
 
 // limits 
 

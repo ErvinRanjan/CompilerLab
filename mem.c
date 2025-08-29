@@ -14,3 +14,11 @@ int getFreeMem(int size) {
     mem += size;
     return prev;
 }
+
+void freeMem(int size) {
+    if (mem - size < 4096) {
+        printf("Error: no memory to free\n");
+        exit(EXIT_FAILURE);
+    }
+    mem -= size;
+}

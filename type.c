@@ -1,131 +1,171 @@
 #include "type.h"
 #include "constants.h"
-#include "stdlib.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include "tree.h"
+#include "symbol.h"
 
 extern bool isLeaf(int nodeType);
 
-int validateOperatorType(int nodeType, int typeLeft, int typeMiddle) {
+void typeCheckForArray(struct tNode* braceRoot, struct symbol* symbolTable) {
+    if (braceRoot == NULL) return;
+
+    if (braceRoot->nodeType != OP_BRACELIST) {
+        struct type* type = typeCheck(braceRoot, symbolTable);
+        if (type->code != LEAF_TYPE_INT || type->depth != 0) {
+            printf("Error: non int type in within braces in array\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    typeCheck(braceRoot->left, symbolTable);
+    typeCheck(braceRoot->middle, symbolTable);
+}
+
+int max(int x, int y) {
+    return x > y ? x : y;
+}
+
+int getArrayDepth(struct tNode* braceRoot) {
+    return braceRoot == NULL ? 0 : 1 + max(getArrayDepth(braceRoot->left), getArrayDepth(braceRoot->right));
+}
+
+struct type* createType(int code, int depth) {
+    struct type* t = malloc(sizeof(struct type));
+    t->code = code;
+    t->depth = depth;
+    return t;
+}
+
+struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct type* typeMiddle) {
     switch (nodeType) {
     case OP_ADD:
-        if (typeLeft == LEAF_TYPE_INT && typeMiddle == LEAF_TYPE_INT) {
-            return LEAF_TYPE_INT;
+        if (typeLeft->code == LEAF_TYPE_INT && typeMiddle->code == LEAF_TYPE_INT) {
+            return createType(LEAF_TYPE_INT, 0);
         }
         else {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
     case OP_SUB:
-        if (typeLeft == LEAF_TYPE_INT && typeMiddle == LEAF_TYPE_INT) {
-            return LEAF_TYPE_INT;
+        if (typeLeft->code == LEAF_TYPE_INT && typeMiddle->code == LEAF_TYPE_INT) {
+            return createType(LEAF_TYPE_INT, 0);
         }
         else {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
     case OP_MUL:
-        if (typeLeft == LEAF_TYPE_INT && typeMiddle == LEAF_TYPE_INT) {
-            return LEAF_TYPE_INT;
+        if (typeLeft->code == LEAF_TYPE_INT && typeMiddle->code == LEAF_TYPE_INT) {
+            return createType(LEAF_TYPE_INT, 0);
         }
         else {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
     case OP_DIV:
-        if (typeLeft == LEAF_TYPE_INT && typeMiddle == LEAF_TYPE_INT) {
-            return LEAF_TYPE_INT;
+        if (typeLeft->code == LEAF_TYPE_INT && typeMiddle->code == LEAF_TYPE_INT) {
+            return createType(LEAF_TYPE_INT, 0);
         }
         else {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
     case OP_MOD:
-        if (typeLeft == LEAF_TYPE_INT && typeMiddle == LEAF_TYPE_INT) {
-            return LEAF_TYPE_INT;
+        if (typeLeft->code == LEAF_TYPE_INT && typeMiddle->code == LEAF_TYPE_INT) {
+            return createType(LEAF_TYPE_INT, 0);
         }
         else {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
     case OP_ASSIGN:
-        if (typeLeft != typeMiddle) {
+        if (typeLeft->code != typeMiddle->code) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
-        return -1;
+        return createType(-1, 0);
     case OP_GT:
-        if (typeLeft != LEAF_TYPE_INT || typeMiddle != LEAF_TYPE_INT) {
+        if (typeLeft->code != LEAF_TYPE_INT || typeMiddle->code != LEAF_TYPE_INT) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
-        return -1;
+        return createType(-1, 0);
     case OP_LT:
-        if (typeLeft != LEAF_TYPE_INT || typeMiddle != LEAF_TYPE_INT) {
+        if (typeLeft->code != LEAF_TYPE_INT || typeMiddle->code != LEAF_TYPE_INT) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
-        return -1;
+        return createType(-1, 0);
     case OP_GE:
-        if (typeLeft != LEAF_TYPE_INT || typeMiddle != LEAF_TYPE_INT) {
+        if (typeLeft->code != LEAF_TYPE_INT || typeMiddle->code != LEAF_TYPE_INT) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
-        return -1;
+        return createType(-1, 0);
     case OP_LE:
-        if (typeLeft != LEAF_TYPE_INT || typeMiddle != LEAF_TYPE_INT) {
+        if (typeLeft->code != LEAF_TYPE_INT || typeMiddle->code != LEAF_TYPE_INT) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
-        return -1;
+        return createType(-1, 0);
     case OP_EQ:
-        if (typeLeft != LEAF_TYPE_INT || typeMiddle != LEAF_TYPE_INT) {
+        if (typeLeft->code != LEAF_TYPE_INT || typeMiddle->code != LEAF_TYPE_INT) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
-        return -1;
+        return createType(-1, 0);
     case OP_NE:
-        if (typeLeft != LEAF_TYPE_INT || typeMiddle != LEAF_TYPE_INT) {
+        if (typeLeft->code != LEAF_TYPE_INT || typeMiddle->code != LEAF_TYPE_INT) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
-        return -1;
+        return createType(-1, 0);
     default:
     }
-    return -1;
+    return createType(-1, 0);
 }
 
-int validateLeafType(int nodeType, int type, char* varName, struct symbol* symbolTable) {
-    switch (nodeType) {
+struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
+    switch (node->nodeType) {
     case LEAF_ID:
-        struct symbol* symbol = getSymbolTable(varName, symbolTable);
+        struct symbol* symbol = getSymbolTable(node->varName, symbolTable);
         if (symbol == NULL) {
-            printf("Error: variable %s has not been declared\n", varName);
+            printf("Error: variable %s has not been declared\n", node->varName);
             exit(EXIT_FAILURE);
         }
         return symbol->type;
     case LEAF_NUM:
-        return LEAF_TYPE_INT;
+        return createType(LEAF_TYPE_INT, 0);
+    case LEAF_ARR:
+        typeCheckForArray(node->middle, symbolTable);
+        struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
+        if (getArrayDepth(node->middle) != sym->type->depth) {
+            printf("Error: Type Mismatch\n");
+            exit(EXIT_FAILURE);
+        }
+        return sym->type;
     case LEAF_STR:
-        return LEAF_TYPE_STR;
+        return createType(LEAF_TYPE_STR, 0);
     case LEAF_TYPE_INT:
-        return LEAF_TYPE_INT;
+        return createType(LEAF_TYPE_INT, 0);
     case LEAF_TYPE_STR:
-        return LEAF_TYPE_STR;
+        return createType(LEAF_TYPE_STR, 0);
     default:
     }
-    return -1;
+    return createType(-1, 0);
 }
 
-int typeCheck(struct tNode* root, struct symbol* symbolTable) {
-    if (root == NULL) return -1;
+struct type* typeCheck(struct tNode* root, struct symbol* symbolTable) {
+    if (root == NULL) return createType(-1, 0);
 
     if (isLeaf(root->nodeType)) {
-        return validateLeafType(root->nodeType, root->type, root->varName, symbolTable);
+        return validateLeafType(root, symbolTable);
     }
 
-    int typeLeft = typeCheck(root->left, symbolTable);
-    int typeMiddle = typeCheck(root->middle, symbolTable);
+    struct type* typeLeft = typeCheck(root->left, symbolTable);
+    struct type* typeMiddle = typeCheck(root->middle, symbolTable);
 
     return validateOperatorType(root->nodeType, typeLeft, typeMiddle);
 }

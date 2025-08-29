@@ -3,13 +3,41 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
-struct symbol* createSymbol(int type, char* varName, int size, int binding) {
+extern bool isLeaf(int nodeType);
+
+void getAndValidateArrayDetails(struct tNode* braceRoot, int* maxSizes, int* depth, int* size) {
+    if (braceRoot == NULL) return;
+
+    if (braceRoot->nodeType == LEAF_NUM) {
+        maxSizes[(*depth)] = braceRoot->val;
+        (*depth) = (*depth) + 1;
+        (*size) = (*size) * (braceRoot->val);
+        return;
+    }
+    else if (braceRoot->nodeType != OP_BRACELIST) {
+        printf("Error: non int type within braces in array declaration\n");
+        exit(EXIT_FAILURE);
+    }
+
+    getAndValidateArrayDetails(braceRoot->left, maxSizes, depth, size);
+    getAndValidateArrayDetails(braceRoot->middle, maxSizes, depth, size);
+}
+
+struct symbol* createSymbol(struct type* type, char* varName, int size, int binding, int symbolType, int* maxSizes) {
     struct symbol* sym = malloc(sizeof(struct symbol));
     sym->type = type;
     strncpy(sym->varName, varName, strlen(varName));
     sym->size = size;
     sym->binding = binding;
+    sym->symbolType = symbolType;
+    sym->type = type;
+    if (maxSizes != NULL) {
+        for (int i = 0;i < type->depth;i++) {
+            sym->maxSizes[i] = maxSizes[i];
+        }
+    }
     return sym;
 }
 
@@ -42,17 +70,33 @@ int isSymbolPresent(struct symbol* symbolTable, struct symbol* symbol) {
     return 0;
 }
 
+struct symbol* createSymbolForIdentifier(struct tNode* varRoot, int type) {
+    switch (varRoot->nodeType) {
+    case LEAF_ID:
+        return createSymbol(createType(type, 0), varRoot->varName, 1, getFreeMem(1), PRIMITIVE, NULL);
+    case LEAF_NUM:
+        return createSymbol(createType(type, 0), varRoot->varName, 1, getFreeMem(1), PRIMITIVE, NULL);
+    case LEAF_ARR:
+        int depth = 0, size = 1;
+        int maxSizes[100];
+        getAndValidateArrayDetails(varRoot->middle, maxSizes, &depth, &size);
+        return createSymbol(createType(type, depth), varRoot->left->varName, size, getFreeMem(size), ARRAY, maxSizes);
+    default:
+        printf("Error: Symbol is not recognized\n");
+        exit(EXIT_FAILURE);
+    }
+    return createSymbol(createType(-1, 0), NULL, -1, -1, -1, NULL);
+}
+
 struct symbol* populateSymbolTableGivenVarList(struct tNode* varRoot, struct symbol* symbolTable, int type) {
     if (varRoot == NULL) return symbolTable;
 
-    // leaf
-    if (varRoot->left == NULL && varRoot->middle == NULL && varRoot->right == NULL) {
-        return addSymbol(symbolTable, createSymbol(type, varRoot->varName, 1, getFreeMem(1)));
+    if (isLeaf(varRoot->nodeType)) {
+        return addSymbol(symbolTable, createSymbolForIdentifier(varRoot, type));
     }
 
     symbolTable = populateSymbolTableGivenVarList(varRoot->left, symbolTable, type);
     symbolTable = populateSymbolTableGivenVarList(varRoot->middle, symbolTable, type);
-    symbolTable = populateSymbolTableGivenVarList(varRoot->right, symbolTable, type);
 
     return symbolTable;
 }
@@ -70,7 +114,6 @@ struct symbol* populateSymbolTable(struct tNode* declRoot, struct symbol* symbol
 
     symbolTable = populateSymbolTable(declRoot->left, symbolTable);
     symbolTable = populateSymbolTable(declRoot->middle, symbolTable);
-    symbolTable = populateSymbolTable(declRoot->right, symbolTable);
 
     return symbolTable;
 }

@@ -6,5 +6,6 @@
 #define MEM_H
 
 int getFreeMem(int size);
+void freeMem(int size);
 
 #endif 

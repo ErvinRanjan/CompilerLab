@@ -17,7 +17,7 @@
 };
 
 %token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR
-%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt B E ID BREAK CONTINUE Declarations DeclList Decl Type VarList CSTR
+%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt B E ID BREAK CONTINUE Declarations DeclList Decl Type VarList CSTR Array BraceList Identifier
 
 %nonassoc '='
 %left '%'
@@ -69,6 +69,12 @@ VarList : VarList ',' ID    {
         | ID    {
                     $<node>$ = $<node>1;
                 }
+        | VarList ',' DeclArray  {
+                                $<node>$ = createOperatorNode(OP_VARLIST,$<node>1,$<node>3,NULL,-1);
+                            }
+        | DeclArray  {
+                    $<node>$ = $<node>1;
+                }
         ;
 
 Slist : Slist Stmt {    
@@ -109,7 +115,7 @@ Whilestmt : WHILE '(' B ')' DO Slist ENDWHILE {
                                                 }
           ;
 
-InputStmt : READ '(' ID ')' ';' {
+InputStmt : READ '(' Identifier ')' ';' {
                                 int label = getLabel();
                                 $<node>$ = createOperatorNode(OP_READ,$<node>3,NULL,NULL,label);
                             }
@@ -121,7 +127,7 @@ OutputStmt : WRITE '(' E ')' ';' {
                             }
             ;
 
-AsgStmt : ID '=' E ';' {
+AsgStmt : Identifier '=' E ';' {
                       int label = getLabel();
                       $<node>$ = createOperatorNode(OP_ASSIGN,$<node>1,$<node>3,NULL,label);
                     }
@@ -173,12 +179,43 @@ E : E '+' E {
                  $<node>$ = $<node>2;
               }
   | NUM 
-  | ID 
+  | Identifier
   | CSTR  
   {
     $<node>$ = $<node>1;
    }
   ;
+
+DeclArray : ID DeclBraceList {
+                        $<node>$ = createOperatorNode(LEAF_ARR,$<node>1,$<node>2,NULL,-1);
+                    }
+
+DeclBraceList : DeclBraceList '[' NUM ']' {
+                                        $<node>$ = createOperatorNode(OP_BRACELIST,$<node>1,$<node>3,NULL,-1);
+                                    }
+          | '[' NUM ']' {
+                            $<node>$ = $<node>2;
+                        }
+          ;
+
+Array : ID BraceList {
+                        $<node>$ = createOperatorNode(LEAF_ARR,$<node>1,$<node>2,NULL,-1);
+                    }
+
+BraceList : BraceList '[' E ']' {
+                                        $<node>$ = createOperatorNode(OP_BRACELIST,$<node>1,$<node>3,NULL,-1);
+                                    }
+          | '[' E ']' {
+                            $<node>$ = $<node>2;
+                        }
+          ;
+
+Identifier : ID 
+            | Array 
+            {
+                $<node>$ = $<node>1;
+            }
+            ;
 
 %%
 
