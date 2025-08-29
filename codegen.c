@@ -34,7 +34,7 @@ void resolveArrayAddrCodegen(FILE* out, struct tNode* braceRoot, struct symbol* 
 int resolveAddr(FILE* out, struct tNode* node, struct symbol* symbolTable) {
     switch (node->nodeType) {
     case LEAF_ID:
-        int reg = getReg();
+        int reg = getFreeReg();
         fprintf(out, "MOV R%d, %d\n", reg, getMem(node->varName, symbolTable));
         return reg;
         break;
@@ -59,19 +59,19 @@ int resolveArrayAddr(FILE* out, struct tNode* node, struct symbol* symbolTable) 
     }
     int maxi = base + depth;
     int addr = sym->binding;
-    int addr_reg = getReg();
+    int addr_reg = getFreeReg();
     fprintf(out, "MOV R%d, %d\n", addr_reg, addr);
-    int prod_reg = getReg();
+    int prod_reg = getFreeReg();
     fprintf(out, "MOV R%d, %d\n", prod_reg, 1);
-    int base_reg = getReg();
-    int maxSizesBase_reg = getReg();
+    int base_reg = getFreeReg();
+    int maxSizesBase_reg = getFreeReg();
     fprintf(out, "MOV R%d, %d\n", base_reg, base);
     fprintf(out, "MOV R%d, %d\n", maxSizesBase_reg, maxSizesBase);
-    int op_reg = getReg();
+    int op_reg = getFreeReg();
     int label = getLabel();
     fprintf(out, "L%d:\n", label);
     fprintf(out, "MOV R%d, R%d\n", op_reg, prod_reg);
-    int temp = getReg();
+    int temp = getFreeReg();
     fprintf(out, "MOV R%d, [R%d]\n", temp, base_reg);
     fprintf(out, "MUL R%d, R%d\n", op_reg, temp);
     freeReg();
@@ -222,7 +222,7 @@ void generateHeader(FILE* out, int xmagic, int entryPoint, int textSize, int dat
  * @param addr buffer address
  */
 int libRead(FILE* out, int fileDescriptor, int addr_reg) {
-    int reg = getReg();
+    int reg = getFreeReg();
 
     fprintf(out, "MOV R%d, \"Read\"\n", reg);
     fprintf(out, "PUSH R%d\n", reg);
@@ -249,7 +249,7 @@ int libRead(FILE* out, int fileDescriptor, int addr_reg) {
  * @param fileDescriptor file descriptor to write to
  */
 void libWrite(FILE* out, int regNum, int fileDescriptor) {
-    int reg = getReg();
+    int reg = getFreeReg();
 
     fprintf(out, "MOV R%d, \"Write\"\n", reg);
     fprintf(out, "PUSH R%d\n", reg);
@@ -277,7 +277,7 @@ void libWrite(FILE* out, int regNum, int fileDescriptor) {
  * @param out output file pointer
  */
 void libExit(FILE* out) {
-    int reg = getReg();
+    int reg = getFreeReg();
 
     fprintf(out, "MOV R%d, \"Exit\"\n", reg);
     fprintf(out, "PUSH R%d\n", reg);
@@ -300,16 +300,16 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
     int reg = -1;
     switch (node->nodeType) {
     case LEAF_ID:
-        reg = getReg();
+        reg = getFreeReg();
         int addr = getMem(node->varName, symbolTable);
         fprintf(out, "MOV R%d, [%d]\n", reg, addr);
         break;
     case LEAF_NUM:
-        reg = getReg();
+        reg = getFreeReg();
         fprintf(out, "MOV R%d, %d\n", reg, node->val);
         break;
     case LEAF_STR:
-        reg = getReg();
+        reg = getFreeReg();
         fprintf(out, "MOV R%d, \"%s\"\n", reg, node->stringVal);
         break;
     case LEAF_BREAK:
@@ -349,7 +349,9 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent,
         return -1;
     }
 
+    int registers_used = 0;
     if (isStmt(root->nodeType)) {
+        registers_used = getReg();
         if (root->nodeType == OP_WHILE) {
             push(beginLabelStack, createGeneric(LEAF_TYPE_INT, &(root->label)));
             push(nextLabelStack, createGeneric(LEAF_TYPE_INT, &next));
@@ -383,6 +385,9 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent,
         pop(nextLabelStack);
     }
 
+    if (isStmt(root->nodeType)) {
+        setReg(registers_used);
+    }
     return reg1;
 }
 

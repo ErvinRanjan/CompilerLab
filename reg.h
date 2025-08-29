@@ -7,7 +7,9 @@
 
 #include <stdio.h>
 
-int getReg();
+int getFreeReg();
 void freeReg();
+int getReg();
+void setReg(int reg);
 
 #endif

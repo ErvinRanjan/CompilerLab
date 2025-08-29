@@ -4,10 +4,20 @@
 
 int regIndex = 0;
 
+
+int getReg() {
+    return regIndex;
+}
+
+void setReg(int reg) {
+    regIndex = reg;
+}
+
+
 /**
  * @brief gets the min index register available
  */
-int getReg() {
+int getFreeReg() {
     int reg = regIndex++;
     if (reg >= 20) {
         printf("Error: Ran out of registers\n");
