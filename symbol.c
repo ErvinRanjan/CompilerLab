@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include "type.h"
 
 extern bool isLeaf(int nodeType);
 
@@ -70,17 +71,17 @@ int isSymbolPresent(struct symbol* symbolTable, struct symbol* symbol) {
     return 0;
 }
 
-struct symbol* createSymbolForIdentifier(struct tNode* varRoot, int type) {
+struct symbol* createSymbolForIdentifier(struct tNode* varRoot, struct type* type) {
     switch (varRoot->nodeType) {
     case LEAF_ID:
-        return createSymbol(createType(type, 0), varRoot->varName, 1, getFreeMem(1), PRIMITIVE, NULL);
+        return createSymbol(type, varRoot->varName, 1, getFreeMem(1), PRIMITIVE, NULL);
     case LEAF_NUM:
-        return createSymbol(createType(type, 0), varRoot->varName, 1, getFreeMem(1), PRIMITIVE, NULL);
+        return createSymbol(type, varRoot->varName, 1, getFreeMem(1), PRIMITIVE, NULL);
     case LEAF_ARR:
         int depth = 0, size = 1;
         int maxSizes[100];
         getAndValidateArrayDetails(varRoot->middle, maxSizes, &depth, &size);
-        return createSymbol(createType(type, depth), varRoot->left->varName, size, getFreeMem(size), ARRAY, maxSizes);
+        return createSymbol(createType(type->code, depth), varRoot->left->varName, size, getFreeMem(size), ARRAY, maxSizes);
     default:
         printf("Error: Symbol is not recognized\n");
         exit(EXIT_FAILURE);
@@ -88,7 +89,7 @@ struct symbol* createSymbolForIdentifier(struct tNode* varRoot, int type) {
     return createSymbol(createType(-1, 0), NULL, -1, -1, -1, NULL);
 }
 
-struct symbol* populateSymbolTableGivenVarList(struct tNode* varRoot, struct symbol* symbolTable, int type) {
+struct symbol* populateSymbolTableGivenVarList(struct tNode* varRoot, struct symbol* symbolTable, struct type* type) {
     if (varRoot == NULL) return symbolTable;
 
     if (isLeaf(varRoot->nodeType)) {
@@ -107,8 +108,7 @@ struct symbol* populateSymbolTable(struct tNode* declRoot, struct symbol* symbol
     }
 
     if (declRoot->nodeType == OP_DECL) {
-        int type = declRoot->left->type;
-        symbolTable = populateSymbolTableGivenVarList(declRoot->middle, symbolTable, type);
+        symbolTable = populateSymbolTableGivenVarList(declRoot->middle, symbolTable, declRoot->left->type);
         return symbolTable;
     }
 
@@ -124,5 +124,15 @@ struct symbol* getSymbolTable(char* varName, struct symbol* symbolTable) {
         symbolTable = symbolTable->next;
     }
     return symbolTable;
+}
+
+void printSymbolTable(struct symbol* symbolTable) {
+    while (symbolTable != NULL) {
+        printf("varName: %s\n", symbolTable->varName);
+        printf("type: %d\n", symbolTable->type->code);
+        printf("pointer depth: %d\n", symbolTable->type->depth);
+        printf("binding: %d\n", symbolTable->binding);
+        symbolTable = symbolTable->next;
+    }
 }
 

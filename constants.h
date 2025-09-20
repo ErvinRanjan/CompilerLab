@@ -35,6 +35,8 @@
 #define OP_MOD 28
 #define LEAF_ARR 31
 #define OP_BRACELIST 32
+#define OP_REF 33
+#define OP_DREF 34
 
 // constants for types
 

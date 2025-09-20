@@ -20,7 +20,7 @@ bool isLeaf(int nodeType) {
 void resolveArrayAddrCodegen(FILE* out, struct tNode* braceRoot, struct symbol* symbolTable, int* base) {
     if (braceRoot == NULL) return;
 
-    if (isLeaf(braceRoot->nodeType)) {
+    if (braceRoot->nodeType != OP_BRACELIST) {
         int reg = codeGenHelper(out, braceRoot, -1, NULL, symbolTable);
         fprintf(out, "MOV [%d], R%d\n", *base, reg);
         (*base) = (*base) + 1;
@@ -58,9 +58,13 @@ int resolveArrayAddr(FILE* out, struct tNode* node, struct symbol* symbolTable) 
         fprintf(out, "MOV [%d], %d\n", maxSizesBase + i, sym->maxSizes[i]);
     }
     int maxi = base + depth;
-    int addr = sym->binding;
     int addr_reg = getFreeReg();
-    fprintf(out, "MOV R%d, %d\n", addr_reg, addr);
+    if (sym->symbolType == PRIMITIVE) {
+        fprintf(out, "MOV R%d, [%d]\n", addr_reg, sym->binding);
+    }
+    else {
+        fprintf(out, "MOV R%d, %d\n", addr_reg, sym->binding);
+    }
     int prod_reg = getFreeReg();
     fprintf(out, "MOV R%d, %d\n", prod_reg, 1);
     int base_reg = getFreeReg();
@@ -201,6 +205,10 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
                 fprintf(out, "JMP L%d\n", parent->label);
             }
         }
+        break;
+    case OP_REF:
+        struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
+        fprintf(out, "MOV R%d, %d\n", reg1, sym->binding);
         break;
     default:
     }

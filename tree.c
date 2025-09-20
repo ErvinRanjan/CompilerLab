@@ -3,11 +3,12 @@
 #include <string.h>
 #include <stdio.h>
 #include "constants.h"
+#include "type.h"
 
 /**
  * @brief acts as a constructor for tNode
  */
-struct tNode* createNode(int val, int nodeType, char* varName, int type, struct tNode* left, struct tNode* right, struct tNode* middle, int label, char* stringVal) {
+struct tNode* createNode(int val, int nodeType, char* varName, struct type* type, struct tNode* left, struct tNode* right, struct tNode* middle, int label, char* stringVal) {
     struct tNode* newNode = malloc(sizeof(struct tNode));
     newNode->val = val;
     newNode->nodeType = nodeType;
@@ -41,7 +42,7 @@ struct tNode* createNode(int val, int nodeType, char* varName, int type, struct 
 /**
  * @brief creates leafNode given params
  */
-struct tNode* createLeafNode(int val, char* varName, int type, int label, int nodeType, char* stringVal) {
+struct tNode* createLeafNode(int val, char* varName, struct type* type, int label, int nodeType, char* stringVal) {
     return createNode(val, nodeType, varName, type, NULL, NULL, NULL, label, stringVal);
 }
 

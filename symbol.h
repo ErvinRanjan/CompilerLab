@@ -20,5 +20,6 @@ struct symbol* addSymbol(struct symbol* symbolTable, struct symbol* symbol);
 int isSymbolPresent(struct symbol* symbolTable, struct symbol* symbol);
 struct symbol* populateSymbolTable(struct tNode* declRoot, struct symbol* symbolTable);
 struct symbol* getSymbolTable(char* varName, struct symbol* symbolTable);
+void printSymbolTable(struct symbol* symbolTable);
 
 #endif

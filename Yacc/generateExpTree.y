@@ -29,6 +29,7 @@
 Program : BLOCK_BEGIN Declarations Slist BLOCK_END  {
                                 struct symbol* symbolTable = NULL;
                                 symbolTable = populateSymbolTable($<node>2,symbolTable);
+                                printSymbolTable(symbolTable);
                                 typeCheck($<node>3,symbolTable);
                                 codeGen(out,$<node>3,symbolTable);
                            }
@@ -174,6 +175,9 @@ E : E '+' E {
             }
   | E '%' E {
                 $<node>$ = createOperatorNode(OP_MOD,$<node>1,$<node>3,NULL,-1);
+            }
+  | '&' ID {
+                $<node>$ = createOperatorNode(OP_REF,$<node>2,NULL,NULL,-1); 
             }
   | '(' E ')' {
                  $<node>$ = $<node>2;

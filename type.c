@@ -28,7 +28,7 @@ int max(int x, int y) {
 }
 
 int getArrayDepth(struct tNode* braceRoot) {
-    return braceRoot == NULL ? 0 : 1 + max(getArrayDepth(braceRoot->left), getArrayDepth(braceRoot->right));
+    return braceRoot == NULL || braceRoot->nodeType != OP_BRACELIST ? braceRoot != NULL : 1 + max(getArrayDepth(braceRoot->left), getArrayDepth(braceRoot->right));
 }
 
 struct type* createType(int code, int depth) {
@@ -122,6 +122,8 @@ struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct ty
             exit(EXIT_FAILURE);
         }
         return createType(-1, 0);
+    case OP_REF:
+        return createType(typeLeft->code, typeLeft->depth + 1);
     default:
     }
     return createType(-1, 0);
