@@ -28,7 +28,6 @@ void getAndValidateArrayDetails(struct tNode* braceRoot, int* maxSizes, int* dep
 
 struct symbol* createSymbol(struct type* type, char* varName, int size, int binding, int symbolType, int* maxSizes) {
     struct symbol* sym = malloc(sizeof(struct symbol));
-    sym->type = type;
     strncpy(sym->varName, varName, strlen(varName));
     sym->size = size;
     sym->binding = binding;
@@ -38,6 +37,8 @@ struct symbol* createSymbol(struct type* type, char* varName, int size, int bind
         for (int i = 0;i < type->depth;i++) {
             sym->maxSizes[i] = maxSizes[i];
         }
+        sym->aval = malloc(sizeof(int) * size);
+        sym->acval = malloc(sizeof(char) * size);
     }
     return sym;
 }

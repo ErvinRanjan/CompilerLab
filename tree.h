@@ -17,7 +17,7 @@ struct tNode {
     int nodeType;
     int label;
     struct symbol* symbolTableEntry;
-    struct tNode* left, * middle, * right;
+    struct tNode* left, * middle, * right, * parent;
 };
 
 struct tNode* createLeafNode(int val, char* varName, struct type* type, int label, int nodeType, char* stringVal);

@@ -424,3 +424,235 @@ void codeGen(FILE* out, struct tNode* root, struct symbol* symbolTable) {
     fprintf(out, "L%d:\n", -1);
     libExit(out);
 }
+
+int operatorEval(struct tNode* node, int val1, int val2, char* buf, struct symbol* symbolTable) {
+    int isString = 0;
+    char cval[100];
+    struct symbol* sym;
+    switch (node->nodeType) {
+    case OP_ADD:
+        return val1 + val2;
+        break;
+    case OP_SUB:
+        return val1 - val2;
+        break;
+    case OP_MUL:
+        return val1 * val2;
+        break;
+    case OP_DIV:
+        return val1 / val2;
+        break;
+    case OP_MOD:
+        return val1 % val2;
+        break;
+    case OP_READ:
+        scanf("%s", buf);
+        sym = node->left->nodeType == LEAF_ARR ? getSymbolTable(node->left->left->varName, symbolTable) : getSymbolTable(node->left->varName, symbolTable);
+        if (sym == NULL) {
+            printf("No such symbol found\n");
+            exit(EXIT_FAILURE);
+        }
+        if (sym->type->depth != 0) {
+            int offs = getArrayOffset(node->left, sym, symbolTable);
+            if (sym->type->code == LEAF_TYPE_INT) {
+                sym->aval[offs] = atoi(buf);
+            }
+            else {
+                strncpy(sym->acval[offs], buf, strlen(buf));
+            }
+        }
+        else {
+            if (sym->type->code == LEAF_TYPE_INT) {
+                sym->val = atoi(buf);
+            }
+            else {
+                strncpy(sym->cval, buf, strlen(buf));
+            }
+        }
+        break;
+    case OP_WRITE:
+        int val = eval(node->left, cval, &isString, symbolTable);
+        if (isString) {
+            printf("%s\n", cval);
+        }
+        else {
+            printf("%d\n", val);
+        }
+        break;
+    case OP_ASSIGN:
+        sym = node->left->nodeType == LEAF_ARR ? getSymbolTable(node->left->left->varName, symbolTable) : getSymbolTable(node->left->varName, symbolTable);
+        if (sym == NULL) {
+            printf("No such symbol found\n");
+            exit(EXIT_FAILURE);
+        }
+        if (sym->type->depth != 0) {
+            int offs = getArrayOffset(node->left, sym, symbolTable);
+            if (sym->type->code == LEAF_TYPE_INT) {
+                sym->aval[offs] = val2;
+            }
+            else {
+                strncpy(sym->acval[offs], buf, strlen(buf));
+            }
+        }
+        else {
+            if (sym->type->code == LEAF_TYPE_INT) {
+                sym->val = val2;
+            }
+            else {
+                strncpy(sym->cval, buf, strlen(buf));
+            }
+        }
+        break;
+    case OP_IF:
+        if (val1) {
+            eval(node->middle, cval, &isString, symbolTable);
+        }
+        else {
+            eval(node->right, cval, &isString, symbolTable);
+        }
+        break;
+    case OP_WHILE:
+        while (eval(node->left, cval, &isString, symbolTable)) {
+            eval(node->middle, cval, &isString, symbolTable);
+        }
+        break;
+    case OP_GT:
+        return val1 > val2;
+        break;
+    case OP_LT:
+        return val1 < val2;
+        break;
+    case OP_GE:
+        return val1 >= val2;
+        break;
+    case OP_LE:
+        return val1 <= val2;
+        break;
+    case OP_EQ:
+        return val1 == val2;
+        break;
+    case OP_NE:
+        return val1 != val2;
+        break;
+    case OP_REF:
+        sym = getSymbolTable(node->left->varName, symbolTable);
+        return sym->binding;
+    default:
+    }
+}
+
+int leafCodeEval(struct tNode* node, char* cval, struct symbol* symbolTable, int* isString) {
+    *isString = 0;
+    switch (node->nodeType) {
+    case LEAF_ID:
+        struct symbol* sym = getSymbolTable(node->varName, symbolTable);
+        if (sym->type->code == LEAF_TYPE_INT) {
+            return sym->val;
+        }
+        else {
+            *isString = 1;
+            strncpy(sym->cval, cval, strlen(cval));
+        }
+        break;
+    case LEAF_NUM:
+        return node->val;
+        break;
+    case LEAF_STR:
+        *isString = 1;
+        strncpy(sym->cval, cval, strlen(cval));
+        break;
+    case LEAF_BREAK:
+        struct tNode* temp = node;
+        while (temp != NULL && temp->nodeType != OP_WHILE) {
+            temp = temp->parent;
+        }
+        if (temp == NULL) {
+            printf("Error: break in a non while loop\n");
+            exit(EXIT_FAILURE);
+        }
+        while (temp != NULL && temp->nodeType != OP_STMTLIST && temp->middle != node) {
+            temp = temp->parent;
+        }
+        if (temp == NULL) {
+            exit(EXIT_SUCCESS);
+        }
+        eval(temp->middle, cval, isString, symbolTable);
+        break;
+    case LEAF_CONTINUE:
+        temp = node;
+        while (temp != NULL && temp->nodeType != OP_WHILE) {
+            temp = temp->parent;
+        }
+        if (temp == NULL) {
+            printf("Error: break in a non while loop\n");
+            exit(EXIT_FAILURE);
+        }
+        eval(temp, cval, isString, symbolTable);
+        break;
+    case LEAF_ARR:
+        sym = getSymbolTable(node->left->varName, symbolTable);
+        if (sym == NULL) {
+            printf("Error: variable %s has not been declared\n", node->left->varName);
+            exit(EXIT_FAILURE);
+        }
+        int offs = getArrayOffset(node, sym, symbolTable);
+        if (sym->type->code == LEAF_TYPE_STR) {
+            isString = 1;
+            strncpy(cval, sym->acval[offs], strlen(sym->acval[offs]));
+            return -1;
+        }
+        return sym->aval[offs];
+        break;
+    default:
+    }
+    return -1;
+}
+
+int getArrayOffset(struct tNode* node, struct symbol* sym, struct symbol* symbolTable) {
+    int* indices = malloc(sizeof(int) * sym->type->depth);
+    int depth = 0;
+    getArrayIndices(node->middle, indices, &depth, symbolTable);
+    int offs = 0;
+    int prod = 1;
+    for (int i = 0;i < depth;i++) {
+        offs += indices[i] * prod;
+        prod *= sym->maxSizes[i];
+    }
+    return offs;
+}
+
+void getArrayIndices(struct tNode* braceRoot, int* indices, int* i, struct symbol* symbolTable) {
+    if (braceRoot == NULL) return;
+
+    if (braceRoot->nodeType != OP_BRACELIST) {
+        int isString = 0;
+        indices[*i] = eval(braceRoot, NULL, &isString, symbolTable);
+        *i = (*i) + 1;
+        return;
+    }
+
+    getArrayIndices(braceRoot->left, indices, i, symbolTable);
+    getArrayIndices(braceRoot->middle, indices, i, symbolTable);
+}
+
+int eval(struct tNode* root, char* cval, int* isString, struct symbol* symbolTable) {
+    if (root == NULL) {
+        *isString = 0;
+        return -1;
+    }
+
+    if (isLeaf(root->nodeType)) {
+        return leafCodeEval(root, cval, symbolTable, isString);
+    }
+
+    int val1 = eval(root->left, cval, isString, symbolTable);
+
+    if (isConditionalStmt(root->nodeType)) {
+        operatorEval(root, val1, -1, NULL, symbolTable);
+    }
+    else {
+        int val2 = eval(root->middle, cval, isString, symbolTable);
+        eval(root->right, cval, isString, symbolTable);
+        operatorEval(root, val1, val2, cval, symbolTable);
+    }
+}

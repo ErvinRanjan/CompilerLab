@@ -30,9 +30,5 @@ int getFreeReg() {
  * @brief frees the max index register used
  */
 void freeReg() {
-    if (regIndex == 0) {
-        printf("Error: No register to free\n");
-        exit(EXIT_FAILURE);
-    }
-    regIndex--;
+    // eval doesnt need to free Reg
 }

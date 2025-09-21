@@ -13,5 +13,6 @@ int libRead(FILE* out, int fileDescriptor, int addr);
 void libWrite(FILE* out, int data, int fileDescriptor);
 void libExit(FILE* out);
 void codeGen(FILE* out, struct tNode* root, struct symbol* symbolTable);
+int eval(struct tNode* root, char* cval, int* isString, struct symbol* symbolTable);
 
 #endif

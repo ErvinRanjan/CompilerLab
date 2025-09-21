@@ -8,11 +8,14 @@ struct symbol {
     struct type* type;
     char varName[100];
     int val;
+    char cval[100];
     int size;
     int binding;
     int symbolType;
     int maxSizes[100];
     struct symbol* next;
+    int* aval;
+    char** acval;
 };
 
 struct symbol* createSymbol(struct type* type, char* varName, int size, int binding, int symbolType, int* maxSizes);

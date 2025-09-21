@@ -25,6 +25,7 @@ struct tNode* createNode(int val, int nodeType, char* varName, struct type* type
     newNode->left = left;
     newNode->right = right;
     newNode->middle = middle;
+    newNode->parent = NULL;
     newNode->label = label;
     newNode->symbolTableEntry = NULL;
     if (stringVal != NULL) {
