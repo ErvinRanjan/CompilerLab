@@ -1,11 +1,3 @@
-input.txt
-lex_program
-parser_program
-label_translator
-xsm_expl
-lex.yy.c
-y.tab.c
-y.tab.h
-*.txt
-*.sh
-*.gz
+/bin
+/xsm_expl
+/labelTranslator/bin

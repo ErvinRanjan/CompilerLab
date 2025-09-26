@@ -1,0 +1,10 @@
+begin 
+decl 
+int num;
+int* b;
+enddecl 
+num = 1;
+b = &num;
+b[0] = 2;
+write(num);
+end 
