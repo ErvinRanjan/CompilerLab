@@ -115,7 +115,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 15 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
+#line 15 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
 
     struct tNode* node;
 
