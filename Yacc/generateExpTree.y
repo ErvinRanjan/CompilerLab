@@ -31,9 +31,10 @@ Program : BLOCK_BEGIN Declarations Slist BLOCK_END  {
                                 symbolTable = populateSymbolTable($<node>2,symbolTable);
                                 printSymbolTable(symbolTable);
                                 typeCheck($<node>3,symbolTable);
-                                char cval[100];
-                                int isString = 0;
-                                eval($<node>3,cval,&isString,symbolTable);
+                                //char cval[100];
+                                //int isString = 0;
+                                //eval($<node>3,cval,&isString,symbolTable);
+                                codeGen(out,$<node>3,symbolTable);
                            }
         | BLOCK_BEGIN BLOCK_END {
 
