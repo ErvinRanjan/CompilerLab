@@ -5,6 +5,7 @@
     #include <stdlib.h>
     #include "label.h"
     #include "type.h"
+    int lines = 0;
 
     int getDepth(char* str,int len){
         int depth = 0;
@@ -140,7 +141,9 @@
             return *yytext;
         }
 
-[ \n\t\r]+ {}
+[ \t\r]+ {}
+
+[\n]+ {lines++;}
 
 %%
 

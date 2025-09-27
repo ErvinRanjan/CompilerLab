@@ -7,8 +7,10 @@
     #include "label.h"
     #include <stdio.h>
     #include <stdlib.h>
+    #include "exercise.h"
     extern FILE* yyin;
     extern char* yytext;
+    extern int lines;
     FILE* out;
 %}
 
@@ -26,142 +28,7 @@
 
 %%
 
-Program : BLOCK_BEGIN Declarations Slist BLOCK_END  {
-                                struct symbol* symbolTable = NULL;
-                                symbolTable = populateSymbolTable($<node>2,symbolTable);
-                                printSymbolTable(symbolTable);
-                                typeCheck($<node>3,symbolTable);
-                                //char cval[100];
-                                //int isString = 0;
-                                //eval($<node>3,cval,&isString,symbolTable);
-                                codeGen(out,$<node>3,symbolTable);
-                           }
-        | BLOCK_BEGIN BLOCK_END {
-
-                                }
-        ;
-
-Declarations : DECL DeclList ENDDECL {
-                                        $<node>$ = $<node>2;
-                                    }
-            | DECL ENDDECL {}
-            ;
-
-DeclList : DeclList Decl {
-                            $<node>$ = createOperatorNode(OP_DECLLIST,$<node>1,$<node>2,NULL,-1);
-                        }
-         | Decl {
-                    $<node>$ = $<node>1;
-                }
-         ;
-
-Decl : Type VarList ';' {
-                        $<node>$ = createOperatorNode(OP_DECL,$<node>1,$<node>2,NULL,-1);
-                    }
-     ;
-
-Type : INT 
-     | STR
-       {
-        $<node>$ = $<node>1;
-       }
-     ;
-
-VarList : VarList ',' ID    {
-                                $<node>$ = createOperatorNode(OP_VARLIST,$<node>1,$<node>3,NULL,-1);
-                            }
-        | ID    {
-                    $<node>$ = $<node>1;
-                }
-        | VarList ',' DeclArray  {
-                                $<node>$ = createOperatorNode(OP_VARLIST,$<node>1,$<node>3,NULL,-1);
-                            }
-        | DeclArray  {
-                    $<node>$ = $<node>1;
-                }
-        ;
-
-Slist : Slist Stmt {    
-                        $<node>$ = createOperatorNode(OP_STMTLIST,$<node>1,$<node>2,NULL,-1);
-                        $<node>$->label = $<node>1->label;
-                    }
-      | Stmt { 
-                $<node>$ = $<node>1;
-             }
-      ;
-
-Stmt : InputStmt 
-     | OutputStmt 
-     | AsgStmt 
-     | Ifstmt
-     | Whilestmt
-     | BreakStmt
-     | ContinueStmt
-       {   
-        $<node>$ = $<node>1;
-       }     
-     ;
-
-Ifstmt : IF '(' B ')' THEN Slist ELSE Slist ENDIF { 
-                                                        int label = getLabel();
-                                                        $<node>$ = createOperatorNode(OP_IF,$<node>3,$<node>6,$<node>8,label);
-                                                  }
-        |  IF '(' B ')' THEN Slist ENDIF {     
-                                            int label = getLabel();
-                                            $<node>$ = createOperatorNode(OP_IF,$<node>3,$<node>6,NULL,label);
-                                        }
-     ;
-
-
-Whilestmt : WHILE '(' B ')' DO Slist ENDWHILE {   
-                                                    int label = getLabel();
-                                                    $<node>$ = createOperatorNode(OP_WHILE,$<node>3,$<node>6,NULL,label);
-                                                }
-          ;
-
-InputStmt : READ '(' Identifier ')' ';' {
-                                int label = getLabel();
-                                $<node>$ = createOperatorNode(OP_READ,$<node>3,NULL,NULL,label);
-                            }
-          ;
-
-OutputStmt : WRITE '(' E ')' ';' {
-                                int label = getLabel();
-                                $<node>$ = createOperatorNode(OP_WRITE,$<node>3,NULL,NULL,label);
-                            }
-            ;
-
-AsgStmt : Identifier '=' E ';' {
-                      int label = getLabel();
-                      $<node>$ = createOperatorNode(OP_ASSIGN,$<node>1,$<node>3,NULL,label);
-                    }
-        ;
-
-BreakStmt : BREAK ';'
-ContinueStmt : CONTINUE ';' 
-        {
-            $<node>$ = $<node>1;
-        }
-        ;   
-
-B : E '<' E {
-                $<node>$ = createOperatorNode(OP_LT,$<node>1,$<node>3,NULL,-1);
-            }
-  | E '>' E {
-                $<node>$ = createOperatorNode(OP_GT,$<node>1,$<node>3,NULL,-1);
-            }
-  | E GE E {
-                $<node>$ = createOperatorNode(OP_GE,$<node>1,$<node>3,NULL,-1);
-            }
-  | E LE E {
-                $<node>$ = createOperatorNode(OP_LE,$<node>1,$<node>3,NULL,-1);
-            }
-  | E NE E {
-                $<node>$ = createOperatorNode(OP_NE,$<node>1,$<node>3,NULL,-1);
-            }
-  | E EQ E {
-                $<node>$ = createOperatorNode(OP_EQ,$<node>1,$<node>3,NULL,-1);
-            }
+P : E { preorder($<node>1); printf("\n"); postorder($<node>1); }
   ;
  
 E : E '+' E {
@@ -193,18 +60,6 @@ E : E '+' E {
    }
   ;
 
-DeclArray : ID DeclBraceList {
-                        $<node>$ = createOperatorNode(LEAF_ARR,$<node>1,$<node>2,NULL,-1);
-                    }
-
-DeclBraceList : DeclBraceList '[' NUM ']' {
-                                        $<node>$ = createOperatorNode(OP_BRACELIST,$<node>1,$<node>3,NULL,-1);
-                                    }
-          | '[' NUM ']' {
-                            $<node>$ = $<node>2;
-                        }
-          ;
-
 Array : ID BraceList {
                         $<node>$ = createOperatorNode(LEAF_ARR,$<node>1,$<node>2,NULL,-1);
                     }
@@ -227,7 +82,8 @@ Identifier : ID
 %%
 
 int yyerror(const char* s){
-    printf("Error: %s\ntoken: %s",s,yytext);
+    printf("Error: %s\ntoken: %s\n",s,yytext);
+    printf("Line number: %d\n",lines + 1);
     return 0;
 }
 
