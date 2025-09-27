@@ -18,7 +18,7 @@ SRC_FILES := $(BASE_SRC_FILES) $(EXERCISE_SRC_FILES)
 
 # Compiler and flags
 CC := gcc
-CFLAGS := -I$(INCLUDE_DIR) -I$(CURRENT_INCLUDE_DIR) -g
+CFLAGS := -I$(CURRENT_INCLUDE_DIR) -I$(INCLUDE_DIR) -g
 LEX := flex
 YACC := yacc
 LDFLAGS := -lfl
