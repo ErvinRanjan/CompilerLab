@@ -7,8 +7,8 @@ YACC_DIR := $(PWD)/src/yacc
 LEX_DIR := $(PWD)/src/lex
 XSM_DIR := $(BASE)/xsm
 XSM_EXPL_DIR := $(BASE)/xsm_expl
-INPUT_FILE := $(PWD)/input.txt 
-OUTPUT_FILE := $(PWD)/output.txt
+INPUT_FILE ?= $(PWD)/input.txt 
+OUTPUT_FILE ?= $(PWD)/output.txt
 CURRENT_INCLUDE_DIR := $(PWD)/include
 
 # Source files
