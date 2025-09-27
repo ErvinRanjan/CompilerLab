@@ -373,8 +373,11 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent,
 
     int reg2 = codeGenHelper(out, root->middle, root->nodeType == OP_WHILE ? root->label : next, root, symbolTable);
 
-    if (isConditionalStmt(root->nodeType)) {
+    if (root->nodeType == OP_IF) {
         fprintf(out, "JMP L%d\n", next);
+    }
+    else if (root->nodeType == OP_WHILE) {
+        fprintf(out, "JMP L%d\n", root->label);
     }
 
     codeGenHelper(out, root->right, next, root, symbolTable);
