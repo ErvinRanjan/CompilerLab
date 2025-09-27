@@ -62,7 +62,7 @@ $(LABEL_BIN):
 run_parser: $(PARSER)
 	@echo "=== Running parser_program ==="
 	@$(PARSER) $(INPUT_FILE) $(OUTPUT_FILE)
-	@cp $(BASE)/output.txt $(XSM_DIR)/test.xsmo
+	@cp $(OUTPUT_FILE) $(XSM_DIR)/test.xsmo
 
 run_label: $(LABEL_BIN) run_parser
 	@echo "=== Running label_translator ==="

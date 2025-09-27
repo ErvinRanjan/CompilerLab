@@ -196,16 +196,6 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
         fprintf(out, "NE R%d, R%d\n", reg1, reg2);
         freeReg();
         break;
-    case OP_STMTLIST:
-        if (parent != NULL) {
-            if (parent->nodeType == OP_IF) {
-                fprintf(out, "JMP L%d\n", next);
-            }
-            else if (parent->nodeType == OP_WHILE) {
-                fprintf(out, "JMP L%d\n", parent->label);
-            }
-        }
-        break;
     case OP_REF:
         struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
         fprintf(out, "MOV R%d, %d\n", reg1, sym->binding);
@@ -382,7 +372,16 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent,
     }
 
     int reg2 = codeGenHelper(out, root->middle, root->nodeType == OP_WHILE ? root->label : next, root, symbolTable);
+
+    if (isConditionalStmt(root->nodeType)) {
+        fprintf(out, "JMP L%d\n", next);
+    }
+
     codeGenHelper(out, root->right, next, root, symbolTable);
+
+    if (root->nodeType == OP_IF) {
+        fprintf(out, "JMP L%d\n", next);
+    }
 
     if (!isConditionalStmt(root->nodeType)) {
         operatorCodeGen(out, root, reg1, reg2, next, parent, symbolTable);
