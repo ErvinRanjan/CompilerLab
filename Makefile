@@ -12,7 +12,9 @@ OUTPUT_FILE := $(PWD)/output.txt
 CURRENT_INCLUDE_DIR := $(PWD)/include
 
 # Source files
-SRC_FILES := $(filter-out $(SRC_DIR)/lex.yy.c $(SRC_DIR)/y.tab.c, $(wildcard $(SRC_DIR)/*.c))
+BASE_SRC_FILES := $(filter-out $(SRC_DIR)/lex.yy.c $(SRC_DIR)/y.tab.c, $(wildcard $(SRC_DIR)/*.c))
+EXERCISE_SRC_FILES := $(wildcard $(PWD)/src/*.c)
+SRC_FILES := $(BASE_SRC_FILES) $(EXERCISE_SRC_FILES)
 
 # Compiler and flags
 CC := gcc

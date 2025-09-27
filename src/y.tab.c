@@ -67,7 +67,7 @@
 
 
 /* First part of user prologue.  */
-#line 1 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 1 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
 
     #include "tree.h"
     #include "codegen.h"
@@ -77,11 +77,13 @@
     #include "label.h"
     #include <stdio.h>
     #include <stdlib.h>
+    #include "exercise.h"
     extern FILE* yyin;
     extern char* yytext;
+    extern int lines;
     FILE* out;
 
-#line 85 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 87 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -142,38 +144,17 @@ enum yysymbol_kind_t
   YYSYMBOL_30_ = 30,                       /* '-'  */
   YYSYMBOL_31_ = 31,                       /* '*'  */
   YYSYMBOL_32_ = 32,                       /* '/'  */
-  YYSYMBOL_33_ = 33,                       /* ';'  */
-  YYSYMBOL_34_ = 34,                       /* ','  */
-  YYSYMBOL_35_ = 35,                       /* '('  */
-  YYSYMBOL_36_ = 36,                       /* ')'  */
-  YYSYMBOL_37_ = 37,                       /* '<'  */
-  YYSYMBOL_38_ = 38,                       /* '>'  */
-  YYSYMBOL_39_ = 39,                       /* '&'  */
-  YYSYMBOL_40_ = 40,                       /* '['  */
-  YYSYMBOL_41_ = 41,                       /* ']'  */
-  YYSYMBOL_YYACCEPT = 42,                  /* $accept  */
-  YYSYMBOL_Program = 43,                   /* Program  */
-  YYSYMBOL_Declarations = 44,              /* Declarations  */
-  YYSYMBOL_DeclList = 45,                  /* DeclList  */
-  YYSYMBOL_Decl = 46,                      /* Decl  */
-  YYSYMBOL_Type = 47,                      /* Type  */
-  YYSYMBOL_VarList = 48,                   /* VarList  */
-  YYSYMBOL_Slist = 49,                     /* Slist  */
-  YYSYMBOL_Stmt = 50,                      /* Stmt  */
-  YYSYMBOL_Ifstmt = 51,                    /* Ifstmt  */
-  YYSYMBOL_Whilestmt = 52,                 /* Whilestmt  */
-  YYSYMBOL_InputStmt = 53,                 /* InputStmt  */
-  YYSYMBOL_OutputStmt = 54,                /* OutputStmt  */
-  YYSYMBOL_AsgStmt = 55,                   /* AsgStmt  */
-  YYSYMBOL_BreakStmt = 56,                 /* BreakStmt  */
-  YYSYMBOL_ContinueStmt = 57,              /* ContinueStmt  */
-  YYSYMBOL_B = 58,                         /* B  */
-  YYSYMBOL_E = 59,                         /* E  */
-  YYSYMBOL_DeclArray = 60,                 /* DeclArray  */
-  YYSYMBOL_DeclBraceList = 61,             /* DeclBraceList  */
-  YYSYMBOL_Array = 62,                     /* Array  */
-  YYSYMBOL_BraceList = 63,                 /* BraceList  */
-  YYSYMBOL_Identifier = 64                 /* Identifier  */
+  YYSYMBOL_33_ = 33,                       /* '&'  */
+  YYSYMBOL_34_ = 34,                       /* '('  */
+  YYSYMBOL_35_ = 35,                       /* ')'  */
+  YYSYMBOL_36_ = 36,                       /* '['  */
+  YYSYMBOL_37_ = 37,                       /* ']'  */
+  YYSYMBOL_YYACCEPT = 38,                  /* $accept  */
+  YYSYMBOL_P = 39,                         /* P  */
+  YYSYMBOL_E = 40,                         /* E  */
+  YYSYMBOL_Array = 41,                     /* Array  */
+  YYSYMBOL_BraceList = 42,                 /* BraceList  */
+  YYSYMBOL_Identifier = 43                 /* Identifier  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -499,18 +480,18 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  6
+#define YYFINAL  14
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   169
+#define YYLAST   56
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  42
+#define YYNTOKENS  38
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  23
+#define YYNNTS  6
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  55
+#define YYNRULES  17
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  115
+#define YYNSTATES  31
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   281
@@ -530,13 +511,13 @@ static const yytype_int8 yytranslate[] =
        0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,    28,    39,     2,
-      35,    36,    31,    29,    34,    30,     2,    32,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,    33,
-      37,    27,    38,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,    28,    33,     2,
+      34,    35,    31,    29,     2,    30,     2,    32,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,    27,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,    40,     2,    41,     2,     2,     2,     2,     2,     2,
+       2,    36,     2,    37,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -560,14 +541,10 @@ static const yytype_int8 yytranslate[] =
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_uint8 yyrline[] =
+static const yytype_int8 yyrline[] =
 {
-       0,    29,    29,    39,    44,    47,    50,    53,    58,    63,
-      64,    70,    73,    76,    79,    84,    88,    93,    94,    95,
-      96,    97,    98,    99,   105,   109,   116,   122,   128,   134,
-     140,   141,   147,   150,   153,   156,   159,   162,   167,   170,
-     173,   176,   179,   182,   185,   188,   189,   190,   196,   200,
-     203,   208,   212,   215,   220,   221
+       0,    31,    31,    34,    37,    40,    43,    46,    49,    52,
+      55,    56,    57,    63,    67,    70,    75,    76
 };
 #endif
 
@@ -587,11 +564,8 @@ static const char *const yytname[] =
   "BLOCK_BEGIN", "BLOCK_END", "READ", "WRITE", "IF", "THEN", "ELSE",
   "ENDIF", "WHILE", "DO", "ENDWHILE", "GE", "LE", "NE", "EQ", "BREAK",
   "CONTINUE", "DECL", "ENDDECL", "INT", "STR", "CSTR", "'='", "'%'", "'+'",
-  "'-'", "'*'", "'/'", "';'", "','", "'('", "')'", "'<'", "'>'", "'&'",
-  "'['", "']'", "$accept", "Program", "Declarations", "DeclList", "Decl",
-  "Type", "VarList", "Slist", "Stmt", "Ifstmt", "Whilestmt", "InputStmt",
-  "OutputStmt", "AsgStmt", "BreakStmt", "ContinueStmt", "B", "E",
-  "DeclArray", "DeclBraceList", "Array", "BraceList", "Identifier", YY_NULLPTR
+  "'-'", "'*'", "'/'", "'&'", "'('", "')'", "'['", "']'", "$accept", "P",
+  "E", "Array", "BraceList", "Identifier", YY_NULLPTR
 };
 
 static const char *
@@ -601,7 +575,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-95)
+#define YYPACT_NINF (-35)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -613,20 +587,12 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-static const yytype_int16 yypact[] =
+static const yytype_int8 yypact[] =
 {
-       8,    -3,    10,   -95,    37,   122,   -95,   -95,   -95,   -95,
-      89,   -95,    13,   -26,   -12,    -9,    34,    42,    -1,    59,
-      21,   -95,   -95,   -95,   -95,   -95,   -95,   -95,   -95,   -95,
-      16,   -95,   -95,   -16,   -27,   -95,     5,    30,    82,     5,
-       5,     5,   -95,   -95,   -95,   -95,     5,    90,    62,   -95,
-     103,   -95,   -95,     5,   114,    27,   -95,     5,    91,    53,
-      92,    35,    98,   125,   100,   147,   -16,   -95,   116,   -95,
-       5,     5,     5,     5,     5,   -95,   108,   118,   131,   153,
-       5,     5,     5,     5,     5,     5,   151,   -95,   -95,   126,
-     -95,   130,   -11,   -11,   -95,   -95,   -95,   -95,   -95,   122,
-      68,    68,    68,    68,    68,    68,   122,   -95,    67,   102,
-     122,   -95,   -95,   112,   -95
+      -3,   -35,   -34,   -35,     7,    -3,    12,    24,   -35,   -35,
+      -3,   -18,   -35,    16,   -35,    -3,    -3,    -3,    -3,    -3,
+      -4,    -3,   -35,   -25,   -22,   -22,   -35,   -35,   -35,     6,
+     -35
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -634,34 +600,22 @@ static const yytype_int16 yypact[] =
    means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,     0,     0,     3,     0,     0,     1,     5,     9,    10,
-       0,     7,     0,    54,     0,     0,     0,     0,     0,     0,
-       0,    16,    20,    21,    17,    18,    19,    22,    23,    55,
-       0,     4,     6,    12,     0,    14,     0,    51,     0,     0,
-       0,     0,    30,    31,     2,    15,     0,     0,    48,     8,
-       0,    45,    47,     0,     0,     0,    46,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,    11,    13,     0,    43,
-       0,     0,     0,     0,     0,    53,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,    29,    50,     0,
-      44,    42,    38,    40,    39,    41,    52,    27,    28,     0,
-      34,    35,    36,    37,    32,    33,     0,    49,     0,     0,
-       0,    25,    26,     0,    24
+       0,    10,    16,    12,     0,     0,     0,     2,    17,    11,
+       0,    13,     8,     0,     1,     0,     0,     0,     0,     0,
+       0,     0,     9,     7,     3,     5,     4,     6,    15,     0,
+      14
 };
 
 /* YYPGOTO[NTERM-NUM].  */
-static const yytype_int16 yypgoto[] =
+static const yytype_int8 yypgoto[] =
 {
-     -95,   -95,   -95,   -95,   156,   -95,   -95,   -94,   -18,   -95,
-     -95,   -95,   -95,   -95,   -95,   -95,   127,   -35,   119,   -95,
-     -95,   -95,    -5
+     -35,   -35,    -2,   -35,   -35,   -35
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,     2,     5,    10,    11,    12,    34,    20,    21,    22,
-      23,    24,    25,    26,    27,    28,    60,    61,    35,    48,
-      29,    37,    56
+       0,     6,     7,     8,    11,     9
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -669,84 +623,46 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      30,    55,    45,     3,    59,   108,    49,    50,    51,    13,
-       6,    63,   109,     1,    36,    30,   113,    33,    68,     4,
-      73,    74,    76,    38,    47,    13,    39,    44,    14,    15,
-      16,    52,    42,    58,    17,    91,    92,    93,    94,    95,
-      53,    18,    19,    46,    54,   100,   101,   102,   103,   104,
-     105,    80,    81,    82,    83,    70,    71,    72,    73,    74,
-       7,     8,     9,    70,    71,    72,    73,    74,    75,    40,
-      57,    13,    84,    85,    14,    15,    16,    41,   110,   111,
-      17,    70,    71,    72,    73,    74,    13,    18,    19,    78,
-      45,    45,    43,    64,    30,    45,    70,    71,    72,    73,
-      74,    30,    65,    30,    30,    30,    13,    66,    30,    14,
-      15,    16,    31,     8,     9,    17,    13,   112,    69,    14,
-      15,    16,    18,    19,   114,    17,    13,    77,    79,    14,
-      15,    16,    18,    19,    86,    17,    70,    71,    72,    73,
-      74,    88,    18,    19,    70,    71,    72,    73,    74,    96,
-      89,    97,    90,    70,    71,    72,    73,    74,    87,    71,
-      72,    73,    74,    99,    98,   106,    32,   107,    62,    67
+       1,     2,    10,    13,    16,    17,    18,    19,    20,    18,
+      19,    12,    14,    23,    24,    25,    26,    27,    21,    29,
+       0,     0,     0,     3,    15,    16,    17,    18,    19,     0,
+       4,     5,     0,    28,    15,    16,    17,    18,    19,     0,
+       0,     0,     0,    30,    15,    16,    17,    18,    19,     0,
+       0,    22,    15,    16,    17,    18,    19
 };
 
 static const yytype_int8 yycheck[] =
 {
-       5,    36,    20,     6,    39,    99,    33,    34,     3,     4,
-       0,    46,   106,     5,    40,    20,   110,     4,    53,    22,
-      31,    32,    57,    35,    40,     4,    35,     6,     7,     8,
-       9,    26,    33,    38,    13,    70,    71,    72,    73,    74,
-      35,    20,    21,    27,    39,    80,    81,    82,    83,    84,
-      85,    16,    17,    18,    19,    28,    29,    30,    31,    32,
-      23,    24,    25,    28,    29,    30,    31,    32,    41,    35,
-      40,     4,    37,    38,     7,     8,     9,    35,    11,    12,
-      13,    28,    29,    30,    31,    32,     4,    20,    21,    36,
-     108,   109,    33,     3,    99,   113,    28,    29,    30,    31,
-      32,   106,    40,   108,   109,   110,     4,     4,   113,     7,
-       8,     9,    23,    24,    25,    13,     4,    15,     4,     7,
-       8,     9,    20,    21,    12,    13,     4,    36,    36,     7,
-       8,     9,    20,    21,    36,    13,    28,    29,    30,    31,
-      32,    41,    20,    21,    28,    29,    30,    31,    32,    41,
-       3,    33,    36,    28,    29,    30,    31,    32,    33,    29,
-      30,    31,    32,    10,    33,    14,    10,    41,    41,    50
+       3,     4,    36,     5,    29,    30,    31,    32,    10,    31,
+      32,     4,     0,    15,    16,    17,    18,    19,    36,    21,
+      -1,    -1,    -1,    26,    28,    29,    30,    31,    32,    -1,
+      33,    34,    -1,    37,    28,    29,    30,    31,    32,    -1,
+      -1,    -1,    -1,    37,    28,    29,    30,    31,    32,    -1,
+      -1,    35,    28,    29,    30,    31,    32
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
    state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     5,    43,     6,    22,    44,     0,    23,    24,    25,
-      45,    46,    47,     4,     7,     8,     9,    13,    20,    21,
-      49,    50,    51,    52,    53,    54,    55,    56,    57,    62,
-      64,    23,    46,     4,    48,    60,    40,    63,    35,    35,
-      35,    35,    33,    33,     6,    50,    27,    40,    61,    33,
-      34,     3,    26,    35,    39,    59,    64,    40,    64,    59,
-      58,    59,    58,    59,     3,    40,     4,    60,    59,     4,
-      28,    29,    30,    31,    32,    41,    59,    36,    36,    36,
-      16,    17,    18,    19,    37,    38,    36,    33,    41,     3,
-      36,    59,    59,    59,    59,    59,    41,    33,    33,    10,
-      59,    59,    59,    59,    59,    59,    14,    41,    49,    49,
-      11,    12,    15,    49,    12
+       0,     3,     4,    26,    33,    34,    39,    40,    41,    43,
+      36,    42,     4,    40,     0,    28,    29,    30,    31,    32,
+      40,    36,    35,    40,    40,    40,    40,    40,    37,    40,
+      37
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    42,    43,    43,    44,    44,    45,    45,    46,    47,
-      47,    48,    48,    48,    48,    49,    49,    50,    50,    50,
-      50,    50,    50,    50,    51,    51,    52,    53,    54,    55,
-      56,    57,    58,    58,    58,    58,    58,    58,    59,    59,
-      59,    59,    59,    59,    59,    59,    59,    59,    60,    61,
-      61,    62,    63,    63,    64,    64
+       0,    38,    39,    40,    40,    40,    40,    40,    40,    40,
+      40,    40,    40,    41,    42,    42,    43,    43
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     4,     2,     3,     2,     2,     1,     3,     1,
-       1,     3,     1,     3,     1,     2,     1,     1,     1,     1,
-       1,     1,     1,     1,     9,     7,     7,     5,     5,     4,
-       2,     2,     3,     3,     3,     3,     3,     3,     3,     3,
-       3,     3,     3,     2,     3,     1,     1,     1,     2,     4,
-       3,     2,     4,     3,     1,     1
+       0,     2,     1,     3,     3,     3,     3,     3,     2,     3,
+       1,     1,     1,     2,     4,     3,     1,     1
 };
 
 
@@ -1209,364 +1125,110 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 2: /* Program: BLOCK_BEGIN Declarations Slist BLOCK_END  */
-#line 29 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                                                    {
-                                struct symbol* symbolTable = NULL;
-                                symbolTable = populateSymbolTable((yyvsp[-2].node),symbolTable);
-                                printSymbolTable(symbolTable);
-                                typeCheck((yyvsp[-1].node),symbolTable);
-                                //char cval[100];
-                                //int isString = 0;
-                                //eval($<node>3,cval,&isString,symbolTable);
-                                codeGen(out,(yyvsp[-1].node),symbolTable);
-                           }
-#line 1225 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+  case 2: /* P: E  */
+#line 31 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
+      { preorder((yyvsp[0].node)); printf("\n"); postorder((yyvsp[0].node)); }
+#line 1132 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
-  case 3: /* Program: BLOCK_BEGIN BLOCK_END  */
-#line 39 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                                {
-
-                                }
-#line 1233 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 4: /* Declarations: DECL DeclList ENDDECL  */
-#line 44 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                                     {
-                                        (yyval.node) = (yyvsp[-1].node);
-                                    }
-#line 1241 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 5: /* Declarations: DECL ENDDECL  */
-#line 47 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                           {}
-#line 1247 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 6: /* DeclList: DeclList Decl  */
-#line 50 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                         {
-                            (yyval.node) = createOperatorNode(OP_DECLLIST,(yyvsp[-1].node),(yyvsp[0].node),NULL,-1);
-                        }
-#line 1255 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 7: /* DeclList: Decl  */
-#line 53 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                {
-                    (yyval.node) = (yyvsp[0].node);
-                }
-#line 1263 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 8: /* Decl: Type VarList ';'  */
-#line 58 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                        {
-                        (yyval.node) = createOperatorNode(OP_DECL,(yyvsp[-2].node),(yyvsp[-1].node),NULL,-1);
-                    }
-#line 1271 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 10: /* Type: STR  */
-#line 65 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-       {
-        (yyval.node) = (yyvsp[0].node);
-       }
-#line 1279 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 11: /* VarList: VarList ',' ID  */
-#line 70 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                            {
-                                (yyval.node) = createOperatorNode(OP_VARLIST,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
-                            }
-#line 1287 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 12: /* VarList: ID  */
-#line 73 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                {
-                    (yyval.node) = (yyvsp[0].node);
-                }
-#line 1295 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 13: /* VarList: VarList ',' DeclArray  */
-#line 76 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                                 {
-                                (yyval.node) = createOperatorNode(OP_VARLIST,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
-                            }
-#line 1303 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 14: /* VarList: DeclArray  */
-#line 79 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                     {
-                    (yyval.node) = (yyvsp[0].node);
-                }
-#line 1311 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 15: /* Slist: Slist Stmt  */
-#line 84 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                   {    
-                        (yyval.node) = createOperatorNode(OP_STMTLIST,(yyvsp[-1].node),(yyvsp[0].node),NULL,-1);
-                        (yyval.node)->label = (yyvsp[-1].node)->label;
-                    }
-#line 1320 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 16: /* Slist: Stmt  */
-#line 88 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-             { 
-                (yyval.node) = (yyvsp[0].node);
-             }
-#line 1328 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 23: /* Stmt: ContinueStmt  */
-#line 100 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-       {   
-        (yyval.node) = (yyvsp[0].node);
-       }
-#line 1336 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 24: /* Ifstmt: IF '(' B ')' THEN Slist ELSE Slist ENDIF  */
-#line 105 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                                                  { 
-                                                        int label = getLabel();
-                                                        (yyval.node) = createOperatorNode(OP_IF,(yyvsp[-6].node),(yyvsp[-3].node),(yyvsp[-1].node),label);
-                                                  }
-#line 1345 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 25: /* Ifstmt: IF '(' B ')' THEN Slist ENDIF  */
-#line 109 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                                         {     
-                                            int label = getLabel();
-                                            (yyval.node) = createOperatorNode(OP_IF,(yyvsp[-4].node),(yyvsp[-1].node),NULL,label);
-                                        }
-#line 1354 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 26: /* Whilestmt: WHILE '(' B ')' DO Slist ENDWHILE  */
-#line 116 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                                              {   
-                                                    int label = getLabel();
-                                                    (yyval.node) = createOperatorNode(OP_WHILE,(yyvsp[-4].node),(yyvsp[-1].node),NULL,label);
-                                                }
-#line 1363 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 27: /* InputStmt: READ '(' Identifier ')' ';'  */
-#line 122 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                                        {
-                                int label = getLabel();
-                                (yyval.node) = createOperatorNode(OP_READ,(yyvsp[-2].node),NULL,NULL,label);
-                            }
-#line 1372 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 28: /* OutputStmt: WRITE '(' E ')' ';'  */
-#line 128 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                                 {
-                                int label = getLabel();
-                                (yyval.node) = createOperatorNode(OP_WRITE,(yyvsp[-2].node),NULL,NULL,label);
-                            }
-#line 1381 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 29: /* AsgStmt: Identifier '=' E ';'  */
-#line 134 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                               {
-                      int label = getLabel();
-                      (yyval.node) = createOperatorNode(OP_ASSIGN,(yyvsp[-3].node),(yyvsp[-1].node),NULL,label);
-                    }
-#line 1390 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 31: /* ContinueStmt: CONTINUE ';'  */
-#line 142 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-        {
-            (yyval.node) = (yyvsp[-1].node);
-        }
-#line 1398 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 32: /* B: E '<' E  */
-#line 147 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-            {
-                (yyval.node) = createOperatorNode(OP_LT,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
-            }
-#line 1406 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 33: /* B: E '>' E  */
-#line 150 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-            {
-                (yyval.node) = createOperatorNode(OP_GT,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
-            }
-#line 1414 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 34: /* B: E GE E  */
-#line 153 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-           {
-                (yyval.node) = createOperatorNode(OP_GE,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
-            }
-#line 1422 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 35: /* B: E LE E  */
-#line 156 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-           {
-                (yyval.node) = createOperatorNode(OP_LE,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
-            }
-#line 1430 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 36: /* B: E NE E  */
-#line 159 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-           {
-                (yyval.node) = createOperatorNode(OP_NE,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
-            }
-#line 1438 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 37: /* B: E EQ E  */
-#line 162 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-           {
-                (yyval.node) = createOperatorNode(OP_EQ,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
-            }
-#line 1446 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 38: /* E: E '+' E  */
-#line 167 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+  case 3: /* E: E '+' E  */
+#line 34 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_ADD,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1454 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1140 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
-  case 39: /* E: E '*' E  */
-#line 170 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+  case 4: /* E: E '*' E  */
+#line 37 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_MUL,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1462 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1148 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
-  case 40: /* E: E '-' E  */
-#line 173 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+  case 5: /* E: E '-' E  */
+#line 40 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_SUB,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1470 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1156 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
-  case 41: /* E: E '/' E  */
-#line 176 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+  case 6: /* E: E '/' E  */
+#line 43 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_DIV,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1478 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1164 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
-  case 42: /* E: E '%' E  */
-#line 179 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+  case 7: /* E: E '%' E  */
+#line 46 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_MOD,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1486 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1172 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
-  case 43: /* E: '&' ID  */
-#line 182 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+  case 8: /* E: '&' ID  */
+#line 49 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
            {
                 (yyval.node) = createOperatorNode(OP_REF,(yyvsp[0].node),NULL,NULL,-1); 
             }
-#line 1494 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1180 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
-  case 44: /* E: '(' E ')'  */
-#line 185 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+  case 9: /* E: '(' E ')'  */
+#line 52 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
               {
                  (yyval.node) = (yyvsp[-1].node);
               }
-#line 1502 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1188 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
-  case 47: /* E: CSTR  */
-#line 191 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+  case 12: /* E: CSTR  */
+#line 58 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
   {
     (yyval.node) = (yyvsp[0].node);
    }
-#line 1510 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1196 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
-  case 48: /* DeclArray: ID DeclBraceList  */
-#line 196 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                             {
-                        (yyval.node) = createOperatorNode(LEAF_ARR,(yyvsp[-1].node),(yyvsp[0].node),NULL,-1);
-                    }
-#line 1518 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 49: /* DeclBraceList: DeclBraceList '[' NUM ']'  */
-#line 200 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                                          {
-                                        (yyval.node) = createOperatorNode(OP_BRACELIST,(yyvsp[-3].node),(yyvsp[-1].node),NULL,-1);
-                                    }
-#line 1526 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 50: /* DeclBraceList: '[' NUM ']'  */
-#line 203 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                        {
-                            (yyval.node) = (yyvsp[-1].node);
-                        }
-#line 1534 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 51: /* Array: ID BraceList  */
-#line 208 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+  case 13: /* Array: ID BraceList  */
+#line 63 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
                      {
                         (yyval.node) = createOperatorNode(LEAF_ARR,(yyvsp[-1].node),(yyvsp[0].node),NULL,-1);
                     }
-#line 1542 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1204 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
-  case 52: /* BraceList: BraceList '[' E ']'  */
-#line 212 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+  case 14: /* BraceList: BraceList '[' E ']'  */
+#line 67 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
                                 {
                                         (yyval.node) = createOperatorNode(OP_BRACELIST,(yyvsp[-3].node),(yyvsp[-1].node),NULL,-1);
                                     }
-#line 1550 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1212 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
-  case 53: /* BraceList: '[' E ']'  */
-#line 215 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+  case 15: /* BraceList: '[' E ']'  */
+#line 70 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
                       {
                             (yyval.node) = (yyvsp[-1].node);
                         }
-#line 1558 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1220 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
-  case 55: /* Identifier: Array  */
-#line 222 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+  case 17: /* Identifier: Array  */
+#line 77 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = (yyvsp[0].node);
             }
-#line 1566 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1228 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
 
-#line 1570 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1232 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
 
       default: break;
     }
@@ -1759,11 +1421,12 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 227 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 82 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage1/exercise1/src/yacc/generateExpTree.y"
 
 
 int yyerror(const char* s){
-    printf("Error: %s\ntoken: %s",s,yytext);
+    printf("Error: %s\ntoken: %s\n",s,yytext);
+    printf("Line number: %d\n",lines + 1);
     return 0;
 }
 
