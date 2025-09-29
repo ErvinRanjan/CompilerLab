@@ -37,6 +37,8 @@
 #define OP_BRACELIST 32
 #define OP_REF 33
 #define OP_DREF 34
+#define OP_DO_WHILE 35
+#define OP_REPEAT_UNTIL 36
 
 // constants for types
 

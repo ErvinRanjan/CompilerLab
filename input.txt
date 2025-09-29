@@ -1,1 +1,10 @@
-a + b + c
+begin
+decl 
+int i,j;
+enddecl 
+i = 0;
+do
+i = i + 1;
+write(i);
+while(i < 10);
+end 

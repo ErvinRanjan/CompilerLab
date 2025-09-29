@@ -121,10 +121,11 @@ struct symbol* populateSymbolTable(struct tNode* declRoot, struct symbol* symbol
 
 struct symbol* getSymbolTable(char* varName, struct symbol* symbolTable) {
     if (varName == NULL) return NULL;
-    while (symbolTable != NULL && strcmp(varName, symbolTable->varName) != 0) {
-        symbolTable = symbolTable->next;
+    struct symbol* temp = symbolTable;
+    while (temp != NULL && strcmp(varName, temp->varName) != 0) {
+        temp = temp->next;
     }
-    return symbolTable;
+    return temp;
 }
 
 void printSymbolTable(struct symbol* symbolTable) {
@@ -133,6 +134,7 @@ void printSymbolTable(struct symbol* symbolTable) {
         printf("type: %d\n", symbolTable->type->code);
         printf("pointer depth: %d\n", symbolTable->type->depth);
         printf("binding: %d\n", symbolTable->binding);
+        printf("val: %d\n", symbolTable->val);
         symbolTable = symbolTable->next;
     }
 }

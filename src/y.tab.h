@@ -77,7 +77,9 @@ extern int yydebug;
     ENDDECL = 278,                 /* ENDDECL  */
     INT = 279,                     /* INT  */
     STR = 280,                     /* STR  */
-    CSTR = 281                     /* CSTR  */
+    CSTR = 281,                    /* CSTR  */
+    REPEAT = 282,                  /* REPEAT  */
+    UNTIL = 283                    /* UNTIL  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -110,16 +112,18 @@ extern int yydebug;
 #define INT 279
 #define STR 280
 #define CSTR 281
+#define REPEAT 282
+#define UNTIL 283
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 15 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage3/exercise1/src/yacc/generateExpTree.y"
+#line 15 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
 
     struct tNode* node;
 
-#line 123 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.h"
+#line 127 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

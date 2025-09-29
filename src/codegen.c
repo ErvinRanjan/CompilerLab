@@ -8,7 +8,9 @@
 #include <stdbool.h>
 #include "stack.h"
 #include <stdlib.h>
+#include <assert.h>
 
+int BREAK = 0;
 struct stack* beginLabelStack, * nextLabelStack; // keeps track of latest while begin and next labels
 
 extern int getArrayDepth(struct tNode* braceRoot);
@@ -95,16 +97,8 @@ int resolveArrayAddr(FILE* out, struct tNode* node, struct symbol* symbolTable) 
     return addr_reg;
 }
 
-bool isNotConditionalStmt(int nodeType) {
-    return nodeType == OP_READ || nodeType == OP_WRITE || nodeType == OP_ASSIGN || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE;
-}
-
-bool isConditionalStmt(int nodeType) {
-    return nodeType == OP_IF || nodeType == OP_WHILE;
-}
-
 bool isStmt(int nodeType) {
-    return isConditionalStmt(nodeType) || isNotConditionalStmt(nodeType);
+    return nodeType == OP_READ || nodeType == OP_WRITE || nodeType == OP_ASSIGN || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE || nodeType == OP_IF || nodeType == OP_WHILE || nodeType == OP_DO_WHILE || nodeType == OP_REPEAT_UNTIL;
 }
 
 int getMem(char* varName, struct symbol* symbolTable) {
@@ -199,6 +193,12 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
     case OP_REF:
         struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
         fprintf(out, "MOV R%d, %d\n", reg1, sym->binding);
+        break;
+    case OP_REPEAT_UNTIL:
+        fprintf(out, "JZ R%d, L%d\n", reg2, node->label);
+        break;
+    case OP_DO_WHILE:
+        fprintf(out, "JNZ R%d, L%d\n", reg2, node->label);
         break;
     default:
     }
@@ -350,7 +350,7 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent,
     int registers_used = 0;
     if (isStmt(root->nodeType)) {
         registers_used = getReg();
-        if (root->nodeType == OP_WHILE) {
+        if (root->nodeType == OP_WHILE || root->nodeType == OP_REPEAT_UNTIL || root->nodeType == OP_DO_WHILE) {
             push(beginLabelStack, createGeneric(LEAF_TYPE_INT, &(root->label)));
             push(nextLabelStack, createGeneric(LEAF_TYPE_INT, &next));
         }
@@ -364,10 +364,10 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent,
     int reg1 = -1;
     // to prevent printing extra assembly instruction
     if (root->nodeType != OP_ASSIGN) {
-        reg1 = codeGenHelper(out, root->left, root->nodeType == OP_STMTLIST ? root->middle->label : next, root, symbolTable);
+        reg1 = codeGenHelper(out, root->left, root->nodeType == OP_STMTLIST ? root->middle->label : (root->nodeType == OP_REPEAT_UNTIL || root->nodeType == OP_DO_WHILE) ? root->label : next, root, symbolTable);
     }
 
-    if (isConditionalStmt(root->nodeType)) {
+    if (root->nodeType == OP_IF || root->nodeType == OP_WHILE) {
         operatorCodeGen(out, root, reg1, -1, next, parent, symbolTable);
     }
 
@@ -386,11 +386,11 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent,
         fprintf(out, "JMP L%d\n", next);
     }
 
-    if (!isConditionalStmt(root->nodeType)) {
+    if (root->nodeType != OP_IF && root->nodeType != OP_WHILE) {
         operatorCodeGen(out, root, reg1, reg2, next, parent, symbolTable);
     }
 
-    if (root->nodeType == OP_WHILE) {
+    if (root->nodeType == OP_WHILE || root->nodeType == OP_REPEAT_UNTIL || root->nodeType == OP_DO_WHILE) {
         pop(beginLabelStack);
         pop(nextLabelStack);
     }
@@ -427,26 +427,11 @@ void codeGen(FILE* out, struct tNode* root, struct symbol* symbolTable) {
     libExit(out);
 }
 
-int operatorEval(struct tNode* node, int val1, int val2, char* buf, struct symbol* symbolTable) {
-    int isString = 0;
+int operatorEval(struct tNode* node, char* buf, struct symbol* symbolTable) {
+    int isString = 0, val;
     char cval[100];
     struct symbol* sym;
     switch (node->nodeType) {
-    case OP_ADD:
-        return val1 + val2;
-        break;
-    case OP_SUB:
-        return val1 - val2;
-        break;
-    case OP_MUL:
-        return val1 * val2;
-        break;
-    case OP_DIV:
-        return val1 / val2;
-        break;
-    case OP_MOD:
-        return val1 % val2;
-        break;
     case OP_READ:
         scanf("%s", buf);
         sym = node->left->nodeType == LEAF_ARR ? getSymbolTable(node->left->left->varName, symbolTable) : getSymbolTable(node->left->varName, symbolTable);
@@ -473,7 +458,7 @@ int operatorEval(struct tNode* node, int val1, int val2, char* buf, struct symbo
         }
         break;
     case OP_WRITE:
-        int val = eval(node->left, cval, &isString, symbolTable);
+        int val = evalExpr(node->left, symbolTable, cval, &isString);
         if (isString) {
             printf("%s\n", cval);
         }
@@ -487,10 +472,11 @@ int operatorEval(struct tNode* node, int val1, int val2, char* buf, struct symbo
             printf("No such symbol found\n");
             exit(EXIT_FAILURE);
         }
+        val = evalExpr(node->middle, symbolTable, buf, &isString);
         if (sym->type->depth != 0) {
             int offs = getArrayOffset(node->left, sym, symbolTable);
             if (sym->type->code == LEAF_TYPE_INT) {
-                sym->aval[offs] = val2;
+                sym->aval[offs] = val;
             }
             else {
                 strncpy(sym->acval[offs], buf, strlen(buf));
@@ -498,7 +484,7 @@ int operatorEval(struct tNode* node, int val1, int val2, char* buf, struct symbo
         }
         else {
             if (sym->type->code == LEAF_TYPE_INT) {
-                sym->val = val2;
+                sym->val = val;
             }
             else {
                 strncpy(sym->cval, buf, strlen(buf));
@@ -506,45 +492,69 @@ int operatorEval(struct tNode* node, int val1, int val2, char* buf, struct symbo
         }
         break;
     case OP_IF:
-        if (val1) {
-            eval(node->middle, cval, &isString, symbolTable);
+        val = evalExpr(node->left, symbolTable, cval, &isString);
+        if (val) {
+            interpret(node->middle, symbolTable);
         }
         else {
-            eval(node->right, cval, &isString, symbolTable);
+            interpret(node->right, symbolTable);
         }
         break;
     case OP_WHILE:
-        while (eval(node->left, cval, &isString, symbolTable)) {
-            eval(node->middle, cval, &isString, symbolTable);
+        while (evalExpr(node->left, symbolTable, cval, &isString)) {
+            interpret(node->middle, symbolTable);
+            if (BREAK) {
+                BREAK = 0;
+                break;
+            }
         }
         break;
-    case OP_GT:
-        return val1 > val2;
+    case OP_DO_WHILE:
+        interpret(node->left, symbolTable);
+        while (evalExpr(node->middle, symbolTable, cval, &isString)) {
+            interpret(node->left, symbolTable);
+            if (BREAK) {
+                BREAK = 0;
+                break;
+            }
+        }
         break;
-    case OP_LT:
-        return val1 < val2;
+    case OP_REPEAT_UNTIL:
+        interpret(node->left, symbolTable);
+        while (!evalExpr(node->middle, symbolTable, cval, &isString)) {
+            interpret(node->left, symbolTable);
+            if (BREAK) {
+                BREAK = 0;
+                break;
+            }
+        }
         break;
-    case OP_GE:
-        return val1 >= val2;
-        break;
-    case OP_LE:
-        return val1 <= val2;
-        break;
-    case OP_EQ:
-        return val1 == val2;
-        break;
-    case OP_NE:
-        return val1 != val2;
-        break;
-    case OP_REF:
-        sym = getSymbolTable(node->left->varName, symbolTable);
-        return sym->binding;
     default:
     }
 }
 
+struct tNode* findNext(struct tNode* cur, struct symbol* symbolTable) {
+    if (cur == NULL || cur->nodeType == LEAF_CONTINUE || BREAK) return NULL;
+
+    if (cur->nodeType == LEAF_BREAK) {
+        BREAK = 1;
+        return NULL;
+    }
+
+    while (cur->parent != NULL && cur->parent->nodeType == OP_STMTLIST && cur->parent->left != cur) {
+        cur = cur->parent;
+    }
+
+    if (cur->parent == NULL || cur->parent->nodeType != OP_STMTLIST) {
+        return NULL;
+    }
+
+    return cur->parent->middle;
+}
+
 int leafCodeEval(struct tNode* node, char* cval, struct symbol* symbolTable, int* isString) {
     *isString = 0;
+    struct tNode* temp, * next;
     switch (node->nodeType) {
     case LEAF_ID:
         struct symbol* sym = getSymbolTable(node->varName, symbolTable);
@@ -562,34 +572,6 @@ int leafCodeEval(struct tNode* node, char* cval, struct symbol* symbolTable, int
     case LEAF_STR:
         *isString = 1;
         strncpy(sym->cval, cval, strlen(cval));
-        break;
-    case LEAF_BREAK:
-        struct tNode* temp = node;
-        while (temp != NULL && temp->nodeType != OP_WHILE) {
-            temp = temp->parent;
-        }
-        if (temp == NULL) {
-            printf("Error: break in a non while loop\n");
-            exit(EXIT_FAILURE);
-        }
-        while (temp != NULL && temp->nodeType != OP_STMTLIST && temp->middle != node) {
-            temp = temp->parent;
-        }
-        if (temp == NULL) {
-            exit(EXIT_SUCCESS);
-        }
-        eval(temp->middle, cval, isString, symbolTable);
-        break;
-    case LEAF_CONTINUE:
-        temp = node;
-        while (temp != NULL && temp->nodeType != OP_WHILE) {
-            temp = temp->parent;
-        }
-        if (temp == NULL) {
-            printf("Error: break in a non while loop\n");
-            exit(EXIT_FAILURE);
-        }
-        eval(temp, cval, isString, symbolTable);
         break;
     case LEAF_ARR:
         sym = getSymbolTable(node->left->varName, symbolTable);
@@ -628,7 +610,7 @@ void getArrayIndices(struct tNode* braceRoot, int* indices, int* i, struct symbo
 
     if (braceRoot->nodeType != OP_BRACELIST) {
         int isString = 0;
-        indices[*i] = eval(braceRoot, NULL, &isString, symbolTable);
+        indices[*i] = evalExpr(braceRoot, symbolTable, NULL, &isString);
         *i = (*i) + 1;
         return;
     }
@@ -637,24 +619,195 @@ void getArrayIndices(struct tNode* braceRoot, int* indices, int* i, struct symbo
     getArrayIndices(braceRoot->middle, indices, i, symbolTable);
 }
 
-int eval(struct tNode* root, char* cval, int* isString, struct symbol* symbolTable) {
-    if (root == NULL) {
-        *isString = 0;
-        return -1;
+struct tNode* findFirst(struct tNode* stmtList) {
+    if (stmtList == NULL || stmtList->nodeType != OP_STMTLIST) return NULL;
+    while (stmtList->left != NULL && stmtList->left->nodeType == OP_STMTLIST) {
+        stmtList = stmtList->left;
     }
+    return stmtList->nodeType == OP_STMTLIST ? stmtList->left : stmtList;
+}
 
-    if (isLeaf(root->nodeType)) {
-        return leafCodeEval(root, cval, symbolTable, isString);
+int evalExpr(struct tNode* expr, struct symbol* symbolTable, char* cval, int* isString) {
+    if (isLeaf(expr->nodeType)) {
+        return leafCodeEval(expr, cval, symbolTable, isString);
     }
-
-    int val1 = eval(root->left, cval, isString, symbolTable);
-
-    if (isConditionalStmt(root->nodeType)) {
-        operatorEval(root, val1, -1, NULL, symbolTable);
+    int val1 = evalExpr(expr->left, symbolTable, cval, isString);
+    int val2 = evalExpr(expr->middle, symbolTable, cval, isString);
+    struct symbol* sym = NULL;
+    switch (expr->nodeType) {
+    case OP_ADD:
+        return val1 + val2;
+        break;
+    case OP_SUB:
+        return val1 - val2;
+        break;
+    case OP_MUL:
+        return val1 * val2;
+        break;
+    case OP_DIV:
+        return val1 / val2;
+        break;
+    case OP_MOD:
+        return val1 % val2;
+        break;
+    case OP_GT:
+        return val1 > val2;
+        break;
+    case OP_LT:
+        return val1 < val2;
+        break;
+    case OP_GE:
+        return val1 >= val2;
+        break;
+    case OP_LE:
+        return val1 <= val2;
+        break;
+    case OP_EQ:
+        return val1 == val2;
+        break;
+    case OP_NE:
+        return val1 != val2;
+        break;
+    case OP_REF:
+        sym = getSymbolTable(expr->left->varName, symbolTable);
+        return sym->binding;
+    default:
     }
-    else {
-        int val2 = eval(root->middle, cval, isString, symbolTable);
-        eval(root->right, cval, isString, symbolTable);
-        operatorEval(root, val1, val2, cval, symbolTable);
+    return -1;
+}
+
+void printStmt(struct tNode* stmt) {
+    if (stmt == NULL) return;
+    switch (stmt->nodeType) {
+    case OP_READ:
+        printf("read( ");
+        printf("%s", stmt->left->nodeType == LEAF_ARR ? stmt->left->left->varName : stmt->left->varName);
+        printf(" )\n");
+        break;
+    case OP_WRITE:
+        printf("write( ");
+        printExpr(stmt->left);
+        printf(")\n");
+        break;
+    case OP_ASSIGN:
+        printf("%s ", stmt->left->nodeType == LEAF_ARR ? stmt->left->left->varName : stmt->left->varName);
+        printf("= ");
+        printExpr(stmt->middle);
+        printf("\n");
+        break;
+    case OP_IF:
+        printf("if( ");
+        printExpr(stmt->left);
+        printf(")\n");
+        break;
+    case OP_WHILE:
+        printf("while( ");
+        printExpr(stmt->left);
+        printf(")\n");
+        break;
+    case OP_DO_WHILE:
+        printf("do-while( ");
+        printExpr(stmt->middle);
+        printf(")\n");
+        break;
+    case OP_REPEAT_UNTIL:
+        printf("repeat-until( ");
+        printExpr(stmt->middle);
+        printf(")\n");
+        break;
+    case LEAF_BREAK:
+        printf("break\n");
+        break;
+    case LEAF_CONTINUE:
+        printf("continue\n");
+        break;
+    default:
     }
 }
+
+void printExpr(struct tNode* expr) {
+    if (expr == NULL) return;
+
+    if (expr->nodeType == LEAF_ID) {
+        printf("%s ", expr->varName);
+        return;
+    }
+
+    if (expr->nodeType == LEAF_NUM) {
+        printf("%d ", expr->val);
+        return;
+    }
+
+    if (expr->nodeType == LEAF_ARR) {
+        printf("%s ", expr->left->varName);
+        return;
+    }
+
+    printExpr(expr->left);
+
+    struct symbol* sym = NULL;
+    switch (expr->nodeType) {
+    case OP_ADD:
+        printf("+ ");
+        break;
+    case OP_SUB:
+        printf("- ");
+        break;
+    case OP_MUL:
+        printf("* ");
+        break;
+    case OP_DIV:
+        printf("/ ");
+        break;
+    case OP_MOD:
+        printf("% ");
+        break;
+    case OP_GT:
+        printf("> ");
+        break;
+    case OP_LT:
+        printf("< ");
+        break;
+    case OP_GE:
+        printf(">= ");
+        break;
+    case OP_LE:
+        printf("<= ");
+        break;
+    case OP_EQ:
+        printf("== ");
+        break;
+    case OP_NE:
+        printf("!= ");
+        break;
+    case OP_REF:
+        printf("& ");
+    default:
+    }
+
+    printExpr(expr->middle);
+}
+
+void interpret(struct tNode* stmtList, struct symbol* symbolTable) {
+    if (stmtList == NULL) return;
+    struct tNode* stmt = findFirst(stmtList);
+    char buf[100];
+    while (stmt != NULL) {
+        // printStmt(stmt);
+        operatorEval(stmt, buf, symbolTable);
+        stmt = findNext(stmt, symbolTable);
+    }
+}
+
+void populateParent(struct tNode* root) {
+    if (root == NULL) return;
+
+    if (root->left != NULL) root->left->parent = root;
+    if (root->middle != NULL) root->middle->parent = root;
+    if (root->right != NULL) root->right->parent = root;
+
+    populateParent(root->left);
+    populateParent(root->middle);
+    populateParent(root->right);
+}
+
