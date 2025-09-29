@@ -1,10 +1,15 @@
 begin
 decl 
-int i,j;
+int i;
+int* p;
+int** k;
+int*** j;
 enddecl 
-i = 0;
-do
-i = i + 1;
-write(i);
-while(i < 10);
+i = 2;
+p = &i;
+k = &p;
+**k = 3;
+j = &k;
+***j = 10;
+write(***j);
 end 

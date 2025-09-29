@@ -81,7 +81,7 @@ struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct ty
             exit(EXIT_FAILURE);
         }
     case OP_ASSIGN:
-        if (typeLeft->code != typeMiddle->code) {
+        if (typeLeft->code != typeMiddle->code || typeLeft->depth != typeMiddle->depth) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
@@ -124,6 +124,8 @@ struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct ty
         return createType(-1, 0);
     case OP_REF:
         return createType(typeLeft->code, typeLeft->depth + 1);
+    case OP_DREF:
+        return createType(typeLeft->code, typeLeft->depth - 1);
     default:
     }
     return createType(-1, 0);
@@ -143,6 +145,10 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
     case LEAF_ARR:
         typeCheckForArray(node->middle, symbolTable);
         struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
+        if (sym == NULL) {
+            printf("variable %s is undeclared\n", node->left->varName);
+            exit(EXIT_FAILURE);
+        }
         if (getArrayDepth(node->middle) != sym->type->depth) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);

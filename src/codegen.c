@@ -155,7 +155,7 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
         freeReg();
         break;
     case OP_ASSIGN:
-        addr_reg = resolveAddr(out, node->left, symbolTable);
+        addr_reg = node->left->nodeType == OP_DREF ? reg1 : resolveAddr(out, node->left, symbolTable);
         fprintf(out, "MOV [R%d], R%d\n", addr_reg, reg2);
         freeReg();
         break;
@@ -193,6 +193,9 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
     case OP_REF:
         struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
         fprintf(out, "MOV R%d, %d\n", reg1, sym->binding);
+        break;
+    case OP_DREF:
+        fprintf(out, "MOV R%d, [R%d]\n", reg1, reg1);
         break;
     case OP_REPEAT_UNTIL:
         fprintf(out, "JZ R%d, L%d\n", reg2, node->label);
@@ -288,6 +291,16 @@ void libExit(FILE* out) {
     freeReg();
 }
 
+int isLValue(struct tNode* root) {
+    if (root == NULL) return 0;
+    struct tNode* prev = NULL;
+    while (root != NULL && root->nodeType != OP_ASSIGN) {
+        prev = root;
+        root = root->parent;
+    }
+    return root != NULL && root->left == prev;
+}
+
 /**
  * @brief generates machine code for leafs of Abstract syntax tree
  * @param out output file pointer
@@ -296,11 +309,20 @@ void libExit(FILE* out) {
  */
 int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTable) {
     int reg = -1;
+    struct symbol* sym = NULL;
+    struct tNode* prev = NULL;
+    int addr = -1;
     switch (node->nodeType) {
     case LEAF_ID:
         reg = getFreeReg();
-        int addr = getMem(node->varName, symbolTable);
-        fprintf(out, "MOV R%d, [%d]\n", reg, addr);
+        struct symbol* sym = getSymbolTable(node->varName, symbolTable);
+        addr = sym->binding;
+        if (sym->type->depth == 0 || !isLValue(node)) {
+            fprintf(out, "MOV R%d, [%d]\n", reg, addr);
+        }
+        else {
+            fprintf(out, "MOV R%d, %d\n", reg, addr);
+        }
         break;
     case LEAF_NUM:
         reg = getFreeReg();
@@ -363,7 +385,7 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent,
 
     int reg1 = -1;
     // to prevent printing extra assembly instruction
-    if (root->nodeType != OP_ASSIGN) {
+    if (root->nodeType != OP_ASSIGN || root->left->nodeType == OP_DREF) {
         reg1 = codeGenHelper(out, root->left, root->nodeType == OP_STMTLIST ? root->middle->label : (root->nodeType == OP_REPEAT_UNTIL || root->nodeType == OP_DO_WHILE) ? root->label : next, root, symbolTable);
     }
 

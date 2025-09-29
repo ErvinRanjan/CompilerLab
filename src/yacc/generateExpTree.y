@@ -195,6 +195,9 @@ E : E '+' E {
   | '&' ID {
                 $<node>$ = createOperatorNode(OP_REF,$<node>2,NULL,NULL,-1); 
             }
+  | '*' E {
+                $<node>$ = createOperatorNode(OP_DREF,$<node>2,NULL,NULL,-1);
+            }
   | '(' E ')' {
                  $<node>$ = $<node>2;
               }
@@ -234,6 +237,9 @@ Identifier : ID
             | Array 
             {
                 $<node>$ = $<node>1;
+            }
+            | '*' E {
+                $<node>$ = createOperatorNode(OP_DREF,$<node>2,NULL,NULL,-1);
             }
             ;
 
