@@ -39,6 +39,13 @@
 #define OP_DREF 34
 #define OP_DO_WHILE 35
 #define OP_REPEAT_UNTIL 36
+#define LEAF_FDECL 37 
+#define OP_FDEF 38 
+#define OP_RETURN 39 
+#define OP_PARAM 40 
+#define OP_PARAMLIST 41 
+#define LEAF_FUNC 42
+#define OP_ARGLIST 43
 
 // constants for types
 

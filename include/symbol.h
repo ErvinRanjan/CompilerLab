@@ -16,13 +16,17 @@ struct symbol {
     struct symbol* next;
     int* aval;
     char** acval;
+    struct param* paramList;
+    int flabel;
 };
 
 struct symbol* createSymbol(struct type* type, char* varName, int size, int binding, int symbolType, int* maxSizes);
+struct symbol* createSymbolForFunction(struct type* type, char* varName, int size, struct param* paramList, int fLabel);
 struct symbol* addSymbol(struct symbol* symbolTable, struct symbol* symbol);
 int isSymbolPresent(struct symbol* symbolTable, struct symbol* symbol);
-struct symbol* populateSymbolTable(struct tNode* declRoot, struct symbol* symbolTable);
+struct symbol* populateSymbolTable(struct tNode* declRoot, struct symbol* symbolTable, int isLocal);
 struct symbol* getSymbolTable(char* varName, struct symbol* symbolTable);
 void printSymbolTable(struct symbol* symbolTable);
+struct symbol* addParamAsSymbol(char* varName, struct symbol* gsymbolTable, struct symbol* symbolTable);
 
 #endif

@@ -10,14 +10,15 @@
     extern FILE* yyin;
     extern char* yytext;
     FILE* out;
+    struct symbol* gsymbolTable = NULL;
 %}
 
 %union{
     struct tNode* node;
 };
 
-%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR REPEAT UNTIL DO
-%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt RepeatUntilStmt DoWhileStmt B E ID BREAK CONTINUE Declarations DeclList Decl Type VarList CSTR Array BraceList Identifier
+%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR REPEAT UNTIL DO MAIN RETURN
+%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt RepeatUntilStmt DoWhileStmt B E ID BREAK CONTINUE Param ParamList Body ArgList FDef FDefBlock MainBlock GDeclBlock LDeclBlock GDeclList LDeclList GDecl LDecl Type GidList LidList Gid Lid CSTR Array BraceList Identifier
 
 %nonassoc '='
 %left '%'
@@ -26,35 +27,45 @@
 
 %%
 
-Program : BLOCK_BEGIN Declarations Slist BLOCK_END  {
-                                struct symbol* symbolTable = NULL;
-                                symbolTable = populateSymbolTable($<node>2,symbolTable);
-                                printSymbolTable(symbolTable);
-                                typeCheck($<node>3,symbolTable);
-                                populateParent($<node>3);
-                                //interpret($<node>3,symbolTable);
-                                codeGen(out,$<node>3,symbolTable);
+Program : GDeclBlock FDefBlock MainBlock 
+        | GDeclBlock MainBlock
+        | MainBlock 
+        ;
+
+MainBlock : INT MAIN '(' ')'  '{' LDeclBlock Body '}' { 
+                                                            struct symbol* symbolTable = NULL;
+                                                            symbolTable = populateSymbolTable($<node>6,symbolTable,1);
+                                                            printf("symbol table for main\n");
+                                                            printSymbolTable(symbolTable);
+                                                            symbolTable->next = gsymbolTable;
+                                                            typeCheck($<node>7,symbolTable); 
+                                                            // 3* codeGen 
+                                                        }
+
+Body : BLOCK_BEGIN Slist RetStmt BLOCK_END  {
+                               $<node>$ = createOperatorNode(OP_STMTLIST,$<node>2,$<node>3,NULL,-1);
                            }
         | BLOCK_BEGIN BLOCK_END {
-
+                            
                                 }
         ;
 
-Declarations : DECL DeclList ENDDECL {
-                                        $<node>$ = $<node>2;
+GDeclBlock : DECL GDeclList ENDDECL {
+                                        gsymbolTable = populateSymbolTable($<node>2,gsymbolTable,0); 
+                                        printSymbolTable(gsymbolTable);
                                     }
             | DECL ENDDECL {}
             ;
 
-DeclList : DeclList Decl {
+GDeclList : GDeclList GDecl {
                             $<node>$ = createOperatorNode(OP_DECLLIST,$<node>1,$<node>2,NULL,-1);
                         }
-         | Decl {
+         | GDecl {
                     $<node>$ = $<node>1;
                 }
          ;
 
-Decl : Type VarList ';' {
+GDecl : Type GidList ';' {
                         $<node>$ = createOperatorNode(OP_DECL,$<node>1,$<node>2,NULL,-1);
                     }
      ;
@@ -66,19 +77,100 @@ Type : INT
        }
      ;
 
-VarList : VarList ',' ID    {
+GidList : GidList ',' Gid    {
                                 $<node>$ = createOperatorNode(OP_VARLIST,$<node>1,$<node>3,NULL,-1);
                             }
-        | ID    {
-                    $<node>$ = $<node>1;
-                }
-        | VarList ',' DeclArray  {
-                                $<node>$ = createOperatorNode(OP_VARLIST,$<node>1,$<node>3,NULL,-1);
-                            }
-        | DeclArray  {
+        | Gid  {
                     $<node>$ = $<node>1;
                 }
         ;
+
+Gid : ID  
+    | DeclArray
+    {
+        $<node>$ = $<node>1; 
+    } 
+    | ID '(' ParamList ')' {
+                                int label = getLabel();
+                                $<node>$ = createOperatorNode(LEAF_FDECL,$<node>1,$<node>3,NULL,label);
+                            }
+    | ID '(' ')' {  
+                    int label = getLabel();
+                    $<node>$ = createOperatorNode(LEAF_FDECL,$<node>1,NULL,NULL,label);
+                }
+    ;
+
+ParamList : ParamList ',' Param {
+                            $<node>$ = createOperatorNode(OP_PARAMLIST,$<node>1,$<node>3,NULL,-1);
+                        }   
+        | Param {
+                $<node>$ = $<node>1;
+            }
+        ;
+
+Param : Type ID {
+                    $<node>$ = createOperatorNode(OP_PARAM,$<node>1,$<node>2,NULL,-1);
+                }
+
+
+LDeclBlock : DECL LDeclList ENDDECL {
+                                        $<node>$ = $<node>2;
+                                    }
+            | DECL ENDDECL {}
+            ;
+
+LDeclList : LDeclList LDecl {
+                            $<node>$ = createOperatorNode(OP_DECLLIST,$<node>1,$<node>2,NULL,-1);
+                        }
+         | LDecl {
+                    $<node>$ = $<node>1;
+                }
+         ;
+
+LDecl : Type LidList ';' {
+                        $<node>$ = createOperatorNode(OP_DECL,$<node>1,$<node>2,NULL,-1);
+                    }
+     ;
+
+LidList : LidList ',' Lid    {
+                                $<node>$ = createOperatorNode(OP_VARLIST,$<node>1,$<node>3,NULL,-1);
+                            }
+        | Lid  {
+                    $<node>$ = $<node>1;
+                }
+        ;
+
+Lid : ID  
+    | DeclArray
+    {
+        $<node>$ = $<node>1; 
+    } 
+    ;
+
+FDefBlock : FDefBlock FDef 
+          | FDef 
+          {}
+          ;
+
+FDef : Type ID '(' ParamList ')' '{' LDeclBlock Body '}' {
+                                                                typeCheckFunctionParam($<node>1->type,$<node>2->varName,$<node>4,gsymbolTable);
+                                                                struct symbol* symbolTable = NULL;
+                                                                symbolTable = addParamAsSymbol($<node>2->varName,gsymbolTable,symbolTable);
+                                                                symbolTable = populateSymbolTable($<node>7,symbolTable,1);
+                                                                symbolTable->next = gsymbolTable;
+                                                                typeCheck($<node>8,symbolTable);
+                                                                // 3* codeGen
+                                                        }
+     | Type ID '('  ')' '{' LDeclBlock Body '}'  {
+        typeCheckFunctionParam($<node>1->type,$<node>2->varName,NULL,gsymbolTable);
+        struct symbol* symbolTable = NULL;
+        symbolTable = addParamAsSymbol($<node>2->varName,gsymbolTable,symbolTable);
+        symbolTable = populateSymbolTable($<node>6,symbolTable,1);
+        symbolTable->next = gsymbolTable;
+        typeCheck($<node>7,symbolTable);
+        // 3* codeGen 
+     }    
+    ;
 
 Slist : Slist Stmt {    
                         $<node>$ = createOperatorNode(OP_STMTLIST,$<node>1,$<node>2,NULL,-1);
@@ -102,6 +194,11 @@ Stmt : InputStmt
         $<node>$ = $<node>1;
        }     
      ;
+
+RetStmt : RETURN E ';'{
+                    $<node>$ = createOperatorNode(OP_RETURN,$<node>1,NULL,NULL,-1);
+        }
+        ;
 
 Ifstmt : IF '(' B ')' THEN Slist ELSE Slist ENDIF { 
                                                         int label = getLabel();
@@ -201,6 +298,12 @@ E : E '+' E {
   | '(' E ')' {
                  $<node>$ = $<node>2;
               }
+  | ID '(' ')' {
+                    $<node>$ = createOperatorNode(LEAF_FUNC,$<node>1,NULL,NULL,-1);
+                } 
+  | ID '(' ArgList ')' {
+                            $<node>$ = createOperatorNode(LEAF_FUNC,$<node>1,$<node>3,NULL,-1);
+                        }
   | NUM 
   | Identifier
   | CSTR  
@@ -208,6 +311,14 @@ E : E '+' E {
     $<node>$ = $<node>1;
    }
   ;
+
+ArgList : ArgList ',' E  {
+                            $<node>$ = createOperatorNode(OP_ARGLIST,$<node>1,$<node>3,NULL,-1);
+                        }
+        | E {
+                $<node>$ = $<node>1;
+            }
+        ;
 
 DeclArray : ID DeclBraceList {
                         $<node>$ = createOperatorNode(LEAF_ARR,$<node>1,$<node>2,NULL,-1);

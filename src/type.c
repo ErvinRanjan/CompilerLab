@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "tree.h"
 #include "symbol.h"
+#include "param.h"
 
 extern bool isLeaf(int nodeType);
 
@@ -19,8 +20,8 @@ void typeCheckForArray(struct tNode* braceRoot, struct symbol* symbolTable) {
         }
     }
 
-    typeCheck(braceRoot->left, symbolTable);
-    typeCheck(braceRoot->middle, symbolTable);
+    typeCheckForArray(braceRoot->left, symbolTable);
+    typeCheckForArray(braceRoot->middle, symbolTable);
 }
 
 int max(int x, int y) {
@@ -131,10 +132,41 @@ struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct ty
     return createType(-1, 0);
 }
 
+void validateFunctionParamsHelper(struct tNode* argList, struct param** paramList, struct symbol* symbolTable, char* varName) {
+    if (argList == NULL) return;
+    if ((*paramList) == NULL) {
+        printf("Error: number of arguments does not match the declaration: %s\n", varName);
+        exit(EXIT_FAILURE);
+    }
+
+    if (argList->nodeType != OP_ARGLIST) {
+        struct type* type = typeCheck(argList, symbolTable);
+        if (!isTypeEqual((*paramList)->type, type)) {
+            printf("Error: Type Mismatch between arguments of function call and function declaration for function: %s\n", varName);
+            exit(EXIT_FAILURE);
+        }
+        *paramList = (*paramList)->next;
+        return;
+    }
+
+    validateFunctionParamsHelper(argList->left, paramList, symbolTable, varName);
+    validateFunctionParamsHelper(argList->middle, paramList, symbolTable, varName);
+}
+
+void validateFunctionParams(struct tNode* argList, struct param* paramList, struct symbol* symbolTable, char* varName) {
+    validateFunctionParamsHelper(argList, &paramList, symbolTable, varName);
+    if (paramList != NULL) {
+        printf("Error: number of arguments does not match the declaration: %s\n", varName);
+        exit(EXIT_FAILURE);
+    }
+}
+
 struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
+    struct symbol* symbol;
+    struct param* param;
     switch (node->nodeType) {
     case LEAF_ID:
-        struct symbol* symbol = getSymbolTable(node->varName, symbolTable);
+        symbol = getSymbolTable(node->varName, symbolTable);
         if (symbol == NULL) {
             printf("Error: variable %s has not been declared\n", node->varName);
             exit(EXIT_FAILURE);
@@ -160,6 +192,14 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
         return createType(LEAF_TYPE_INT, 0);
     case LEAF_TYPE_STR:
         return createType(LEAF_TYPE_STR, 0);
+    case LEAF_FUNC:
+        symbol = getSymbolTable(node->left->varName, symbolTable);
+        if (symbol == NULL) {
+            printf("Error: function is called but not declared for function : %s\n", node->left->varName);
+            exit(EXIT_FAILURE);
+        }
+        validateFunctionParams(node->middle, symbol->paramList, symbolTable, node->left->varName);
+        return symbol->type;
     default:
     }
     return createType(-1, 0);
@@ -176,4 +216,36 @@ struct type* typeCheck(struct tNode* root, struct symbol* symbolTable) {
     struct type* typeMiddle = typeCheck(root->middle, symbolTable);
 
     return validateOperatorType(root->nodeType, typeLeft, typeMiddle);
+}
+
+void typeCheckFunctionParam(struct type* type, char* varName, struct tNode* paramRoot, struct symbol* symbolTable) {
+    int numberOfParam = 0;
+    struct param* paramList = NULL;
+    paramList = convertTreeToParamList(paramRoot, &numberOfParam, paramList);
+    struct symbol* sym = getSymbolTable(varName, symbolTable);
+    if (sym == NULL) {
+        printf("Error: function %s has not been declared\n", varName);
+        exit(EXIT_FAILURE);
+    }
+    if (!isTypeEqual(sym->type, type)) {
+        printf("Type Mismatch between return types of function declaration and definition for function : %s\n", varName);
+        exit(EXIT_FAILURE);
+    }
+    struct param* p = sym->paramList;
+    while (p != NULL && paramList != NULL) {
+        if (!isTypeEqual(p->type, paramList->type)) {
+            printf("Error: Type Mismatch between param types of function declaration and definition for function : %s\n", varName);
+            exit(EXIT_FAILURE);
+        }
+        p = p->next;
+        paramList = paramList->next;
+    }
+    if (p != NULL || paramList != NULL) {
+        printf("Error: Number of arguments between function declaration and function definition don't match for function : %s\n", varName);
+        exit(EXIT_FAILURE);
+    }
+}
+
+int isTypeEqual(struct type* t1, struct type* t2) {
+    return t1 != NULL && t2 != NULL && t1->code == t2->code && t1->depth == t2->depth;
 }

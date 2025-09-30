@@ -19,6 +19,14 @@
 
 %%
 
+"main" {
+            return MAIN;
+        }
+
+"return" {
+            return RETURN;
+        }
+
 ("int")("*")+ {
                     yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_INT,getDepth(yytext,strlen(yytext))),-1,LEAF_TYPE_INT,NULL);
                     return INT;
@@ -142,7 +150,7 @@
             return ID;
        }
 
-[+*/\-%()=;<>,\[\]&@]  {
+[+*/\-%()=;<>,\[\]&{}]  {
             return *yytext;
         }
 
