@@ -1,7 +1,6 @@
 decl 
-int f(int n),sum(int a,int b),swap(int* a,int* b);
+int f(int n),sum(int a,int b),swap(int* a,int* b),gcd(int a,int b);
 enddecl 
-/*
 int f(int n){
     decl 
     int ans;
@@ -24,7 +23,6 @@ int sum(int a,int b){
     return x;
     end
 }
-*/
 int swap(int* a,int* b){
     decl
     int temp; 
@@ -36,16 +34,27 @@ int swap(int* a,int* b){
     return 0;
     end
 }
+int gcd(int a,int b){
+    decl 
+    int ans;
+    enddecl 
+    begin 
+    if(b == 0) then 
+        ans = a;
+    else 
+        ans = gcd(b,a%b);
+    endif 
+    return ans;
+    end
+}
 int main(){
     decl 
     int a,b,temp;
     enddecl
     begin 
-    a = 1;
-    b = 2;
-    temp = swap(&a,&b);
-    write(a);
-    write(b);
+    read(a);
+    read(b);
+    write(gcd(a,b));
     return 0; 
     end
 } 
