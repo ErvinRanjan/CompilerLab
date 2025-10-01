@@ -49,12 +49,15 @@ int gcd(int a,int b){
 }
 int main(){
     decl 
-    int a,b,temp;
+    int i,a[10];
+    int* p;
     enddecl
     begin 
-    read(a);
-    read(b);
-    write(gcd(a,b));
+    i = 0;
+    while(i < 10) do 
+        a[i] = i;
+        i = i + 1;
+    endwhile 
     return 0; 
     end
 } 

@@ -185,7 +185,7 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
-        return sym->type;
+        return createType(sym->type->code, 0);
     case LEAF_STR:
         return createType(LEAF_TYPE_STR, 0);
     case LEAF_TYPE_INT:
