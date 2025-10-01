@@ -68,9 +68,17 @@ run_label: $(LABEL_BIN) run_parser
 	@echo "=== Running label_translator ==="
 	@$(LABEL_BIN) $(XSM_DIR)/test.xsmo $(XSM_DIR)/test.xsm
 
+run_label_without_parser: $(LABEL_BIN)
+	@echo "=== Running label_translator ==="
+	@$(LABEL_BIN) $(XSM_DIR)/test.xsmo $(XSM_DIR)/test.xsm
+
 run_xsm: run_label
 	@echo "=== Running XSM emulator ==="
 	@cd $(XSM_EXPL_DIR) && bash ./xsm -l ../lib/library.lib -e ../xsm/test.xsm
+
+run_xsm_with_debug: 
+	@echo "=== Running XSM emulator ==="
+	@cd $(XSM_EXPL_DIR) && bash ./xsm -l ../lib/library.lib -e ../xsm/test.xsm --debug
 
 run: run_xsm
 	@echo "=== Full flow completed ==="
@@ -81,4 +89,4 @@ clean:
 	rm -f $(SRC_DIR)/lex.yy.c $(SRC_DIR)/y.tab.c $(Y_TAB_H) $(PARSER)
 	$(MAKE) -C $(BASE)/labelTranslator clean
 
-.PHONY: all clean run run_parser run_label run_xsm
+.PHONY: all clean run run_parser run_label run_xsm run_label_without_parser

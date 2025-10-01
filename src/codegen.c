@@ -10,30 +10,31 @@
 #include <stdlib.h>
 #include <assert.h>
 
-int BREAK = 0;
 struct stack* beginLabelStack, * nextLabelStack; // keeps track of latest while begin and next labels
-
 extern int getArrayDepth(struct tNode* braceRoot);
 
 bool isLeaf(int nodeType) {
     return nodeType == LEAF_ID || nodeType == LEAF_NUM || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE || nodeType == LEAF_STR || nodeType == LEAF_TYPE_INT || nodeType == LEAF_TYPE_STR || nodeType == LEAF_ARR || nodeType == LEAF_FUNC || nodeType == LEAF_FDECL;
 }
 
-void resolveArrayAddrCodegen(FILE* out, struct tNode* braceRoot, struct symbol* symbolTable, int* base) {
+void resolveArrayAddrCodegen(FILE* out, struct tNode* braceRoot, struct symbol* symbolTable, int* base, char* fname) {
     if (braceRoot == NULL) return;
 
     if (braceRoot->nodeType != OP_BRACELIST) {
-        int reg = codeGenHelper(out, braceRoot, -1, NULL, symbolTable);
+        int reg = codeGenHelper(out, braceRoot, -1, NULL, symbolTable, fname);
         fprintf(out, "MOV [%d], R%d\n", *base, reg);
         (*base) = (*base) + 1;
         return;
     }
 
-    resolveArrayAddrCodegen(out, braceRoot->left, symbolTable, base);
-    resolveArrayAddrCodegen(out, braceRoot->middle, symbolTable, base);
+    resolveArrayAddrCodegen(out, braceRoot->left, symbolTable, base, fname);
+    resolveArrayAddrCodegen(out, braceRoot->middle, symbolTable, base, fname);
 }
 
-int resolveAddr(FILE* out, struct tNode* node, struct symbol* symbolTable) {
+int resolveAddr(FILE* out, struct tNode* node, struct symbol* symbolTable, char* fname) {
+    if (fname != NULL) {
+        return resolveAddrInFunction(out, node, symbolTable, getParamLenForFunction(fname, symbolTable));
+    }
     switch (node->nodeType) {
     case LEAF_ID:
         int reg = getFreeReg();
@@ -41,19 +42,19 @@ int resolveAddr(FILE* out, struct tNode* node, struct symbol* symbolTable) {
         return reg;
         break;
     case LEAF_ARR:
-        return resolveArrayAddr(out, node, symbolTable);
+        return resolveArrayAddr(out, node, symbolTable, fname);
         break;
     default:
     }
     return -1;
 }
 
-int resolveArrayAddr(FILE* out, struct tNode* node, struct symbol* symbolTable) {
+int resolveArrayAddr(FILE* out, struct tNode* node, struct symbol* symbolTable, char* fname) {
     int depth = getArrayDepth(node->middle);
     int indices[100];
     int base = getFreeMem(depth);
     int x = base;
-    resolveArrayAddrCodegen(out, node->middle, symbolTable, &x);
+    resolveArrayAddrCodegen(out, node->middle, symbolTable, &x, fname);
     struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
     int maxSizesBase = getFreeMem(depth);
     for (int i = 0;i < depth;i++) {
@@ -98,7 +99,7 @@ int resolveArrayAddr(FILE* out, struct tNode* node, struct symbol* symbolTable) 
 }
 
 bool isStmt(int nodeType) {
-    return nodeType == OP_READ || nodeType == OP_WRITE || nodeType == OP_ASSIGN || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE || nodeType == OP_IF || nodeType == OP_WHILE || nodeType == OP_DO_WHILE || nodeType == OP_REPEAT_UNTIL;
+    return nodeType == OP_READ || nodeType == OP_WRITE || nodeType == OP_ASSIGN || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE || nodeType == OP_IF || nodeType == OP_WHILE || nodeType == OP_DO_WHILE || nodeType == OP_REPEAT_UNTIL || nodeType == OP_RETURN;
 }
 
 int getMem(char* varName, struct symbol* symbolTable) {
@@ -123,8 +124,9 @@ int getMem(char* varName, struct symbol* symbolTable) {
  * @param next next instructions label
  * @param parentNodeType type of parent node
  */
-void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next, struct tNode* parent, struct symbol* symbolTable) {
+void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next, struct tNode* parent, struct symbol* symbolTable, char* fname) {
     int addr_reg = -1;
+    int paramCount = getParamLenForFunction(fname, symbolTable);
     switch (node->nodeType) {
     case OP_ADD:
         fprintf(out, "ADD R%d, R%d\n", reg1, reg2);
@@ -147,7 +149,7 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
         freeReg();
         break;
     case OP_READ:
-        addr_reg = resolveAddr(out, node->left, symbolTable);
+        addr_reg = resolveAddr(out, node->left, symbolTable, fname);
         libRead(out, XSM_STDIN, addr_reg);
         break;
     case OP_WRITE:
@@ -155,7 +157,7 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
         freeReg();
         break;
     case OP_ASSIGN:
-        addr_reg = node->left->nodeType == OP_DREF ? reg1 : resolveAddr(out, node->left, symbolTable);
+        addr_reg = node->left->nodeType == OP_DREF ? reg1 : resolveAddr(out, node->left, symbolTable, fname);
         fprintf(out, "MOV [R%d], R%d\n", addr_reg, reg2);
         freeReg();
         break;
@@ -191,8 +193,9 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
         freeReg();
         break;
     case OP_REF:
-        struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
-        fprintf(out, "MOV R%d, %d\n", reg1, sym->binding);
+        addr_reg = resolveAddr(out, node, symbolTable, fname);
+        fprintf(out, "MOV R%d, R%d\n", reg1, addr_reg);
+        //!TODO: freeReg
         break;
     case OP_DREF:
         fprintf(out, "MOV R%d, [R%d]\n", reg1, reg1);
@@ -203,6 +206,14 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
     case OP_DO_WHILE:
         fprintf(out, "JNZ R%d, L%d\n", reg2, node->label);
         break;
+    case OP_RETURN: {
+        if (fname == NULL) return;
+        int reg = getReg();
+        fprintf(out, "MOV R%d, BP\n", reg);
+        fprintf(out, "SUB R%d, 2\n", reg);
+        fprintf(out, "MOV [R%d], R%d\n", reg, reg1);
+        freeReg();
+    }
     default:
     }
 }
@@ -301,13 +312,32 @@ int isLValue(struct tNode* root) {
     return root != NULL && root->left == prev;
 }
 
+int pushFuncArgs(FILE* out, struct tNode* argList, struct symbol* symbolTable, char* fname) {
+    if (argList == NULL) return 0;
+
+    if (argList->nodeType != OP_ARGLIST) {
+        int reg = codeGenHelper(out, argList, -1, NULL, symbolTable, fname);
+        fprintf(out, "PUSH R%d\n", reg);
+        return 1;
+    }
+
+    // we need to push in reverse so first middle then left
+    int numOfRegInMiddle = pushFuncArgs(out, argList->middle, symbolTable, fname);
+    int numOfRegInLeft = pushFuncArgs(out, argList->left, symbolTable, fname);
+
+    return numOfRegInLeft + numOfRegInMiddle;
+}
+
 /**
  * @brief generates machine code for leafs of Abstract syntax tree
  * @param out output file pointer
  * @param varName optional - only for identifiers
  * @param val optional - value for numbers
  */
-int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTable) {
+int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTable, char* fname) {
+    if (fname != NULL && node->nodeType == LEAF_ID) {
+        return leafCodeGenForFunction(out, fname, node, symbolTable);
+    }
     int reg = -1;
     struct symbol* sym = NULL;
     struct tNode* prev = NULL;
@@ -349,13 +379,74 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
         fprintf(out, "JMP L%d\n", latestBeginWhileLabel);
         break;
     case LEAF_ARR:
-        int addr_reg = resolveArrayAddr(out, node, symbolTable);
+        int addr_reg = resolveArrayAddr(out, node, symbolTable, fname);
         fprintf(out, "MOV R%d, [R%d]\n", addr_reg, addr_reg);
         reg = addr_reg;
         break;
+    case LEAF_FUNC: {
+        backup(out);
+        char* calleeFname = node->left->varName;
+        struct symbol* fsymbol = getSymbolTable(calleeFname, symbolTable);
+        if (fsymbol == NULL) {
+            printf("Error: no such function: %s\n", calleeFname);
+            exit(EXIT_FAILURE);
+        }
+        int args = pushFuncArgs(out, node->middle, symbolTable, fname);
+        fprintf(out, "PUSH R0\n"); // return value
+        fprintf(out, "CALL L%d\n", fsymbol->flabel);
+        if (getReg() == MAX_REG) {
+            printf("Error: run out of registers\n");
+            exit(EXIT_FAILURE);
+        }
+        fprintf(out, "POP R19\n");
+        for (int i = 0;i < args;i++) {
+            fprintf(out, "POP R0\n");
+        }
+        restore(out);
+        reg = getFreeReg();
+        fprintf(out, "MOV R%d, R19\n", reg);
+    }
     default:
     }
     return reg;
+}
+
+int resolveAddrInFunction(FILE* out, struct tNode* node, struct symbol* symbolTable, int paramCount) {
+    int reg = getFreeReg();
+    if (isParam(node->varName, symbolTable, paramCount)) {
+        int offs = getParamOffset(node->varName, symbolTable, paramCount);
+        fprintf(out, "MOV R%d, BP\n", reg);
+        fprintf(out, "SUB R%d, 3\n", reg);
+        fprintf(out, "SUB R%d, %d\n", reg, offs);
+    }
+    else {
+        int offs = getLocalVarOffset(node->varName, getLocalVarList(symbolTable, paramCount));
+        fprintf(out, "MOV R%d, BP\n", reg);
+        fprintf(out, "ADD R%d, %d\n", reg, offs);
+        fprintf(out, "ADD R%d, 1\n", reg);
+    }
+    return reg;
+}
+
+int leafCodeGenForFunction(FILE* out, char* fname, struct tNode* node, struct symbol* symbolTable) {
+    int paramCount = getParamLenForFunction(fname, symbolTable);
+    switch (node->nodeType) {
+    case LEAF_ID: {
+        int reg = resolveAddrInFunction(out, node, symbolTable, paramCount);
+        struct symbol* sym = getSymbolTable(node->varName, symbolTable);
+        if (sym == NULL) {
+            printf("Error: variable has not been declared: %s\n", node->varName);
+            exit(EXIT_FAILURE);
+        }
+        if (sym->type->depth == 0 || !isLValue(node)) {
+            fprintf(out, "MOV R%d, [R%d]\n", reg, reg);
+        }
+        return reg;
+        break;
+    }
+    default:
+    }
+    return -1;
 }
 
 /**
@@ -364,7 +455,7 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
  * @param root root of AST
  * @return register where result is stored
  */
-int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent, struct symbol* symbolTable) {
+int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent, struct symbol* symbolTable, char* fname) {
     if (root == NULL) {
         return -1;
     }
@@ -380,20 +471,21 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent,
     }
 
     if (isLeaf(root->nodeType)) {
-        return leafCodeGen(out, root, next, symbolTable);
+        return leafCodeGen(out, root, next, symbolTable, fname);
     }
+
 
     int reg1 = -1;
     // to prevent printing extra assembly instruction
     if (root->nodeType != OP_ASSIGN || root->left->nodeType == OP_DREF) {
-        reg1 = codeGenHelper(out, root->left, root->nodeType == OP_STMTLIST ? root->middle->label : (root->nodeType == OP_REPEAT_UNTIL || root->nodeType == OP_DO_WHILE) ? root->label : next, root, symbolTable);
+        reg1 = codeGenHelper(out, root->left, root->nodeType == OP_STMTLIST ? root->middle->label : (root->nodeType == OP_REPEAT_UNTIL || root->nodeType == OP_DO_WHILE) ? root->label : next, root, symbolTable, fname);
     }
 
     if (root->nodeType == OP_IF || root->nodeType == OP_WHILE) {
-        operatorCodeGen(out, root, reg1, -1, next, parent, symbolTable);
+        operatorCodeGen(out, root, reg1, -1, next, parent, symbolTable, fname);
     }
 
-    int reg2 = codeGenHelper(out, root->middle, root->nodeType == OP_WHILE ? root->label : next, root, symbolTable);
+    int reg2 = codeGenHelper(out, root->middle, root->nodeType == OP_WHILE ? root->label : next, root, symbolTable, fname);
 
     if (root->nodeType == OP_IF) {
         fprintf(out, "JMP L%d\n", next);
@@ -402,14 +494,14 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent,
         fprintf(out, "JMP L%d\n", root->label);
     }
 
-    codeGenHelper(out, root->right, next, root, symbolTable);
+    codeGenHelper(out, root->right, next, root, symbolTable, fname);
 
     if (root->nodeType == OP_IF) {
         fprintf(out, "JMP L%d\n", next);
     }
 
     if (root->nodeType != OP_IF && root->nodeType != OP_WHILE) {
-        operatorCodeGen(out, root, reg1, reg2, next, parent, symbolTable);
+        operatorCodeGen(out, root, reg1, reg2, next, parent, symbolTable, fname);
     }
 
     if (root->nodeType == OP_WHILE || root->nodeType == OP_REPEAT_UNTIL || root->nodeType == OP_DO_WHILE) {
@@ -435,390 +527,46 @@ void initParams(FILE* out) {
     fprintf(out, "MOV SP, %d\n", INIT_SP);
 }
 
+void initCompiler(FILE* out) {
+    initDataStructures();
+    generateHeader(out, 0, ENTRY_POINT, 0, 0, 0, 0, 0);
+    initParams(out);
+}
+
 /**
  * @brief generates XSM machine code from AST
  * @param out output file pointer
  * @param root root of AST
  */
 void codeGen(FILE* out, struct tNode* root, struct symbol* symbolTable) {
-    initDataStructures();
-    generateHeader(out, 0, ENTRY_POINT, 0, 0, 0, 0, 0);
-    initParams(out);
-    codeGenHelper(out, root, -1, NULL, symbolTable);
+    codeGenHelper(out, root, -1, NULL, symbolTable, NULL);
     fprintf(out, "L%d:\n", -1);
     libExit(out);
 }
 
-int operatorEval(struct tNode* node, char* buf, struct symbol* symbolTable) {
-    int isString = 0, val;
-    char cval[100];
-    struct symbol* sym;
-    switch (node->nodeType) {
-    case OP_READ:
-        scanf("%s", buf);
-        sym = node->left->nodeType == LEAF_ARR ? getSymbolTable(node->left->left->varName, symbolTable) : getSymbolTable(node->left->varName, symbolTable);
-        if (sym == NULL) {
-            printf("No such symbol found\n");
-            exit(EXIT_FAILURE);
-        }
-        if (sym->type->depth != 0) {
-            int offs = getArrayOffset(node->left, sym, symbolTable);
-            if (sym->type->code == LEAF_TYPE_INT) {
-                sym->aval[offs] = atoi(buf);
-            }
-            else {
-                strncpy(sym->acval[offs], buf, strlen(buf));
-            }
-        }
-        else {
-            if (sym->type->code == LEAF_TYPE_INT) {
-                sym->val = atoi(buf);
-            }
-            else {
-                strncpy(sym->cval, buf, strlen(buf));
-            }
-        }
-        break;
-    case OP_WRITE:
-        int val = evalExpr(node->left, symbolTable, cval, &isString);
-        if (isString) {
-            printf("%s\n", cval);
-        }
-        else {
-            printf("%d\n", val);
-        }
-        break;
-    case OP_ASSIGN:
-        sym = node->left->nodeType == LEAF_ARR ? getSymbolTable(node->left->left->varName, symbolTable) : getSymbolTable(node->left->varName, symbolTable);
-        if (sym == NULL) {
-            printf("No such symbol found\n");
-            exit(EXIT_FAILURE);
-        }
-        val = evalExpr(node->middle, symbolTable, buf, &isString);
-        if (sym->type->depth != 0) {
-            int offs = getArrayOffset(node->left, sym, symbolTable);
-            if (sym->type->code == LEAF_TYPE_INT) {
-                sym->aval[offs] = val;
-            }
-            else {
-                strncpy(sym->acval[offs], buf, strlen(buf));
-            }
-        }
-        else {
-            if (sym->type->code == LEAF_TYPE_INT) {
-                sym->val = val;
-            }
-            else {
-                strncpy(sym->cval, buf, strlen(buf));
-            }
-        }
-        break;
-    case OP_IF:
-        val = evalExpr(node->left, symbolTable, cval, &isString);
-        if (val) {
-            interpret(node->middle, symbolTable);
-        }
-        else {
-            interpret(node->right, symbolTable);
-        }
-        break;
-    case OP_WHILE:
-        while (evalExpr(node->left, symbolTable, cval, &isString)) {
-            interpret(node->middle, symbolTable);
-            if (BREAK) {
-                BREAK = 0;
-                break;
-            }
-        }
-        break;
-    case OP_DO_WHILE:
-        interpret(node->left, symbolTable);
-        while (evalExpr(node->middle, symbolTable, cval, &isString)) {
-            interpret(node->left, symbolTable);
-            if (BREAK) {
-                BREAK = 0;
-                break;
-            }
-        }
-        break;
-    case OP_REPEAT_UNTIL:
-        interpret(node->left, symbolTable);
-        while (!evalExpr(node->middle, symbolTable, cval, &isString)) {
-            interpret(node->left, symbolTable);
-            if (BREAK) {
-                BREAK = 0;
-                break;
-            }
-        }
-        break;
-    default:
+void pushOrPopLocalVariables(FILE* out, char* funcName, struct symbol* symbolTable, int pushOrPop) {
+    struct symbol* fsymbol = getSymbolTable(funcName, symbolTable);
+    if (fsymbol == NULL) {
+        printf("Error: no such function has been declared\n");
+        exit(EXIT_FAILURE);
+    }
+    struct symbol* lVarList = getLocalVarList(symbolTable, getParamLen(fsymbol->paramList));
+    while (lVarList != NULL && !(lVarList->isGlobal)) {
+        lVarList = lVarList->next;
+        fprintf(out, "%s R%d\n", pushOrPop ? "PUSH" : "POP", 0); // keeping size = 1 for all, for now
     }
 }
 
-struct tNode* findNext(struct tNode* cur, struct symbol* symbolTable) {
-    if (cur == NULL || cur->nodeType == LEAF_CONTINUE || BREAK) return NULL;
-
-    if (cur->nodeType == LEAF_BREAK) {
-        BREAK = 1;
-        return NULL;
-    }
-
-    while (cur->parent != NULL && cur->parent->nodeType == OP_STMTLIST && cur->parent->left != cur) {
-        cur = cur->parent;
-    }
-
-    if (cur->parent == NULL || cur->parent->nodeType != OP_STMTLIST) {
-        return NULL;
-    }
-
-    return cur->parent->middle;
-}
-
-int leafCodeEval(struct tNode* node, char* cval, struct symbol* symbolTable, int* isString) {
-    *isString = 0;
-    struct tNode* temp, * next;
-    switch (node->nodeType) {
-    case LEAF_ID:
-        struct symbol* sym = getSymbolTable(node->varName, symbolTable);
-        if (sym->type->code == LEAF_TYPE_INT) {
-            return sym->val;
-        }
-        else {
-            *isString = 1;
-            strncpy(sym->cval, cval, strlen(cval));
-        }
-        break;
-    case LEAF_NUM:
-        return node->val;
-        break;
-    case LEAF_STR:
-        *isString = 1;
-        strncpy(sym->cval, cval, strlen(cval));
-        break;
-    case LEAF_ARR:
-        sym = getSymbolTable(node->left->varName, symbolTable);
-        if (sym == NULL) {
-            printf("Error: variable %s has not been declared\n", node->left->varName);
-            exit(EXIT_FAILURE);
-        }
-        int offs = getArrayOffset(node, sym, symbolTable);
-        if (sym->type->code == LEAF_TYPE_STR) {
-            isString = 1;
-            strncpy(cval, sym->acval[offs], strlen(sym->acval[offs]));
-            return -1;
-        }
-        return sym->aval[offs];
-        break;
-    default:
-    }
-    return -1;
-}
-
-int getArrayOffset(struct tNode* node, struct symbol* sym, struct symbol* symbolTable) {
-    int* indices = malloc(sizeof(int) * sym->type->depth);
-    int depth = 0;
-    getArrayIndices(node->middle, indices, &depth, symbolTable);
-    int offs = 0;
-    int prod = 1;
-    for (int i = 0;i < depth;i++) {
-        offs += indices[i] * prod;
-        prod *= sym->maxSizes[i];
-    }
-    return offs;
-}
-
-void getArrayIndices(struct tNode* braceRoot, int* indices, int* i, struct symbol* symbolTable) {
-    if (braceRoot == NULL) return;
-
-    if (braceRoot->nodeType != OP_BRACELIST) {
-        int isString = 0;
-        indices[*i] = evalExpr(braceRoot, symbolTable, NULL, &isString);
-        *i = (*i) + 1;
-        return;
-    }
-
-    getArrayIndices(braceRoot->left, indices, i, symbolTable);
-    getArrayIndices(braceRoot->middle, indices, i, symbolTable);
-}
-
-struct tNode* findFirst(struct tNode* stmtList) {
-    if (stmtList == NULL || stmtList->nodeType != OP_STMTLIST) return NULL;
-    while (stmtList->left != NULL && stmtList->left->nodeType == OP_STMTLIST) {
-        stmtList = stmtList->left;
-    }
-    return stmtList->nodeType == OP_STMTLIST ? stmtList->left : stmtList;
-}
-
-int evalExpr(struct tNode* expr, struct symbol* symbolTable, char* cval, int* isString) {
-    if (isLeaf(expr->nodeType)) {
-        return leafCodeEval(expr, cval, symbolTable, isString);
-    }
-    int val1 = evalExpr(expr->left, symbolTable, cval, isString);
-    int val2 = evalExpr(expr->middle, symbolTable, cval, isString);
-    struct symbol* sym = NULL;
-    switch (expr->nodeType) {
-    case OP_ADD:
-        return val1 + val2;
-        break;
-    case OP_SUB:
-        return val1 - val2;
-        break;
-    case OP_MUL:
-        return val1 * val2;
-        break;
-    case OP_DIV:
-        return val1 / val2;
-        break;
-    case OP_MOD:
-        return val1 % val2;
-        break;
-    case OP_GT:
-        return val1 > val2;
-        break;
-    case OP_LT:
-        return val1 < val2;
-        break;
-    case OP_GE:
-        return val1 >= val2;
-        break;
-    case OP_LE:
-        return val1 <= val2;
-        break;
-    case OP_EQ:
-        return val1 == val2;
-        break;
-    case OP_NE:
-        return val1 != val2;
-        break;
-    case OP_REF:
-        sym = getSymbolTable(expr->left->varName, symbolTable);
-        return sym->binding;
-    default:
-    }
-    return -1;
-}
-
-void printStmt(struct tNode* stmt) {
-    if (stmt == NULL) return;
-    switch (stmt->nodeType) {
-    case OP_READ:
-        printf("read( ");
-        printf("%s", stmt->left->nodeType == LEAF_ARR ? stmt->left->left->varName : stmt->left->varName);
-        printf(" )\n");
-        break;
-    case OP_WRITE:
-        printf("write( ");
-        printExpr(stmt->left);
-        printf(")\n");
-        break;
-    case OP_ASSIGN:
-        printf("%s ", stmt->left->nodeType == LEAF_ARR ? stmt->left->left->varName : stmt->left->varName);
-        printf("= ");
-        printExpr(stmt->middle);
-        printf("\n");
-        break;
-    case OP_IF:
-        printf("if( ");
-        printExpr(stmt->left);
-        printf(")\n");
-        break;
-    case OP_WHILE:
-        printf("while( ");
-        printExpr(stmt->left);
-        printf(")\n");
-        break;
-    case OP_DO_WHILE:
-        printf("do-while( ");
-        printExpr(stmt->middle);
-        printf(")\n");
-        break;
-    case OP_REPEAT_UNTIL:
-        printf("repeat-until( ");
-        printExpr(stmt->middle);
-        printf(")\n");
-        break;
-    case LEAF_BREAK:
-        printf("break\n");
-        break;
-    case LEAF_CONTINUE:
-        printf("continue\n");
-        break;
-    default:
-    }
-}
-
-void printExpr(struct tNode* expr) {
-    if (expr == NULL) return;
-
-    if (expr->nodeType == LEAF_ID) {
-        printf("%s ", expr->varName);
-        return;
-    }
-
-    if (expr->nodeType == LEAF_NUM) {
-        printf("%d ", expr->val);
-        return;
-    }
-
-    if (expr->nodeType == LEAF_ARR) {
-        printf("%s ", expr->left->varName);
-        return;
-    }
-
-    printExpr(expr->left);
-
-    struct symbol* sym = NULL;
-    switch (expr->nodeType) {
-    case OP_ADD:
-        printf("+ ");
-        break;
-    case OP_SUB:
-        printf("- ");
-        break;
-    case OP_MUL:
-        printf("* ");
-        break;
-    case OP_DIV:
-        printf("/ ");
-        break;
-    case OP_MOD:
-        printf("% ");
-        break;
-    case OP_GT:
-        printf("> ");
-        break;
-    case OP_LT:
-        printf("< ");
-        break;
-    case OP_GE:
-        printf(">= ");
-        break;
-    case OP_LE:
-        printf("<= ");
-        break;
-    case OP_EQ:
-        printf("== ");
-        break;
-    case OP_NE:
-        printf("!= ");
-        break;
-    case OP_REF:
-        printf("& ");
-    default:
-    }
-
-    printExpr(expr->middle);
-}
-
-void interpret(struct tNode* stmtList, struct symbol* symbolTable) {
-    if (stmtList == NULL) return;
-    struct tNode* stmt = findFirst(stmtList);
-    char buf[100];
-    while (stmt != NULL) {
-        // printStmt(stmt);
-        operatorEval(stmt, buf, symbolTable);
-        stmt = findNext(stmt, symbolTable);
-    }
+void funcCodeGen(FILE* out, char* funcName, struct tNode* root, struct symbol* symbolTable) {
+    struct symbol* fsymbol = getSymbolTable(funcName, symbolTable);
+    fprintf(out, "L%d:\n", fsymbol->flabel);
+    fprintf(out, "PUSH BP\n");
+    fprintf(out, "MOV BP, SP\n");
+    pushOrPopLocalVariables(out, funcName, symbolTable, 1);
+    codeGenHelper(out, root, -1, NULL, symbolTable, funcName);
+    pushOrPopLocalVariables(out, funcName, symbolTable, 0);
+    fprintf(out, "POP BP\n");
+    fprintf(out, "RET\n");
 }
 
 void populateParent(struct tNode* root) {

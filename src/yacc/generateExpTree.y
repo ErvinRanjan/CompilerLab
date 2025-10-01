@@ -34,16 +34,17 @@ Program : GDeclBlock FDefBlock MainBlock
 
 MainBlock : INT MAIN '(' ')'  '{' LDeclBlock Body '}' { 
                                                             struct symbol* symbolTable = NULL;
-                                                            symbolTable = populateSymbolTable($<node>6,symbolTable,1);
-                                                            printf("symbol table for main\n");
-                                                            printSymbolTable(symbolTable);
-                                                            symbolTable->next = gsymbolTable;
-                                                            typeCheck($<node>7,symbolTable); 
-                                                            // 3* codeGen 
+                                                            symbolTable = populateSymbolTable($<node>6,symbolTable,0);
+                                                            symbolTable = appendSymbolTable(symbolTable,gsymbolTable);
+                                                            typeCheck($<node>7,symbolTable);
+                                                            fprintf(out,"L0:\n"); 
+                                                            codeGen(out,$<node>7,symbolTable);
                                                         }
+        ;
 
 Body : BLOCK_BEGIN Slist RetStmt BLOCK_END  {
                                $<node>$ = createOperatorNode(OP_STMTLIST,$<node>2,$<node>3,NULL,-1);
+                               $<node>$->label = $<node>2->label;
                            }
         | BLOCK_BEGIN BLOCK_END {
                             
@@ -52,6 +53,7 @@ Body : BLOCK_BEGIN Slist RetStmt BLOCK_END  {
 
 GDeclBlock : DECL GDeclList ENDDECL {
                                         gsymbolTable = populateSymbolTable($<node>2,gsymbolTable,0); 
+                                        gsymbolTable->isGlobal = 1;
                                         printSymbolTable(gsymbolTable);
                                     }
             | DECL ENDDECL {}
@@ -111,6 +113,7 @@ ParamList : ParamList ',' Param {
 Param : Type ID {
                     $<node>$ = createOperatorNode(OP_PARAM,$<node>1,$<node>2,NULL,-1);
                 }
+        ;
 
 
 LDeclBlock : DECL LDeclList ENDDECL {
@@ -154,21 +157,21 @@ FDefBlock : FDefBlock FDef
 
 FDef : Type ID '(' ParamList ')' '{' LDeclBlock Body '}' {
                                                                 typeCheckFunctionParam($<node>1->type,$<node>2->varName,$<node>4,gsymbolTable);
-                                                                struct symbol* symbolTable = NULL;
-                                                                symbolTable = addParamAsSymbol($<node>2->varName,gsymbolTable,symbolTable);
-                                                                symbolTable = populateSymbolTable($<node>7,symbolTable,1);
-                                                                symbolTable->next = gsymbolTable;
-                                                                typeCheck($<node>8,symbolTable);
-                                                                // 3* codeGen
+                                                                struct symbol* symbolTable1 = NULL;
+                                                                symbolTable1 = addParamAsSymbol($<node>2->varName,gsymbolTable,symbolTable1);
+                                                                symbolTable1 = populateSymbolTable($<node>7,symbolTable1,1);
+                                                                symbolTable1 = appendSymbolTable(symbolTable1,gsymbolTable);
+                                                                typeCheck($<node>8,symbolTable1);
+                                                                funcCodeGen(out,$<node>2->varName,$<node>8,symbolTable1);
                                                         }
      | Type ID '('  ')' '{' LDeclBlock Body '}'  {
         typeCheckFunctionParam($<node>1->type,$<node>2->varName,NULL,gsymbolTable);
-        struct symbol* symbolTable = NULL;
-        symbolTable = addParamAsSymbol($<node>2->varName,gsymbolTable,symbolTable);
-        symbolTable = populateSymbolTable($<node>6,symbolTable,1);
-        symbolTable->next = gsymbolTable;
-        typeCheck($<node>7,symbolTable);
-        // 3* codeGen 
+        struct symbol* symbolTable1 = NULL;
+        symbolTable1 = addParamAsSymbol($<node>2->varName,gsymbolTable,symbolTable1);
+        symbolTable1 = populateSymbolTable($<node>6,symbolTable1,1);
+        symbolTable1 = appendSymbolTable(symbolTable1,gsymbolTable);
+        typeCheck($<node>7,symbolTable1);
+        funcCodeGen(out,$<node>2->varName,$<node>7,symbolTable1);
      }    
     ;
 
@@ -196,7 +199,8 @@ Stmt : InputStmt
      ;
 
 RetStmt : RETURN E ';'{
-                    $<node>$ = createOperatorNode(OP_RETURN,$<node>1,NULL,NULL,-1);
+                    int label = getLabel();
+                    $<node>$ = createOperatorNode(OP_RETURN,$<node>2,NULL,NULL,label);
         }
         ;
 
@@ -369,6 +373,8 @@ int main(int argc,char** argv){
         printf("Insufficient Args: <exe> <input> <output>\n");
         exit(EXIT_FAILURE);
     }
+    initCompiler(out);
+    fprintf(out,"JMP L0\n");
     yyparse();
     return 0;
 }

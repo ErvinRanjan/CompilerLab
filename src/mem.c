@@ -22,3 +22,7 @@ void freeMem(int size) {
     }
     mem -= size;
 }
+
+int getMemPointer() {
+    return mem;
+}

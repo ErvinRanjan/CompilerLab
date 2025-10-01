@@ -61,6 +61,7 @@
 
 #define MAX_VARNAME_LEN 1001
 #define MAX_ARR_LEN 1001
+#define MAX_REG 19
 
 // general constants
 

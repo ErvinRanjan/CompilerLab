@@ -43,6 +43,7 @@ struct symbol* createSymbol(struct type* type, char* varName, int size, int bind
     }
     sym->paramList = NULL;
     sym->flabel = -1;
+    sym->isGlobal = 0;
     return sym;
 }
 
@@ -177,3 +178,69 @@ struct symbol* addParamAsSymbol(char* varName, struct symbol* gsymbolTable, stru
     return symbolTable;
 }
 
+struct symbol* getLocalVarList(struct symbol* symbolTable, int paramCount) {
+    while (symbolTable != NULL && paramCount > 0) {
+        symbolTable = symbolTable->next;
+        paramCount--;
+    }
+    return symbolTable;
+}
+
+int getParamOffset(char* varName, struct symbol* symbolTable, int paramCount) {
+    int offs = 0;
+    while (symbolTable != NULL && strcmp(varName, symbolTable->varName) != 0) {
+        symbolTable = symbolTable->next;
+        offs++;
+    }
+    if (symbolTable == NULL || offs >= paramCount) {
+        printf("Error: no such parameter exists for function: %s\n", varName);
+        exit(EXIT_FAILURE);
+    }
+    return offs;
+}
+
+int getLocalVarOffset(char* varName, struct symbol* localVarList) {
+    int offs = 0;
+    while (localVarList != NULL && !(localVarList->isGlobal) && strcmp(varName, localVarList->varName) != 0) {
+        localVarList = localVarList->next;
+        offs++;
+    }
+    if (localVarList == NULL || localVarList->isGlobal) {
+        printf("Error: no such local variable exists for function: %s\n", varName);
+        exit(EXIT_FAILURE);
+    }
+    return offs;
+}
+
+
+int isParam(char* varName, struct symbol* symbolTable, int paramCount) {
+    while (symbolTable != NULL && paramCount > 0) {
+        if (strcmp(varName, symbolTable->varName) == 0) {
+            return 1;
+        }
+        symbolTable = symbolTable->next;
+        paramCount--;
+    }
+    return 0;
+}
+
+int getParamLenForFunction(char* fname, struct symbol* symbolTable) {
+    if (fname == NULL) return 0;
+    struct symbol* fsymbol = getSymbolTable(fname, symbolTable);
+    if (fsymbol == NULL) {
+        printf("Error: no such function: %s\n", fname);
+        exit(EXIT_FAILURE);
+    }
+    int paramCount = getParamLen(fsymbol->paramList);
+    return paramCount;
+}
+
+struct symbol* appendSymbolTable(struct symbol* s1, struct symbol* s2) {
+    if (s1 == NULL) return s2;
+    struct symbol* head = s1;
+    while (s1->next != NULL) {
+        s1 = s1->next;
+    }
+    s1->next = s2;
+    return head;
+}

@@ -18,6 +18,7 @@ struct symbol {
     char** acval;
     struct param* paramList;
     int flabel;
+    int isGlobal;
 };
 
 struct symbol* createSymbol(struct type* type, char* varName, int size, int binding, int symbolType, int* maxSizes);
@@ -28,5 +29,11 @@ struct symbol* populateSymbolTable(struct tNode* declRoot, struct symbol* symbol
 struct symbol* getSymbolTable(char* varName, struct symbol* symbolTable);
 void printSymbolTable(struct symbol* symbolTable);
 struct symbol* addParamAsSymbol(char* varName, struct symbol* gsymbolTable, struct symbol* symbolTable);
+struct symbol* getLocalVarList(struct symbol* symbolTable, int paramCount);
+int getParamOffset(char* varName, struct symbol* symbolTable, int paramCount);
+int getLocalVarOffset(char* varName, struct symbol* localVarList);
+int isParam(char* varName, struct symbol* symbolTable, int paramCount);
+int getParamLenForFunction(char* fname, struct symbol* symbolTable);
+struct symbol* appendSymbolTable(struct symbol* s1, struct symbol* s2);
 
 #endif

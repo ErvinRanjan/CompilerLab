@@ -7,5 +7,6 @@
 
 int getFreeMem(int size);
 void freeMem(int size);
+int getMemPointer();
 
 #endif 

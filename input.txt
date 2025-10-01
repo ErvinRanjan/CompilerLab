@@ -1,21 +1,50 @@
 decl 
-int b,f(int a,int b,int c);
+int f(int n),sum(int a,int b),swap(int* a,int* b);
 enddecl 
-int f(int a,int b,int c){
+/*int f(int n){
     decl 
-    int x;
+    int ans;
     enddecl 
-    begin 
-    a = 1;
+    begin
+    if(n <= 1) then 
+        ans = 1;
+    else 
+        ans = n*f(n - 1);
+    endif
+    return ans;
+    end
+}
+int sum(int a,int b){
+    decl
+    int x; 
+    enddecl 
+    begin
+    x = a + b;
+    return x;
+    end
+}
+*/
+int swap(int* a,int* b){
+    decl
+    int temp; 
+    enddecl
+    begin
+    temp = *a;
+    *a = *b;
+    *b = temp;
     return 0;
     end
 }
 int main(){
     decl 
-    int a;
+    int a,b,temp;
     enddecl
     begin 
-    a = f(1,2,3);
+    a = 1;
+    b = 2;
+    temp = swap(&a,&b);
+    write(a);
+    write(b);
     return 0; 
     end
 } 

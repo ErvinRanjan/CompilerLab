@@ -11,5 +11,7 @@ int getFreeReg();
 void freeReg();
 int getReg();
 void setReg(int reg);
+void backup(FILE* out);
+void restore(FILE* out);
 
 #endif

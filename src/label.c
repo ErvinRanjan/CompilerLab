@@ -1,6 +1,6 @@
 #include "label.h"
 
-int label = 0;
+int label = 1;
 
 int getLabel() {
     return label++;

@@ -48,3 +48,12 @@ struct param* getParam(struct param* paramList, char* varName) {
     }
     return NULL;
 }
+
+int getParamLen(struct param* param) {
+    int count = 0;
+    while (param != NULL) {
+        param = param->next;
+        count++;
+    }
+    return count;
+}
