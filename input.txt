@@ -1,7 +1,8 @@
 decl 
 int f(int n),sum(int a,int b),swap(int* a,int* b);
 enddecl 
-/*int f(int n){
+/*
+int f(int n){
     decl 
     int ans;
     enddecl 

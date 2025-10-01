@@ -193,7 +193,7 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
         freeReg();
         break;
     case OP_REF:
-        addr_reg = resolveAddr(out, node, symbolTable, fname);
+        addr_reg = resolveAddr(out, node->left, symbolTable, fname);
         fprintf(out, "MOV R%d, R%d\n", reg1, addr_reg);
         //!TODO: freeReg
         break;

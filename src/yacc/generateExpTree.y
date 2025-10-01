@@ -38,6 +38,7 @@ MainBlock : INT MAIN '(' ')'  '{' LDeclBlock Body '}' {
                                                             symbolTable = appendSymbolTable(symbolTable,gsymbolTable);
                                                             typeCheck($<node>7,symbolTable);
                                                             fprintf(out,"L0:\n"); 
+                                                            populateParent($<node>7);
                                                             codeGen(out,$<node>7,symbolTable);
                                                         }
         ;
@@ -162,6 +163,7 @@ FDef : Type ID '(' ParamList ')' '{' LDeclBlock Body '}' {
                                                                 symbolTable1 = populateSymbolTable($<node>7,symbolTable1,1);
                                                                 symbolTable1 = appendSymbolTable(symbolTable1,gsymbolTable);
                                                                 typeCheck($<node>8,symbolTable1);
+                                                                populateParent($<node>8);
                                                                 funcCodeGen(out,$<node>2->varName,$<node>8,symbolTable1);
                                                         }
      | Type ID '('  ')' '{' LDeclBlock Body '}'  {
@@ -171,6 +173,7 @@ FDef : Type ID '(' ParamList ')' '{' LDeclBlock Body '}' {
         symbolTable1 = populateSymbolTable($<node>6,symbolTable1,1);
         symbolTable1 = appendSymbolTable(symbolTable1,gsymbolTable);
         typeCheck($<node>7,symbolTable1);
+        populateParent($<node>7);
         funcCodeGen(out,$<node>2->varName,$<node>7,symbolTable1);
      }    
     ;
