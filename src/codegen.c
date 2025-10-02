@@ -9,12 +9,13 @@
 #include "stack.h"
 #include <stdlib.h>
 #include <assert.h>
+#include "typeTable.h"
 
 struct stack* beginLabelStack, * nextLabelStack; // keeps track of latest while begin and next labels
 extern int getArrayDepth(struct tNode* braceRoot);
 
 bool isLeaf(int nodeType) {
-    return nodeType == LEAF_ID || nodeType == LEAF_NUM || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE || nodeType == LEAF_STR || nodeType == LEAF_TYPE_INT || nodeType == LEAF_TYPE_STR || nodeType == LEAF_ARR || nodeType == LEAF_FUNC || nodeType == LEAF_FDECL;
+    return nodeType == LEAF_ID || nodeType == LEAF_NUM || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE || nodeType == LEAF_STR || nodeType == LEAF_TYPE_INT || nodeType == LEAF_TYPE_STR || nodeType == LEAF_ARR || nodeType == LEAF_FUNC || nodeType == LEAF_FDECL || nodeType == LEAF_TUPLE_ACCESS;
 }
 
 void resolveArrayAddrCodegen(FILE* out, struct tNode* braceRoot, struct symbol* symbolTable, int* base, char* fname) {
@@ -32,7 +33,7 @@ void resolveArrayAddrCodegen(FILE* out, struct tNode* braceRoot, struct symbol* 
 }
 
 int resolveAddr(FILE* out, struct tNode* node, struct symbol* symbolTable, char* fname) {
-    if (fname != NULL) {
+    if (fname != NULL && (node->nodeType == LEAF_ID || node->nodeType == LEAF_TUPLE_ACCESS)) {
         return resolveAddrInFunction(out, node, symbolTable, getParamLenForFunction(fname, symbolTable));
     }
     switch (node->nodeType) {
@@ -44,6 +45,20 @@ int resolveAddr(FILE* out, struct tNode* node, struct symbol* symbolTable, char*
     case LEAF_ARR:
         return resolveArrayAddr(out, node, symbolTable, fname);
         break;
+    case LEAF_TUPLE_ACCESS: {
+        struct symbol* symbol = getSymbolTable(node->left->varName, symbolTable);
+        if (symbol == NULL) {
+            printf("Error: variable has not been declared: %s\n", node->left->varName);
+            exit(EXIT_FAILURE);
+        }
+        struct typeTable* typeTable = getTypeTableWithName(symbol->type->typename);
+        int baseBinding = symbol->binding;
+        int offs = getFieldOffset(node->middle->varName, typeTable->paramList);
+        int reg = getReg();
+        fprintf(out, "MOV R%d, %d\n", reg, baseBinding);
+        fprintf(out, "ADD R%d, %d\n", reg, offs);
+        return reg;
+    }
     default:
     }
     return -1;
@@ -110,6 +125,33 @@ int getMem(char* varName, struct symbol* symbolTable) {
     return sym == NULL ? -1 : sym->binding;
 }
 
+void handleAssignForUserDefinedTypes(FILE* out, struct tNode* node, int addr_reg, struct symbol* symbolTable, char* fname) {
+    struct symbol* symbol = getSymbolTable(node->varName, symbolTable);
+    struct typeTable* typeTable = getTypeTableWithName(symbol->type->typename);
+    if (typeTable == NULL) {
+        printf("Error: type is used but not declared\n");
+        exit(EXIT_FAILURE);
+    }
+    int base_reg = resolveAddr(out, node, symbolTable, fname);
+    struct param* paramList = typeTable->paramList;
+    int size = 0;
+    int reg1 = getFreeReg();
+    int reg2 = getFreeReg();
+    while (paramList != NULL) {
+        int totalTypeSizeIncludingCur = size + getTypeSize(paramList->type);
+        while (size < totalTypeSizeIncludingCur) {
+            fprintf(out, "MOV R%d, R%d\n", reg1, base_reg);
+            fprintf(out, "MOV R%d, R%d\n", reg2, addr_reg);
+            fprintf(out, "ADD R%d, %d\n", reg1, size);
+            fprintf(out, "ADD R%d, %d\n", reg2, size);
+            fprintf(out, "MOV R%d, [R%d]\n", reg2, reg2);
+            fprintf(out, "MOV [R%d], R%d\n", reg1, reg2);
+            size++;
+        }
+        paramList = paramList->next;
+    }
+}
+
 /**
  * @brief generates machine code for operators
  * @param out output file pointer
@@ -156,11 +198,18 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
         libWrite(out, reg1, XSM_STDOUT);
         freeReg();
         break;
-    case OP_ASSIGN:
-        addr_reg = node->left->nodeType == OP_DREF ? reg1 : resolveAddr(out, node->left, symbolTable, fname);
-        fprintf(out, "MOV [R%d], R%d\n", addr_reg, reg2);
-        freeReg();
+    case OP_ASSIGN: {
+        struct symbol* symbolMiddle = getSymbolTable(node->middle->varName, symbolTable);
+        if (symbolMiddle != NULL && symbolMiddle->type->typename != NULL) {
+            handleAssignForUserDefinedTypes(out, node->left, reg2, symbolTable, fname);
+        }
+        else {
+            addr_reg = node->left->nodeType == OP_DREF ? reg1 : resolveAddr(out, node->left, symbolTable, fname);
+            fprintf(out, "MOV [R%d], R%d\n", addr_reg, reg2);
+            freeReg();
+        }
         break;
+    }
     case OP_IF:
         fprintf(out, "JNZ R%d, L%d\n", reg1, node->middle != NULL ? node->middle->label : next);
         fprintf(out, "JMP L%d\n", node->right != NULL ? node->right->label : next);
@@ -335,7 +384,7 @@ int pushFuncArgs(FILE* out, struct tNode* argList, struct symbol* symbolTable, c
  * @param val optional - value for numbers
  */
 int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTable, char* fname) {
-    if (fname != NULL && node->nodeType == LEAF_ID) {
+    if (fname != NULL && (node->nodeType == LEAF_ID || node->nodeType == LEAF_TUPLE_ACCESS)) {
         return leafCodeGenForFunction(out, fname, node, symbolTable);
     }
     int reg = -1;
@@ -347,7 +396,10 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
         reg = getFreeReg();
         struct symbol* sym = getSymbolTable(node->varName, symbolTable);
         addr = sym->binding;
-        if (sym->type->depth == 0 || !isLValue(node)) {
+        if (sym->type->typename != NULL) {
+            fprintf(out, "MOV R%d, %d\n", reg, addr);
+        }
+        else if (sym->type->depth == 0 || !isLValue(node)) {
             fprintf(out, "MOV R%d, [%d]\n", reg, addr);
         }
         else {
@@ -405,6 +457,13 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
         restore(out);
         reg = getFreeReg();
         fprintf(out, "MOV R%d, R19\n", reg);
+        break;
+    }
+    case LEAF_TUPLE_ACCESS: {
+        reg = getFreeReg();
+        int addr_reg = resolveAddr(out, node, symbolTable, fname);
+        fprintf(out, "MOV R%d, [R%d]\n", reg, addr_reg);
+        break;
     }
     default:
     }
@@ -420,10 +479,24 @@ int resolveAddrInFunction(FILE* out, struct tNode* node, struct symbol* symbolTa
         fprintf(out, "SUB R%d, %d\n", reg, offs);
     }
     else {
-        int offs = getLocalVarOffset(node->varName, getLocalVarList(symbolTable, paramCount));
-        fprintf(out, "MOV R%d, BP\n", reg);
-        fprintf(out, "ADD R%d, %d\n", reg, offs);
-        fprintf(out, "ADD R%d, 1\n", reg);
+        int offs;
+        if (node->nodeType == LEAF_ID) {
+            offs = getLocalVarOffset(node->varName, getLocalVarList(symbolTable, paramCount));
+            fprintf(out, "MOV R%d, BP\n", reg);
+            fprintf(out, "ADD R%d, %d\n", reg, offs);
+            fprintf(out, "ADD R%d, 1\n", reg);
+        }
+        else if (node->nodeType == LEAF_TUPLE_ACCESS) {
+            offs = getLocalVarOffset(node->left->varName, getLocalVarList(symbolTable, paramCount));
+            fprintf(out, "MOV R%d, BP\n", reg);
+            fprintf(out, "ADD R%d, %d\n", reg, offs);
+            fprintf(out, "ADD R%d, 1\n", reg);
+            struct symbol* symbol = getSymbolTable(node->left->varName, symbolTable);
+            struct typeTable* typeTable = getTypeTableWithName(symbol->type->typename);
+            int offs = getFieldOffset(node->middle->varName, typeTable->paramList);
+            fprintf(out, "ADD R%d, %d\n", reg, offs);
+        }
+
     }
     return reg;
 }
@@ -438,9 +511,15 @@ int leafCodeGenForFunction(FILE* out, char* fname, struct tNode* node, struct sy
             printf("Error: variable has not been declared: %s\n", node->varName);
             exit(EXIT_FAILURE);
         }
-        if (sym->type->depth == 0 || !isLValue(node)) {
+        if (sym->type->typename == NULL && (sym->type->depth == 0 || !isLValue(node))) {
             fprintf(out, "MOV R%d, [R%d]\n", reg, reg);
         }
+        return reg;
+        break;
+    }
+    case LEAF_TUPLE_ACCESS: {
+        int reg = resolveAddrInFunction(out, node, symbolTable, paramCount);
+        fprintf(out, "MOV R%d, [R%d]\n", reg, reg);
         return reg;
         break;
     }
@@ -552,8 +631,11 @@ void pushOrPopLocalVariables(FILE* out, char* funcName, struct symbol* symbolTab
     }
     struct symbol* lVarList = getLocalVarList(symbolTable, getParamLen(fsymbol->paramList));
     while (lVarList != NULL && !(lVarList->isGlobal)) {
+        int size = getTypeSize(lVarList->type);
+        for (int i = 0;i < size;i++) {
+            fprintf(out, "%s R%d\n", pushOrPop ? "PUSH" : "POP", 0);
+        }
         lVarList = lVarList->next;
-        fprintf(out, "%s R%d\n", pushOrPop ? "PUSH" : "POP", 0); // keeping size = 1 for all, for now
     }
 }
 

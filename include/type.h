@@ -6,6 +6,7 @@
 #include "param.h"
 
 struct type {
+    char* typename;
     int code;
     int depth;
 };
@@ -14,5 +15,7 @@ struct type* createType(int code, int depth);
 struct type* typeCheck(struct tNode* root, struct symbol* symbolTable);
 void typeCheckFunctionParam(struct type* type, char* varName, struct tNode* paramRoot, struct symbol* symbolTable);
 int isTypeEqual(struct type* t1, struct type* t2);
+struct type* createUserDefinedType(char* typename);
+struct type* createUserDefinedTypeWithDepth(char* typename, int depth);
 
 #endif

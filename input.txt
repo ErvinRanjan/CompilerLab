@@ -1,51 +1,30 @@
+typedecl 
+tuple person(str name,int age);
+endtypedecl 
 decl 
-int swap(int* a,int* b),g;
-str hello();
-int* getRef(int* a);
+int personHello(str name,int age);
 enddecl 
-int swap(int* a,int* b){
-    decl
-    int temp; 
-    enddecl
-    begin
-    temp = *a;
-    *a = *b;
-    *b = temp;
-    return 0;
-    end
-}
-str hello(){
+int personHello(str name,int age){
     decl 
-    str h;
+    person p1,p2;
     enddecl
     begin 
-    h = "hello";
-    return h; 
-    end
-}
-int* getRef(int* a){
-    decl
-    int* ans; 
-    enddecl 
-    begin 
-    ans = a;
-    return ans;
+    p1.name = name;
+    p1.age = age;
+    p2 = p1;
+    write("hello");
+    write("by");
+    write(p2.name);
+    write(p2.age);
+    return 0; 
     end
 }
 int main(){
     decl
-    int a,b,temp,*p;
+    int temp;
     enddecl
     begin
-    g = 1; 
-    p = getRef(&g); // experimental function to test return types
-    *p = 3;
-    write(g);
-    a = 1;
-    b = 2;
-    temp = swap(&a,&b);
-    write(a);
-    write(b);
+    temp = personHello("Ervin",10);
     return 0; 
     end
 } 

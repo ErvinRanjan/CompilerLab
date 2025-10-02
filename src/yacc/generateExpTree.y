@@ -7,6 +7,8 @@
     #include "label.h"
     #include <stdio.h>
     #include <stdlib.h>
+    #include "typeTable.h"
+    #include "param.h"
     extern FILE* yyin;
     extern char* yytext;
     FILE* out;
@@ -18,8 +20,8 @@
     struct tNode* node;
 };
 
-%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR REPEAT UNTIL DO MAIN RETURN
-%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt RepeatUntilStmt DoWhileStmt B E ID BREAK CONTINUE Param ParamList Body ArgList FDef FDefBlock MainBlock GDeclBlock LDeclBlock GDeclList LDeclList GDecl LDecl Type GidList LidList Gid Lid CSTR Array BraceList Identifier
+%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR REPEAT UNTIL DO MAIN RETURN TYPEDECL ENDTYPEDECL TUPLE
+%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt RepeatUntilStmt DoWhileStmt B E ID BREAK CONTINUE Param ParamList Body ArgList FDef FDefBlock MainBlock GDeclBlock LDeclBlock GDeclList LDeclList GDecl LDecl Type GidList LidList Gid Lid CSTR Array BraceList Identifier TypeDeclBlock TypeDeclList TypeDecl
 
 %nonassoc '='
 %left '%'
@@ -28,10 +30,28 @@
 
 %%
 
-Program : GDeclBlock FDefBlock MainBlock 
+Program : TypeDeclBlock GDeclBlock FDefBlock MainBlock 
+        | TypeDeclBlock GDeclBlock MainBlock
+        | TypeDeclBlock MainBlock
+        | GDeclBlock FDefBlock MainBlock
         | GDeclBlock MainBlock
         | MainBlock 
         ;
+
+TypeDeclBlock : TYPEDECL ENDTYPEDECL {}
+              | TYPEDECL TypeDeclList ENDTYPEDECL {}
+              ;
+
+TypeDeclList : TypeDecl TypeDeclList {}
+            | TypeDecl {}
+            ;
+
+TypeDecl : TUPLE ID '(' ParamList ')' ';' {
+                int numberOfParam = 0;
+                populateTypeTable($<node>2->varName,convertTreeToParamList($<node>4,&numberOfParam,NULL));
+                printTypeTable();
+            }
+        ;   
 
 MainBlock : INT MAIN '(' ')'  '{' LDeclBlock Body '}' { 
                                                             struct symbol* symbolTable = NULL;
@@ -77,7 +97,17 @@ GDecl : Type GidList ';' {
 
 Type : INT 
      | STR
+     {
+        $<node>$ = $<node>1;
+     }
+     | ID
        {
+        struct typeTable* type = getTypeTableWithName($<node>1->varName);
+        if(type == NULL){
+            printf("Error: type is used but not declared: %s\n",$<node>1->varName);
+            exit(EXIT_FAILURE);
+        }
+        $<node>1->type = createUserDefinedType($<node>1->varName);
         $<node>$ = $<node>1;
        }
      ;
@@ -184,6 +214,7 @@ FDef : Type Pid '(' ParamList ')' '{' LDeclBlock Body '}' {
                                                                 struct symbol* symbolTable1 = NULL;
                                                                 symbolTable1 = addParamAsSymbol($<node>2->varName,gsymbolTable,symbolTable1);
                                                                 symbolTable1 = populateSymbolTable($<node>7,symbolTable1,1);
+                                                                printSymbolTable(symbolTable1);
                                                                 symbolTable1 = appendSymbolTable(symbolTable1,gsymbolTable);
                                                                 typeCheck($<node>8,symbolTable1);
                                                                 populateParent($<node>8);
@@ -323,9 +354,6 @@ E : E '+' E {
   | '&' ID {
                 $<node>$ = createOperatorNode(OP_REF,$<node>2,NULL,NULL,-1); 
             }
-  | '*' E {
-                $<node>$ = createOperatorNode(OP_DREF,$<node>2,NULL,NULL,-1);
-            }
   | '(' E ')' {
                  $<node>$ = $<node>2;
               }
@@ -383,6 +411,9 @@ Identifier : ID
             }
             | '*' E {
                 $<node>$ = createOperatorNode(OP_DREF,$<node>2,NULL,NULL,-1);
+            }
+            | ID '.' ID {
+                $<node>$ = createOperatorNode(LEAF_TUPLE_ACCESS,$<node>1,$<node>3,NULL,-1);
             }
             ;
 

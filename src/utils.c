@@ -1,5 +1,6 @@
 #include "utils.h"
 #include <string.h>
+#include <stdlib.h>
 
 void strip(char* dest, char* src, char ch) {
     int i = 0;
@@ -16,3 +17,19 @@ void strip(char* dest, char* src, char ch) {
 
     dest[j - i + 1] = '\0';
 }
+
+// mainly to be used for function names, max buffer size allowed is 100
+char* safeStrcpy(char* src) {
+    char* dest = malloc(sizeof(src));
+    if (src == NULL) {
+        printf("Error: while doing safe copy: src pointer is NULL\n");
+        exit(EXIT_FAILURE);
+    }
+    if (strlen(src) >= 100) {
+        printf("Error: while doing safe copy: src pointer len is greater than or equal to 100\n");
+        exit(EXIT_FAILURE);
+    }
+    strcpy(dest, src);
+    return dest;
+}
+

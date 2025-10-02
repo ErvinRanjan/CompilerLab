@@ -46,6 +46,7 @@
 #define OP_PARAMLIST 41 
 #define LEAF_FUNC 42
 #define OP_ARGLIST 43
+#define LEAF_TUPLE_ACCESS 44
 
 // constants for types
 

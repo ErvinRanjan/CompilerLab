@@ -15,6 +15,18 @@
 
 "//"[^\n]* {}
 
+"tuple" {
+            return TUPLE;
+            }
+
+"typedecl" {
+                return TYPEDECL;
+        }
+
+"endtypedecl" {
+                return ENDTYPEDECL;
+            }
+
 "main" {
             return MAIN;
         }
@@ -136,7 +148,7 @@
             return ID;
        }
 
-[+*/\-%()=;<>,\[\]&{}]  {
+[\.+*/\-%()=;<>,\[\]&{}]  {
             return *yytext;
         }
 

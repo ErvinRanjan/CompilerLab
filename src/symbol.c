@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include "type.h"
 #include "param.h"
+#include "typeTable.h"
 
 extern bool isLeaf(int nodeType);
 
@@ -88,7 +89,8 @@ struct symbol* createSymbolForIdentifier(struct tNode* varRoot, struct type* typ
     int numberOfParam = 0;
     switch (varRoot->nodeType) {
     case LEAF_ID: {
-        return createSymbol(createType(type->code, type->depth + varRoot->type->depth), varRoot->varName, 1, isLocal ? -1 : getFreeMem(1), PRIMITIVE, NULL);
+        struct type* t = type->typename == NULL ? createType(type->code, type->depth + varRoot->type->depth) : createUserDefinedTypeWithDepth(type->typename, type->depth + varRoot->type->depth);
+        return createSymbol(t, varRoot->varName, 1, isLocal ? -1 : getFreeMem(getTypeSize(t)), PRIMITIVE, NULL);
     }
     case LEAF_NUM: {
         return createSymbol(type, varRoot->varName, 1, isLocal ? -1 : getFreeMem(1), PRIMITIVE, NULL);
@@ -98,11 +100,13 @@ struct symbol* createSymbolForIdentifier(struct tNode* varRoot, struct type* typ
         int maxSizes[100];
         getAndValidateArrayDetails(varRoot->middle, maxSizes, &depth, &size);
         depth += varRoot->type->depth;
-        return createSymbol(createType(type->code, depth), varRoot->left->varName, size, isLocal ? -1 : getFreeMem(size), ARRAY, maxSizes);
+        struct type* t = type->typename == NULL ? createType(type->code, depth) : createUserDefinedTypeWithDepth(type->typename, depth);
+        return createSymbol(t, varRoot->left->varName, size, isLocal ? -1 : getFreeMem(size), ARRAY, maxSizes);
     }
     case LEAF_FDECL: {
         paramList = convertTreeToParamList(varRoot->middle, &numberOfParam, paramList);
-        return createSymbolForFunction(createType(type->code, type->depth + varRoot->type->depth), varRoot->left->varName, numberOfParam, paramList, varRoot->label);
+        struct type* t = type->typename == NULL ? createType(type->code, type->depth + varRoot->type->depth) : createUserDefinedTypeWithDepth(type->typename, type->depth + varRoot->type->depth);
+        return createSymbolForFunction(t, varRoot->left->varName, numberOfParam, paramList, varRoot->label);
     }
     default:
         printf("Error: Symbol is not recognized\n");
@@ -152,6 +156,9 @@ struct symbol* getSymbolTable(char* varName, struct symbol* symbolTable) {
 void printSymbolTable(struct symbol* symbolTable) {
     while (symbolTable != NULL) {
         printf("varName: %s\n", symbolTable->varName);
+        if (symbolTable->type->typename != NULL) {
+            printf("typename: %s\n", symbolTable->type->typename);
+        }
         printf("type: %d\n", symbolTable->type->code);
         printf("pointer depth: %d\n", symbolTable->type->depth);
         printf("binding: %d\n", symbolTable->binding);
@@ -207,8 +214,8 @@ int getParamOffset(char* varName, struct symbol* symbolTable, int paramCount) {
 int getLocalVarOffset(char* varName, struct symbol* localVarList) {
     int offs = 0;
     while (localVarList != NULL && !(localVarList->isGlobal) && strcmp(varName, localVarList->varName) != 0) {
+        offs += getTypeSize(localVarList->type);
         localVarList = localVarList->next;
-        offs++;
     }
     if (localVarList == NULL || localVarList->isGlobal) {
         printf("Error: no such local variable exists for function: %s\n", varName);

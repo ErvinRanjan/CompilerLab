@@ -81,7 +81,10 @@ extern int yydebug;
     REPEAT = 282,                  /* REPEAT  */
     UNTIL = 283,                   /* UNTIL  */
     MAIN = 284,                    /* MAIN  */
-    RETURN = 285                   /* RETURN  */
+    RETURN = 285,                  /* RETURN  */
+    TYPEDECL = 286,                /* TYPEDECL  */
+    ENDTYPEDECL = 287,             /* ENDTYPEDECL  */
+    TUPLE = 288                    /* TUPLE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -118,16 +121,19 @@ extern int yydebug;
 #define UNTIL 283
 #define MAIN 284
 #define RETURN 285
+#define TYPEDECL 286
+#define ENDTYPEDECL 287
+#define TUPLE 288
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 17 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 19 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
 
     struct tNode* node;
 
-#line 131 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.h"
+#line 137 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

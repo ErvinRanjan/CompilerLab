@@ -6,6 +6,8 @@
 #include "tree.h"
 #include "symbol.h"
 #include "param.h"
+#include "utils.h"
+#include "typeTable.h"
 
 extern bool isLeaf(int nodeType);
 
@@ -35,6 +37,21 @@ int getArrayDepth(struct tNode* braceRoot) {
 struct type* createType(int code, int depth) {
     struct type* t = malloc(sizeof(struct type));
     t->code = code;
+    t->depth = depth;
+    t->typename = NULL;
+    return t;
+}
+
+struct type* createUserDefinedType(char* typename) {
+    struct type* t = malloc(sizeof(struct type));
+    t->code = -2; // user defined types equal -2 , undefined equal -1
+    t->depth = 0;
+    t->typename = safeStrcpy(typename);
+    return t;
+}
+
+struct type* createUserDefinedTypeWithDepth(char* typename, int depth) {
+    struct type* t = createUserDefinedType(typename);
     t->depth = depth;
     return t;
 }
@@ -82,7 +99,12 @@ struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct ty
             exit(EXIT_FAILURE);
         }
     case OP_ASSIGN:
-        if (typeLeft->code != typeMiddle->code || typeLeft->depth != typeMiddle->depth) {
+        if (
+            (typeLeft->typename != NULL
+                && typeMiddle->typename != NULL
+                && strcmp(typeLeft->typename, typeMiddle->typename) != 0)
+            || typeLeft->code != typeMiddle->code
+            || typeLeft->depth != typeMiddle->depth) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
@@ -200,6 +222,24 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
         }
         validateFunctionParams(node->middle, symbol->paramList, symbolTable, node->left->varName);
         return symbol->type;
+    case LEAF_TUPLE_ACCESS: {
+        struct symbol* symbol = getSymbolTable(node->left->varName, symbolTable);
+        if (symbol == NULL) {
+            printf("Error: variable %s has not been declared\n", node->left->varName);
+            exit(EXIT_FAILURE);
+        }
+        struct typeTable* typeTable = getTypeTableWithName(symbol->type->typename);
+        if (typeTable == NULL) {
+            printf("Error: type is used but not declared: %s\n", symbol->type->typename);
+            exit(EXIT_FAILURE);
+        }
+        struct param* param = getParam(typeTable->paramList, node->middle->varName);
+        if (param == NULL) {
+            printf("Error: type %s does not have a field %s\n", symbol->type->typename, node->middle->varName);
+            exit(EXIT_FAILURE);
+        }
+        return param->type;
+    }
     default:
     }
     return createType(-1, 0);
@@ -249,3 +289,4 @@ void typeCheckFunctionParam(struct type* type, char* varName, struct tNode* para
 int isTypeEqual(struct type* t1, struct type* t2) {
     return t1 != NULL && t2 != NULL && t1->code == t2->code && t1->depth == t2->depth;
 }
+

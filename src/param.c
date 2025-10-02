@@ -57,3 +57,12 @@ int getParamLen(struct param* param) {
     }
     return count;
 }
+
+void printParamList(struct param* paramList) {
+    while (paramList != NULL) {
+        printf("param type code : %d\n", paramList->type->code);
+        printf("param type depth: %d\n", paramList->type->depth);
+        printf("param name: %s\n", paramList->name);
+        paramList = paramList->next;
+    }
+}
