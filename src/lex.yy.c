@@ -546,8 +546,8 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
-#line 2 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 1 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
+#line 2 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
     #include "y.tab.h"
     #include "tree.h"
     #include "constants.h"
@@ -774,7 +774,7 @@ YY_DECL
 		}
 
 	{
-#line 12 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 12 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 
 
 #line 781 "/mnt/c/Users/ervin/coding/compilerLab/src/lex.yy.c"
@@ -837,67 +837,67 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 14 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 14 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 16 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 16 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 18 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 18 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             return TUPLE;
             }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 22 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 22 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
                 return TYPEDECL;
         }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 26 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 26 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
                 return ENDTYPEDECL;
             }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 30 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 30 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             return MAIN;
         }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 34 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 34 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             return RETURN;
         }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 38 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 38 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 { return DO; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 40 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 40 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 { return REPEAT; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 42 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 42 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 { return UNTIL; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 44 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 44 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_INT,0),-1,LEAF_TYPE_INT,NULL);
             return INT;
@@ -905,7 +905,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 49 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 49 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_STR,0),-1,LEAF_TYPE_STR,NULL);
             return STR;
@@ -913,126 +913,126 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 54 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 54 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
         return DECL;
     }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 58 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 58 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             return ENDDECL;
         }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 62 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 62 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
         return LE;
     }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 66 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 66 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
         return GE;
      }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 70 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 70 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
         return EQ;
     }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 74 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 74 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
         return NE;
      }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 78 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 78 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
         return IF;
      }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 82 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 82 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             return ELSE;
         }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 86 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 86 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             return THEN;
         }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 90 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 90 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             return ENDIF;
         }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 94 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 94 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             return WHILE;
         }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 98 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 98 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             return DO;
         }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 102 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 102 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
                 return ENDWHILE;
             }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 106 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 106 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             return BLOCK_BEGIN;
         }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 110 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 110 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             return BLOCK_END;
         }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 114 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 114 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             return READ;
         }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 118 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 118 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             return WRITE;
         }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 122 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 122 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             int label = getLabel();
             yylval.node = createLeafNode(0,NULL,createType(-1,-1),label,LEAF_BREAK,NULL);
@@ -1041,7 +1041,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 128 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 128 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
                 int label = getLabel();
                 yylval.node = createLeafNode(0,NULL,createType(-1,-1),label,LEAF_CONTINUE,NULL);
@@ -1050,7 +1050,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 134 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 134 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 { 
             yylval.node = createLeafNode(atoi(yytext),NULL,createType(LEAF_TYPE_INT,0),-1,LEAF_NUM,NULL); 
             return NUM;
@@ -1058,7 +1058,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 139 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 139 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             char syytext[100];
             strip(syytext,yytext,'"');
@@ -1068,7 +1068,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 146 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 146 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             yylval.node = createLeafNode(0,yytext,createType(-1,0),-1,LEAF_ID,NULL);
             return ID;
@@ -1076,27 +1076,27 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 151 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 151 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
             return *yytext;
         }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 155 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 155 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {}
 	YY_BREAK
 case 37:
 /* rule 37 can match eol */
 YY_RULE_SETUP
-#line 157 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 157 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 {
         lines++;
     }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 161 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 161 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 ECHO;
 	YY_BREAK
 #line 1103 "/mnt/c/Users/ervin/coding/compilerLab/src/lex.yy.c"
@@ -2104,7 +2104,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 161 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
+#line 161 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage5/exercise1/src/lex/generateExpTree.l"
 
 
 int yywrap(){

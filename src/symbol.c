@@ -213,13 +213,18 @@ int getParamOffset(char* varName, struct symbol* symbolTable, int paramCount) {
 
 int getLocalVarOffset(char* varName, struct symbol* localVarList) {
     int offs = 0;
-    while (localVarList != NULL && !(localVarList->isGlobal) && strcmp(varName, localVarList->varName) != 0) {
+    int isGlobal = 0;
+    while (localVarList != NULL && strcmp(varName, localVarList->varName) != 0) {
         offs += getTypeSize(localVarList->type);
         localVarList = localVarList->next;
+        isGlobal |= localVarList->isGlobal;
     }
-    if (localVarList == NULL || localVarList->isGlobal) {
+    if (localVarList == NULL) {
         printf("Error: no such local variable exists for function: %s\n", varName);
         exit(EXIT_FAILURE);
+    }
+    if (isGlobal) {
+        return -1;
     }
     return offs;
 }

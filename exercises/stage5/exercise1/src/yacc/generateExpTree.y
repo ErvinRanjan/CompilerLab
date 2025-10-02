@@ -114,19 +114,15 @@ Type : INT
 
 GidList : GidList ',' Gid    {
                                 $<node>$ = createOperatorNode(OP_VARLIST,$<node>1,$<node>3,NULL,-1);
-                                printNode($<node>1);
                             }
         | Gid  {
                     $<node>$ = $<node>1;
-                    printNode($<node>1);
-                    printf("hello");
                 }
         ;
 
 Gid : ID  
     | DeclArray
     {
-        printf("%d\n",$<node>1->nodeType); 
         $<node>$ = $<node>1; 
     } 
     | ID '(' ParamList ')' {
@@ -199,7 +195,7 @@ LidList : LidList ',' Lid    {
 Lid : ID  
     | DeclArray
     {
-        $<node>$ = $<node>1;
+        $<node>$ = $<node>1; 
     }
     | '*' Lid {
         $<node>2->type->depth = $<node>2->type->depth + 1;
@@ -384,10 +380,9 @@ ArgList : ArgList ',' E  {
         ;
 
 DeclArray : ID DeclBraceList {
-                        $<node>$ = createOperatorNode(LEAF_ARR,$<node>1,$<node>2,NULL,-1); 
+                        $<node>$ = createOperatorNode(LEAF_ARR,$<node>1,$<node>2,NULL,-1);
                         $<node>$->type = $<node>1->type;
                     }
-            ;
 
 DeclBraceList : DeclBraceList '[' NUM ']' {
                                         $<node>$ = createOperatorNode(OP_BRACELIST,$<node>1,$<node>3,NULL,-1);
@@ -400,7 +395,6 @@ DeclBraceList : DeclBraceList '[' NUM ']' {
 Array : ID BraceList {
                         $<node>$ = createOperatorNode(LEAF_ARR,$<node>1,$<node>2,NULL,-1);
                     }
-        ;
 
 BraceList : BraceList '[' E ']' {
                                         $<node>$ = createOperatorNode(OP_BRACELIST,$<node>1,$<node>3,NULL,-1);

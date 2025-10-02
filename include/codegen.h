@@ -16,5 +16,6 @@ void codeGen(FILE* out, struct tNode* root, struct symbol* symbolTable);
 void populateParent(struct tNode* root);
 void initCompiler(FILE* out);
 void funcCodeGen(FILE* out, char* funcName, struct tNode* root, struct symbol* symbolTable);
+void printNode(struct tNode* node);
 
 #endif

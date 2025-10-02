@@ -1,165 +1,165 @@
-%{
-    #include "y.tab.h"
-    #include "tree.h"
-    #include "constants.h"
-    #include <stdlib.h>
-    #include "label.h"
-    #include "type.h"
+    %{
+        #include "y.tab.h"
+        #include "tree.h"
+        #include "constants.h"
+        #include <stdlib.h>
+        #include "label.h"
+        #include "type.h"
 
-    int lines = 1;
-%}
+        int lines = 1;
+    %}
 
-%%
+    %%
 
-"/*"([^*]|\*+[^/])*"*/"    {}
+    "/*"([^*]|\*+[^/])*"*/"    {}
 
-"//"[^\n]* {}
+    "//"[^\n]* {}
 
-"tuple" {
-            return TUPLE;
+    "tuple" {
+                return TUPLE;
+                }
+
+    "typedecl" {
+                    return TYPEDECL;
             }
 
-"typedecl" {
-                return TYPEDECL;
-        }
+    "endtypedecl" {
+                    return ENDTYPEDECL;
+                }
 
-"endtypedecl" {
-                return ENDTYPEDECL;
+    "main" {
+                return MAIN;
             }
 
-"main" {
-            return MAIN;
-        }
-
-"return" {
-            return RETURN;
-        }
-
-"do" { return DO; }
-
-"repeat" { return REPEAT; }
-
-"until" { return UNTIL; }
-
-"int" {
-            yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_INT,0),-1,LEAF_TYPE_INT,NULL);
-            return INT;
-        }
-
-"str"   {
-            yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_STR,0),-1,LEAF_TYPE_STR,NULL);
-            return STR;
-        }
-
-"decl" {
-        return DECL;
-    }
-
-"enddecl" {
-            return ENDDECL;
-        }
-
-"<=" {
-        return LE;
-    }
-
-">=" {
-        return GE;
-     }
-
-"==" {
-        return EQ;
-    }
-
-"!=" {
-        return NE;
-     }
-
-"if" {
-        return IF;
-     }
-
-"else" {
-            return ELSE;
-        }
-
-"then" {
-            return THEN;
-        }
-
-"endif" {
-            return ENDIF;
-        }
-
-"while" {
-            return WHILE;
-        }
-
-"do"    {
-            return DO;
-        }
-
-"endwhile" {
-                return ENDWHILE;
+    "return" {
+                return RETURN;
             }
 
-"begin" {
-            return BLOCK_BEGIN;
+    "do" { return DO; }
+
+    "repeat" { return REPEAT; }
+
+    "until" { return UNTIL; }
+
+    "int" {
+                yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_INT,0),-1,LEAF_TYPE_INT,NULL);
+                return INT;
+            }
+
+    "str"   {
+                yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_STR,0),-1,LEAF_TYPE_STR,NULL);
+                return STR;
+            }
+
+    "decl" {
+            return DECL;
         }
 
-"end"   {
-            return BLOCK_END;
+    "enddecl" {
+                return ENDDECL;
+            }
+
+    "<=" {
+            return LE;
         }
 
-"read"  {
-            return READ;
+    ">=" {
+            return GE;
         }
 
-"write" {
-            return WRITE;
+    "==" {
+            return EQ;
         }
 
-"break" {
-            int label = getLabel();
-            yylval.node = createLeafNode(0,NULL,createType(-1,-1),label,LEAF_BREAK,NULL);
-            return BREAK;
+    "!=" {
+            return NE;
         }
 
-"continue" {
+    "if" {
+            return IF;
+        }
+
+    "else" {
+                return ELSE;
+            }
+
+    "then" {
+                return THEN;
+            }
+
+    "endif" {
+                return ENDIF;
+            }
+
+    "while" {
+                return WHILE;
+            }
+
+    "do"    {
+                return DO;
+            }
+
+    "endwhile" {
+                    return ENDWHILE;
+                }
+
+    "begin" {
+                return BLOCK_BEGIN;
+            }
+
+    "end"   {
+                return BLOCK_END;
+            }
+
+    "read"  {
+                return READ;
+            }
+
+    "write" {
+                return WRITE;
+            }
+
+    "break" {
                 int label = getLabel();
-                yylval.node = createLeafNode(0,NULL,createType(-1,-1),label,LEAF_CONTINUE,NULL);
-                return CONTINUE;
+                yylval.node = createLeafNode(0,NULL,createType(-1,-1),label,LEAF_BREAK,NULL);
+                return BREAK;
             }
 
-[0-9]+ { 
-            yylval.node = createLeafNode(atoi(yytext),NULL,createType(LEAF_TYPE_INT,0),-1,LEAF_NUM,NULL); 
-            return NUM;
-       }
+    "continue" {
+                    int label = getLabel();
+                    yylval.node = createLeafNode(0,NULL,createType(-1,-1),label,LEAF_CONTINUE,NULL);
+                    return CONTINUE;
+                }
 
-\".*\" {
-            char syytext[100];
-            strip(syytext,yytext,'"');
-            yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_STR,0),-1,LEAF_STR,syytext);
-            return CSTR;
+    [0-9]+ { 
+                yylval.node = createLeafNode(atoi(yytext),NULL,createType(LEAF_TYPE_INT,0),-1,LEAF_NUM,NULL); 
+                return NUM;
         }
 
-[_a-zA-Z]+[0-9]*   {
-            yylval.node = createLeafNode(0,yytext,createType(-1,0),-1,LEAF_ID,NULL);
-            return ID;
-       }
+    \".*\" {
+                char syytext[100];
+                strip(syytext,yytext,'"');
+                yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_STR,0),-1,LEAF_STR,syytext);
+                return CSTR;
+            }
 
-[\.+*/\-%()=;<>,\[\]&{}]  {
-            return *yytext;
+    [_a-zA-Z]+[0-9]*   {
+                yylval.node = createLeafNode(0,yytext,createType(-1,0),-1,LEAF_ID,NULL);
+                return ID;
         }
 
-[ \t\r]+ {}
+    [\.+*/\-%()=;<>,\[\]&{}]  {
+                return *yytext;
+            }
 
-[\n] {
-        lines++;
+    [ \t\r]+ {}
+
+    [\n] {
+            lines++;
+        }
+
+    %%
+
+    int yywrap(){
+        return 1;
     }
-
-%%
-
-int yywrap(){
-    return 1;
-}

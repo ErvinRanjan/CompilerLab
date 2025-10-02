@@ -535,7 +535,7 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  20
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   354
+#define YYLAST   356
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  52
@@ -544,7 +544,7 @@ union yyalloc
 /* YYNRULES -- Number of rules.  */
 #define YYNRULES  101
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  225
+#define YYNSTATES  228
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   288
@@ -598,15 +598,15 @@ static const yytype_int16 yyrline[] =
 {
        0,    33,    33,    34,    35,    36,    37,    38,    41,    42,
       45,    46,    49,    56,    68,    72,    77,    82,    85,    88,
-      93,    98,    99,   103,   115,   118,   123,   124,   128,   133,
-     138,   144,   147,   152,   158,   161,   168,   171,   174,   177,
-     182,   187,   190,   195,   196,   200,   206,   207,   211,   223,
-     236,   240,   245,   246,   247,   248,   249,   250,   251,   252,
-     253,   259,   265,   269,   276,   282,   288,   294,   300,   301,
-     307,   313,   319,   322,   325,   328,   331,   334,   339,   342,
-     345,   348,   351,   354,   357,   360,   363,   366,   367,   368,
-     374,   377,   382,   387,   390,   395,   399,   402,   407,   408,
-     412,   415
+      93,    98,    99,   103,   115,   119,   126,   127,   132,   137,
+     142,   148,   151,   156,   162,   165,   172,   175,   178,   181,
+     186,   191,   194,   199,   200,   204,   210,   211,   215,   227,
+     240,   244,   249,   250,   251,   252,   253,   254,   255,   256,
+     257,   263,   269,   273,   280,   286,   292,   298,   304,   305,
+     311,   317,   323,   326,   329,   332,   335,   338,   343,   346,
+     349,   352,   355,   358,   361,   364,   367,   370,   371,   372,
+     378,   381,   386,   392,   395,   400,   405,   408,   413,   414,
+     418,   421
 };
 #endif
 
@@ -680,8 +680,8 @@ static const yytype_int16 yypact[] =
       66,    66,    66,    66,   290,    66,    66,  -124,   311,   153,
     -124,   315,   110,   110,  -124,  -124,  -124,  -124,  -124,  -124,
     -124,   255,   311,   311,   311,   311,   311,   311,   255,   264,
-     265,  -124,    66,   133,   219,    -1,   270,   311,   255,  -124,
-    -124,  -124,  -124,   240,  -124
+     265,  -124,    66,   133,   219,    -1,   270,   311,   255,   271,
+     273,  -124,  -124,   240,  -124,  -124,   274,  -124
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -710,16 +710,16 @@ static const yytype_int8 yydefact[] =
        0,     0,     0,     0,     0,     0,     0,    85,    91,     0,
       84,    82,    78,    80,    79,    81,    61,    67,    96,    65,
       66,     0,    74,    75,    76,    77,    72,    73,     0,     0,
-       0,    86,     0,     0,     0,     0,     0,    90,     0,    63,
-      64,    71,    70,     0,    62
+       0,    86,     0,     0,     0,     0,     0,    90,     0,     0,
+       0,    71,    70,     0,    63,    64,     0,    62
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -124,  -124,  -124,   283,  -124,    93,   -86,   308,  -124,   303,
-       2,  -124,   -16,    79,   267,   -34,   -59,  -124,   234,  -124,
-     -79,   313,    -6,   -98,  -105,  -124,  -124,  -124,  -124,  -124,
+    -124,  -124,  -124,   283,  -124,    93,   -86,   330,  -124,   325,
+       2,  -124,   -16,    79,   285,   -34,   -59,  -124,   262,  -124,
+     -79,   334,    -6,   -98,  -105,  -124,  -124,  -124,  -124,  -124,
     -124,  -124,  -124,  -124,  -124,  -123,  -100,  -124,   -71,  -124,
     -124,  -124,   -84
 };
@@ -764,20 +764,20 @@ static const yytype_uint8 yytable[] =
      126,    84,   127,    96,   105,   160,    98,    99,   100,    79,
       86,   120,   101,   102,   220,   106,    88,   134,    47,   103,
      104,   129,   130,   131,    96,   132,   105,    98,    99,   100,
-     135,   147,   224,   101,   102,   148,   152,   106,   153,    96,
+     135,   147,   226,   101,   102,   148,   152,   106,   153,    96,
      103,   104,    98,    99,   100,   163,   170,   105,   101,   102,
      164,   165,   166,   167,   168,   103,   104,   197,   106,   175,
       96,   172,   105,    98,    99,   100,   177,   184,   185,   159,
      102,   186,   199,   106,   201,   200,   103,   104,   178,   179,
      180,   181,    38,   105,   208,   215,   216,   164,   165,   166,
-     167,   168,   222,    22,   106,    29,    95,   164,   165,   166,
+     167,   168,   222,   224,   106,   225,   227,   164,   165,   166,
      167,   168,   173,   164,   165,   166,   167,   168,   182,   183,
-     164,   165,   166,   167,   168,    40,   176,    78,   198,   164,
-     165,   166,   167,   168,     0,   190,   164,   165,   166,   167,
-     168,   165,   166,   167,   168
+     164,   165,   166,   167,   168,    22,   176,    29,   198,   164,
+     165,   166,   167,   168,    95,   190,   164,   165,   166,   167,
+     168,   165,   166,   167,   168,    78,    40
 };
 
-static const yytype_int16 yycheck[] =
+static const yytype_uint8 yycheck[] =
 {
       84,    87,   107,     1,   102,     4,   106,   105,    42,   132,
       81,    90,     4,    14,    12,    31,    40,    76,   102,    90,
@@ -810,11 +810,11 @@ static const yytype_int16 yycheck[] =
        4,    44,    27,     7,     8,     9,    41,    41,    40,    13,
       14,    40,    42,    38,    10,    42,    20,    21,    16,    17,
       18,    19,    19,    27,    14,    41,    41,    35,    36,    37,
-      38,    39,    42,     5,    38,    12,    82,    35,    36,    37,
+      38,    39,    42,    42,    38,    42,    42,    35,    36,    37,
       38,    39,    50,    35,    36,    37,    38,    39,    46,    47,
-      35,    36,    37,    38,    39,    22,    41,    70,    50,    35,
-      36,    37,    38,    39,    -1,    41,    35,    36,    37,    38,
-      39,    36,    37,    38,    39
+      35,    36,    37,    38,    39,     5,    41,    12,    50,    35,
+      36,    37,    38,    39,    82,    41,    35,    36,    37,    38,
+      39,    36,    37,    38,    39,    70,    22
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
@@ -843,7 +843,7 @@ static const yytype_int8 yystos[] =
       41,    88,    88,    88,    88,    88,    42,    42,    50,    42,
       42,    10,    88,    88,    88,    88,    88,    88,    14,    87,
       87,    41,    45,    75,    75,    41,    41,    88,    11,    12,
-      15,    42,    42,    75,    12
+      15,    42,    42,    75,    42,    42,    12,    42
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
@@ -871,7 +871,7 @@ static const yytype_int8 yyr2[] =
        2,     3,     1,     2,     1,     2,     3,     2,     2,     1,
        3,     3,     1,     1,     1,     2,     2,     1,     9,     8,
        2,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     3,     9,     7,     7,     5,     5,     4,     2,     2,
+       1,     3,    10,     8,     8,     5,     5,     4,     2,     2,
        7,     7,     3,     3,     3,     3,     3,     3,     3,     3,
        3,     3,     3,     2,     3,     3,     4,     1,     1,     1,
        3,     1,     2,     4,     3,     2,     4,     3,     1,     1,
@@ -1470,176 +1470,180 @@ yyreduce:
 #line 115 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                              {
                                 (yyval.node) = createOperatorNode(OP_VARLIST,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
+                                printNode((yyvsp[-2].node));
                             }
-#line 1475 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1476 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 25: /* GidList: Gid  */
-#line 118 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 119 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                {
                     (yyval.node) = (yyvsp[0].node);
+                    printNode((yyvsp[0].node));
+                    printf("hello");
                 }
-#line 1483 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1486 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 27: /* Gid: DeclArray  */
-#line 125 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 128 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
     {
+        printf("%d\n",(yyvsp[0].node)->nodeType); 
         (yyval.node) = (yyvsp[0].node); 
     }
-#line 1491 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1495 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 28: /* Gid: ID '(' ParamList ')'  */
-#line 128 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 132 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                            {
                                 int label = getLabel();
                                 (yyval.node) = createOperatorNode(LEAF_FDECL,(yyvsp[-3].node),(yyvsp[-1].node),NULL,label);
                                 (yyval.node)->type = (yyvsp[-3].node)->type;
                             }
-#line 1501 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1505 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 29: /* Gid: ID '(' ')'  */
-#line 133 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 137 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                  {  
                     int label = getLabel();
                     (yyval.node) = createOperatorNode(LEAF_FDECL,(yyvsp[-2].node),NULL,NULL,label);
                     (yyval.node)->type = (yyvsp[-2].node)->type;
                 }
-#line 1511 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1515 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 30: /* Gid: '*' Gid  */
-#line 138 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 142 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
               {
                     (yyvsp[0].node)->type->depth = (yyvsp[0].node)->type->depth + 1;
                     (yyval.node) = (yyvsp[0].node);
                 }
-#line 1520 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1524 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 31: /* ParamList: ParamList ',' Param  */
-#line 144 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 148 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                                 {
                             (yyval.node) = createOperatorNode(OP_PARAMLIST,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
                         }
-#line 1528 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1532 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 32: /* ParamList: Param  */
-#line 147 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 151 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                 {
                 (yyval.node) = (yyvsp[0].node);
             }
-#line 1536 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1540 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 33: /* Param: Type Pid  */
-#line 152 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 156 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                  {
                     (yyval.node) = createOperatorNode(OP_PARAM,(yyvsp[-1].node),(yyvsp[0].node),NULL,-1);
                     (yyval.node)->type = (yyvsp[0].node)->type;
                 }
-#line 1545 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1549 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 34: /* Pid: ID  */
-#line 158 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 162 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
          {
             (yyval.node) = (yyvsp[0].node);
             }
-#line 1553 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1557 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 35: /* Pid: '*' Pid  */
-#line 161 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 165 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
               {
             (yyvsp[0].node)->type->depth = (yyvsp[0].node)->type->depth + 1;
             (yyval.node) = (yyvsp[0].node); 
         }
-#line 1562 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1566 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 36: /* LDeclBlock: DECL LDeclList ENDDECL  */
-#line 168 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 172 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                                     {
                                         (yyval.node) = (yyvsp[-1].node);
                                     }
-#line 1570 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1574 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 37: /* LDeclBlock: DECL ENDDECL  */
-#line 171 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 175 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                            {}
-#line 1576 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1580 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 38: /* LDeclList: LDeclList LDecl  */
-#line 174 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 178 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                             {
                             (yyval.node) = createOperatorNode(OP_DECLLIST,(yyvsp[-1].node),(yyvsp[0].node),NULL,-1);
                         }
-#line 1584 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1588 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 39: /* LDeclList: LDecl  */
-#line 177 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 181 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                  {
                     (yyval.node) = (yyvsp[0].node);
                 }
-#line 1592 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1596 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 40: /* LDecl: Type LidList ';'  */
-#line 182 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 186 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                          {
                         (yyval.node) = createOperatorNode(OP_DECL,(yyvsp[-2].node),(yyvsp[-1].node),NULL,-1);
                     }
-#line 1600 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1604 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 41: /* LidList: LidList ',' Lid  */
-#line 187 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 191 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                              {
                                 (yyval.node) = createOperatorNode(OP_VARLIST,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
                             }
-#line 1608 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1612 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 42: /* LidList: Lid  */
-#line 190 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 194 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                {
                     (yyval.node) = (yyvsp[0].node);
                 }
-#line 1616 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1620 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 44: /* Lid: DeclArray  */
-#line 197 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 201 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
     {
-        (yyval.node) = (yyvsp[0].node); 
+        (yyval.node) = (yyvsp[0].node);
     }
-#line 1624 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1628 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 45: /* Lid: '*' Lid  */
-#line 200 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 204 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
               {
         (yyvsp[0].node)->type->depth = (yyvsp[0].node)->type->depth + 1;
         (yyval.node) = (yyvsp[0].node);
     }
-#line 1633 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1637 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 47: /* FDefBlock: FDef  */
-#line 208 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 212 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
           {}
-#line 1639 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1643 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 48: /* FDef: Type Pid '(' ParamList ')' '{' LDeclBlock Body '}'  */
-#line 211 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 215 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                                                           {
                                                                 (yyvsp[-8].node)->type->depth += (yyvsp[-7].node)->type->depth;
                                                                 typeCheckFunctionParam((yyvsp[-8].node)->type,(yyvsp[-7].node)->varName,(yyvsp[-5].node),gsymbolTable);
@@ -1652,11 +1656,11 @@ yyreduce:
                                                                 populateParent((yyvsp[-1].node));
                                                                 funcCodeGen(out,(yyvsp[-7].node)->varName,(yyvsp[-1].node),symbolTable1);
                                                         }
-#line 1656 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1660 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 49: /* FDef: Type Pid '(' ')' '{' LDeclBlock Body '}'  */
-#line 223 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 227 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                                                   {
         (yyvsp[-7].node)->type->depth += (yyvsp[-6].node)->type->depth;
         typeCheckFunctionParam((yyvsp[-7].node)->type,(yyvsp[-6].node)->varName,NULL,gsymbolTable);
@@ -1668,342 +1672,342 @@ yyreduce:
         populateParent((yyvsp[-1].node));
         funcCodeGen(out,(yyvsp[-6].node)->varName,(yyvsp[-1].node),symbolTable1);
      }
-#line 1672 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1676 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 50: /* Slist: Slist Stmt  */
-#line 236 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 240 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                    {    
                         (yyval.node) = createOperatorNode(OP_STMTLIST,(yyvsp[-1].node),(yyvsp[0].node),NULL,-1);
                         (yyval.node)->label = (yyvsp[-1].node)->label;
                     }
-#line 1681 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1685 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 51: /* Slist: Stmt  */
-#line 240 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 244 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
              { 
                 (yyval.node) = (yyvsp[0].node);
              }
-#line 1689 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1693 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 60: /* Stmt: DoWhileStmt  */
-#line 254 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 258 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
        {   
         (yyval.node) = (yyvsp[0].node);
        }
-#line 1697 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1701 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 61: /* RetStmt: RETURN E ';'  */
-#line 259 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 263 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                       {
                     int label = getLabel();
                     (yyval.node) = createOperatorNode(OP_RETURN,(yyvsp[-1].node),NULL,NULL,label);
         }
-#line 1706 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1710 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
-  case 62: /* Ifstmt: IF '(' B ')' THEN Slist ELSE Slist ENDIF  */
-#line 265 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                                                  { 
-                                                        int label = getLabel();
-                                                        (yyval.node) = createOperatorNode(OP_IF,(yyvsp[-6].node),(yyvsp[-3].node),(yyvsp[-1].node),label);
-                                                  }
-#line 1715 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
-    break;
-
-  case 63: /* Ifstmt: IF '(' B ')' THEN Slist ENDIF  */
+  case 62: /* Ifstmt: IF '(' B ')' THEN Slist ELSE Slist ENDIF ';'  */
 #line 269 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                                         {     
-                                            int label = getLabel();
-                                            (yyval.node) = createOperatorNode(OP_IF,(yyvsp[-4].node),(yyvsp[-1].node),NULL,label);
-                                        }
-#line 1724 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+                                                     { 
+                                                        int label = getLabel();
+                                                        (yyval.node) = createOperatorNode(OP_IF,(yyvsp[-7].node),(yyvsp[-4].node),(yyvsp[-2].node),label);
+                                                  }
+#line 1719 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
-  case 64: /* Whilestmt: WHILE '(' B ')' DO Slist ENDWHILE  */
-#line 276 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
-                                              {   
+  case 63: /* Ifstmt: IF '(' B ')' THEN Slist ENDIF ';'  */
+#line 273 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+                                            {     
+                                            int label = getLabel();
+                                            (yyval.node) = createOperatorNode(OP_IF,(yyvsp[-5].node),(yyvsp[-2].node),NULL,label);
+                                        }
+#line 1728 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+    break;
+
+  case 64: /* Whilestmt: WHILE '(' B ')' DO Slist ENDWHILE ';'  */
+#line 280 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+                                                 {   
                                                     int label = getLabel();
-                                                    (yyval.node) = createOperatorNode(OP_WHILE,(yyvsp[-4].node),(yyvsp[-1].node),NULL,label);
+                                                    (yyval.node) = createOperatorNode(OP_WHILE,(yyvsp[-5].node),(yyvsp[-2].node),NULL,label);
                                                 }
-#line 1733 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1737 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 65: /* InputStmt: READ '(' Identifier ')' ';'  */
-#line 282 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 286 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                                         {
                                 int label = getLabel();
                                 (yyval.node) = createOperatorNode(OP_READ,(yyvsp[-2].node),NULL,NULL,label);
                             }
-#line 1742 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1746 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 66: /* OutputStmt: WRITE '(' E ')' ';'  */
-#line 288 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 292 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                                  {
                                 int label = getLabel();
                                 (yyval.node) = createOperatorNode(OP_WRITE,(yyvsp[-2].node),NULL,NULL,label);
                             }
-#line 1751 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1755 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 67: /* AsgStmt: Identifier '=' E ';'  */
-#line 294 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 298 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                                {
                       int label = getLabel();
                       (yyval.node) = createOperatorNode(OP_ASSIGN,(yyvsp[-3].node),(yyvsp[-1].node),NULL,label);
                     }
-#line 1760 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1764 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 69: /* ContinueStmt: CONTINUE ';'  */
-#line 302 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 306 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
         {
             (yyval.node) = (yyvsp[-1].node);
         }
-#line 1768 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1772 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 70: /* RepeatUntilStmt: REPEAT Slist UNTIL '(' B ')' ';'  */
-#line 307 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 311 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                                                     {
                     int label = getLabel();
                     (yyval.node) = createOperatorNode(OP_REPEAT_UNTIL,(yyvsp[-5].node),(yyvsp[-2].node),NULL,label);
                 }
-#line 1777 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1781 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 71: /* DoWhileStmt: DO Slist WHILE '(' B ')' ';'  */
-#line 313 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 317 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                                            {
                     int label = getLabel();
                     (yyval.node) = createOperatorNode(OP_DO_WHILE,(yyvsp[-5].node),(yyvsp[-2].node),NULL,label);
             }
-#line 1786 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1790 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 72: /* B: E '<' E  */
-#line 319 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 323 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_LT,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1794 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1798 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 73: /* B: E '>' E  */
-#line 322 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 326 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_GT,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1802 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1806 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 74: /* B: E GE E  */
-#line 325 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 329 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
            {
                 (yyval.node) = createOperatorNode(OP_GE,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1810 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1814 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 75: /* B: E LE E  */
-#line 328 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 332 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
            {
                 (yyval.node) = createOperatorNode(OP_LE,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1818 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1822 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 76: /* B: E NE E  */
-#line 331 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 335 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
            {
                 (yyval.node) = createOperatorNode(OP_NE,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1826 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1830 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 77: /* B: E EQ E  */
-#line 334 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 338 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
            {
                 (yyval.node) = createOperatorNode(OP_EQ,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1834 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1838 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 78: /* E: E '+' E  */
-#line 339 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 343 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_ADD,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1842 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1846 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 79: /* E: E '*' E  */
-#line 342 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 346 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_MUL,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1850 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1854 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 80: /* E: E '-' E  */
-#line 345 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 349 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_SUB,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1858 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1862 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 81: /* E: E '/' E  */
-#line 348 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 352 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_DIV,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1866 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1870 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 82: /* E: E '%' E  */
-#line 351 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 355 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_MOD,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 1874 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1878 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 83: /* E: '&' ID  */
-#line 354 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 358 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
            {
                 (yyval.node) = createOperatorNode(OP_REF,(yyvsp[0].node),NULL,NULL,-1); 
             }
-#line 1882 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1886 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 84: /* E: '(' E ')'  */
-#line 357 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 361 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
               {
                  (yyval.node) = (yyvsp[-1].node);
               }
-#line 1890 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1894 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 85: /* E: ID '(' ')'  */
-#line 360 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 364 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                {
                     (yyval.node) = createOperatorNode(LEAF_FUNC,(yyvsp[-2].node),NULL,NULL,-1);
                 }
-#line 1898 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1902 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 86: /* E: ID '(' ArgList ')'  */
-#line 363 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 367 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                        {
                             (yyval.node) = createOperatorNode(LEAF_FUNC,(yyvsp[-3].node),(yyvsp[-1].node),NULL,-1);
                         }
-#line 1906 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1910 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 89: /* E: CSTR  */
-#line 369 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 373 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
   {
     (yyval.node) = (yyvsp[0].node);
    }
-#line 1914 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1918 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 90: /* ArgList: ArgList ',' E  */
-#line 374 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 378 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                          {
                             (yyval.node) = createOperatorNode(OP_ARGLIST,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
                         }
-#line 1922 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1926 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 91: /* ArgList: E  */
-#line 377 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 381 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = (yyvsp[0].node);
             }
-#line 1930 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1934 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 92: /* DeclArray: ID DeclBraceList  */
-#line 382 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 386 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                              {
-                        (yyval.node) = createOperatorNode(LEAF_ARR,(yyvsp[-1].node),(yyvsp[0].node),NULL,-1);
-                        (yyval.node) = (yyvsp[-1].node)->type;
+                        (yyval.node) = createOperatorNode(LEAF_ARR,(yyvsp[-1].node),(yyvsp[0].node),NULL,-1); 
+                        (yyval.node)->type = (yyvsp[-1].node)->type;
                     }
-#line 1939 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1943 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 93: /* DeclBraceList: DeclBraceList '[' NUM ']'  */
-#line 387 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 392 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                                           {
                                         (yyval.node) = createOperatorNode(OP_BRACELIST,(yyvsp[-3].node),(yyvsp[-1].node),NULL,-1);
                                     }
-#line 1947 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1951 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 94: /* DeclBraceList: '[' NUM ']'  */
-#line 390 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 395 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                         {
                             (yyval.node) = (yyvsp[-1].node);
                         }
-#line 1955 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1959 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 95: /* Array: ID BraceList  */
-#line 395 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 400 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                      {
                         (yyval.node) = createOperatorNode(LEAF_ARR,(yyvsp[-1].node),(yyvsp[0].node),NULL,-1);
                     }
-#line 1963 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1967 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 96: /* BraceList: BraceList '[' E ']'  */
-#line 399 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 405 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                                 {
                                         (yyval.node) = createOperatorNode(OP_BRACELIST,(yyvsp[-3].node),(yyvsp[-1].node),NULL,-1);
                                     }
-#line 1971 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1975 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 97: /* BraceList: '[' E ']'  */
-#line 402 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 408 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                       {
                             (yyval.node) = (yyvsp[-1].node);
                         }
-#line 1979 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1983 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 99: /* Identifier: Array  */
-#line 409 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 415 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = (yyvsp[0].node);
             }
-#line 1987 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1991 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 100: /* Identifier: '*' E  */
-#line 412 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 418 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                     {
                 (yyval.node) = createOperatorNode(OP_DREF,(yyvsp[0].node),NULL,NULL,-1);
             }
-#line 1995 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 1999 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 101: /* Identifier: ID '.' ID  */
-#line 415 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 421 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
                         {
                 (yyval.node) = createOperatorNode(LEAF_TUPLE_ACCESS,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
-#line 2003 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 2007 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
 
-#line 2007 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
+#line 2011 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
 
       default: break;
     }
@@ -2196,7 +2200,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 420 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 426 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
 
 
 int yyerror(const char* s){

@@ -49,7 +49,7 @@ $(PARSER): $(SRC_FILES) $(Y_TAB_C) $(LEX_C)
 # Generate y.tab.c and y.tab.h from yacc
 $(Y_TAB_C) $(Y_TAB_H): $(YACC_FILE)
 	$(YACC) -d -o $(Y_TAB_C) $(YACC_FILE)
-	@mv -f $(SRC_DIR)/y.tab.h $(Y_TAB_H) || true
+	@mv -f y.tab.h $(Y_TAB_H) || true
 
 # Generate lex.yy.c from lex
 $(LEX_C): $(LEX_FILE)

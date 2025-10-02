@@ -482,12 +482,18 @@ int resolveAddrInFunction(FILE* out, struct tNode* node, struct symbol* symbolTa
         int offs;
         if (node->nodeType == LEAF_ID) {
             offs = getLocalVarOffset(node->varName, getLocalVarList(symbolTable, paramCount));
+            if (offs == -1) {
+                return resolveAddr(out, node, symbolTable, NULL);
+            }
             fprintf(out, "MOV R%d, BP\n", reg);
             fprintf(out, "ADD R%d, %d\n", reg, offs);
             fprintf(out, "ADD R%d, 1\n", reg);
         }
         else if (node->nodeType == LEAF_TUPLE_ACCESS) {
             offs = getLocalVarOffset(node->left->varName, getLocalVarList(symbolTable, paramCount));
+            if (offs == -1) {
+                return resolveAddr(out, node, symbolTable, NULL);
+            }
             fprintf(out, "MOV R%d, BP\n", reg);
             fprintf(out, "ADD R%d, %d\n", reg, offs);
             fprintf(out, "ADD R%d, 1\n", reg);
@@ -661,5 +667,14 @@ void populateParent(struct tNode* root) {
     populateParent(root->left);
     populateParent(root->middle);
     populateParent(root->right);
+}
+
+void printNode(struct tNode* node) {
+    if (node == NULL) return;
+    printf("nodeType: %d\n", node->nodeType);
+    printf("varName: %s\n", node->varName);
+    printNode(node->left);
+    printNode(node->middle);
+    printNode(node->right);
 }
 
