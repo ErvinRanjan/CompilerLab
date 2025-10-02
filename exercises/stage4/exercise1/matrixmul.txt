@@ -1,0 +1,39 @@
+begin 
+decl 
+int A[2][2],B[2][2],i,j,k,o;
+enddecl 
+i = 0;
+while(i < 2) do 
+    j = 0;
+    while(j < 2) do 
+        read(A[i][j]);
+        j = j + 1;
+    endwhile 
+    i = i + 1;
+endwhile 
+i = 0;
+while(i < 2) do 
+    j = 0;
+    while(j < 2) do 
+        read(B[i][j]);
+        j = j + 1;
+    endwhile 
+    i = i + 1;
+endwhile
+i = 0;
+while(i < 2) do
+    j = 0;
+    while(j < 2) do 
+        k = 0;
+        o = 0;
+        while(k < 2) do 
+            o = o + A[i][k]*B[k][j];
+            k = k + 1;
+        endwhile 
+        write(o);
+        j = j + 1;
+    endwhile 
+    i = i + 1;
+endwhile 
+end
+

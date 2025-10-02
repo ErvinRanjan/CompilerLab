@@ -1,0 +1,16 @@
+begin 
+decl 
+int a;
+int* p1;
+str b;
+str* p2;
+enddecl
+a = 1;
+p1 = &a;
+*p1 = 2;
+write(a);
+b = "ehh";
+p2 = &b;
+*p2 = "hello";
+write(b);
+end 

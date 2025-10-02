@@ -1,0 +1,11 @@
+begin 
+decl 
+int sum,x;
+enddecl 
+sum = 0;
+do 
+read(x);
+sum = sum + x;
+while(x != 0);
+write(sum);
+end
