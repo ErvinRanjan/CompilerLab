@@ -67,7 +67,7 @@
 
 
 /* First part of user prologue.  */
-#line 1 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 1 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
 
     #include "tree.h"
     #include "codegen.h"
@@ -1248,7 +1248,7 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* Program: BLOCK_BEGIN Declarations Slist BLOCK_END  */
-#line 29 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 29 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                                                     {
                                 struct symbol* symbolTable = NULL;
                                 symbolTable = populateSymbolTable((yyvsp[-2].node),symbolTable);
@@ -1262,7 +1262,7 @@ yyreduce:
     break;
 
   case 3: /* Program: BLOCK_BEGIN BLOCK_END  */
-#line 38 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 38 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                                 {
 
                                 }
@@ -1270,7 +1270,7 @@ yyreduce:
     break;
 
   case 4: /* Declarations: DECL DeclList ENDDECL  */
-#line 43 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 43 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                                      {
                                         (yyval.node) = (yyvsp[-1].node);
                                     }
@@ -1278,13 +1278,13 @@ yyreduce:
     break;
 
   case 5: /* Declarations: DECL ENDDECL  */
-#line 46 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 46 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                            {}
 #line 1284 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.c"
     break;
 
   case 6: /* DeclList: DeclList Decl  */
-#line 49 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 49 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                          {
                             (yyval.node) = createOperatorNode(OP_DECLLIST,(yyvsp[-1].node),(yyvsp[0].node),NULL,-1);
                         }
@@ -1292,7 +1292,7 @@ yyreduce:
     break;
 
   case 7: /* DeclList: Decl  */
-#line 52 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 52 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                 {
                     (yyval.node) = (yyvsp[0].node);
                 }
@@ -1300,7 +1300,7 @@ yyreduce:
     break;
 
   case 8: /* Decl: Type VarList ';'  */
-#line 57 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 57 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                         {
                         (yyval.node) = createOperatorNode(OP_DECL,(yyvsp[-2].node),(yyvsp[-1].node),NULL,-1);
                     }
@@ -1308,7 +1308,7 @@ yyreduce:
     break;
 
   case 10: /* Type: STR  */
-#line 64 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 64 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
        {
         (yyval.node) = (yyvsp[0].node);
        }
@@ -1316,7 +1316,7 @@ yyreduce:
     break;
 
   case 11: /* VarList: VarList ',' ID  */
-#line 69 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 69 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                             {
                                 (yyval.node) = createOperatorNode(OP_VARLIST,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
                             }
@@ -1324,7 +1324,7 @@ yyreduce:
     break;
 
   case 12: /* VarList: ID  */
-#line 72 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 72 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                 {
                     (yyval.node) = (yyvsp[0].node);
                 }
@@ -1332,7 +1332,7 @@ yyreduce:
     break;
 
   case 13: /* VarList: VarList ',' DeclArray  */
-#line 75 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 75 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                                  {
                                 (yyval.node) = createOperatorNode(OP_VARLIST,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
                             }
@@ -1340,7 +1340,7 @@ yyreduce:
     break;
 
   case 14: /* VarList: DeclArray  */
-#line 78 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 78 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                      {
                     (yyval.node) = (yyvsp[0].node);
                 }
@@ -1348,7 +1348,7 @@ yyreduce:
     break;
 
   case 15: /* Slist: Slist Stmt  */
-#line 83 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 83 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                    {    
                         (yyval.node) = createOperatorNode(OP_STMTLIST,(yyvsp[-1].node),(yyvsp[0].node),NULL,-1);
                         (yyval.node)->label = (yyvsp[-1].node)->label;
@@ -1357,7 +1357,7 @@ yyreduce:
     break;
 
   case 16: /* Slist: Stmt  */
-#line 87 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 87 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
              { 
                 (yyval.node) = (yyvsp[0].node);
              }
@@ -1365,7 +1365,7 @@ yyreduce:
     break;
 
   case 25: /* Stmt: DoWhileStmt  */
-#line 101 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 101 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
        {   
         (yyval.node) = (yyvsp[0].node);
        }
@@ -1373,7 +1373,7 @@ yyreduce:
     break;
 
   case 26: /* Ifstmt: IF '(' B ')' THEN Slist ELSE Slist ENDIF  */
-#line 106 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 106 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                                                   { 
                                                         int label = getLabel();
                                                         (yyval.node) = createOperatorNode(OP_IF,(yyvsp[-6].node),(yyvsp[-3].node),(yyvsp[-1].node),label);
@@ -1382,7 +1382,7 @@ yyreduce:
     break;
 
   case 27: /* Ifstmt: IF '(' B ')' THEN Slist ENDIF  */
-#line 110 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 110 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                                          {     
                                             int label = getLabel();
                                             (yyval.node) = createOperatorNode(OP_IF,(yyvsp[-4].node),(yyvsp[-1].node),NULL,label);
@@ -1391,7 +1391,7 @@ yyreduce:
     break;
 
   case 28: /* Whilestmt: WHILE '(' B ')' DO Slist ENDWHILE  */
-#line 117 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 117 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                                               {   
                                                     int label = getLabel();
                                                     (yyval.node) = createOperatorNode(OP_WHILE,(yyvsp[-4].node),(yyvsp[-1].node),NULL,label);
@@ -1400,7 +1400,7 @@ yyreduce:
     break;
 
   case 29: /* InputStmt: READ '(' Identifier ')' ';'  */
-#line 123 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 123 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                                         {
                                 int label = getLabel();
                                 (yyval.node) = createOperatorNode(OP_READ,(yyvsp[-2].node),NULL,NULL,label);
@@ -1409,7 +1409,7 @@ yyreduce:
     break;
 
   case 30: /* OutputStmt: WRITE '(' E ')' ';'  */
-#line 129 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 129 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                                  {
                                 int label = getLabel();
                                 (yyval.node) = createOperatorNode(OP_WRITE,(yyvsp[-2].node),NULL,NULL,label);
@@ -1418,7 +1418,7 @@ yyreduce:
     break;
 
   case 31: /* AsgStmt: Identifier '=' E ';'  */
-#line 135 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 135 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                                {
                       int label = getLabel();
                       (yyval.node) = createOperatorNode(OP_ASSIGN,(yyvsp[-3].node),(yyvsp[-1].node),NULL,label);
@@ -1427,7 +1427,7 @@ yyreduce:
     break;
 
   case 33: /* ContinueStmt: CONTINUE ';'  */
-#line 143 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 143 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
         {
             (yyval.node) = (yyvsp[-1].node);
         }
@@ -1435,7 +1435,7 @@ yyreduce:
     break;
 
   case 34: /* RepeatUntilStmt: REPEAT Slist UNTIL '(' B ')' ';'  */
-#line 148 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 148 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                                                     {
                     int label = getLabel();
                     (yyval.node) = createOperatorNode(OP_REPEAT_UNTIL,(yyvsp[-5].node),(yyvsp[-2].node),NULL,label);
@@ -1444,7 +1444,7 @@ yyreduce:
     break;
 
   case 35: /* DoWhileStmt: DO Slist WHILE '(' B ')' ';'  */
-#line 154 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 154 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                                            {
                     int label = getLabel();
                     (yyval.node) = createOperatorNode(OP_DO_WHILE,(yyvsp[-5].node),(yyvsp[-2].node),NULL,label);
@@ -1453,7 +1453,7 @@ yyreduce:
     break;
 
   case 36: /* B: E '<' E  */
-#line 160 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 160 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_LT,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
@@ -1461,7 +1461,7 @@ yyreduce:
     break;
 
   case 37: /* B: E '>' E  */
-#line 163 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 163 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_GT,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
@@ -1469,7 +1469,7 @@ yyreduce:
     break;
 
   case 38: /* B: E GE E  */
-#line 166 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 166 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
            {
                 (yyval.node) = createOperatorNode(OP_GE,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
@@ -1477,7 +1477,7 @@ yyreduce:
     break;
 
   case 39: /* B: E LE E  */
-#line 169 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 169 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
            {
                 (yyval.node) = createOperatorNode(OP_LE,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
@@ -1485,7 +1485,7 @@ yyreduce:
     break;
 
   case 40: /* B: E NE E  */
-#line 172 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 172 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
            {
                 (yyval.node) = createOperatorNode(OP_NE,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
@@ -1493,7 +1493,7 @@ yyreduce:
     break;
 
   case 41: /* B: E EQ E  */
-#line 175 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 175 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
            {
                 (yyval.node) = createOperatorNode(OP_EQ,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
@@ -1501,7 +1501,7 @@ yyreduce:
     break;
 
   case 42: /* E: E '+' E  */
-#line 180 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 180 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_ADD,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
@@ -1509,7 +1509,7 @@ yyreduce:
     break;
 
   case 43: /* E: E '*' E  */
-#line 183 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 183 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_MUL,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
@@ -1517,7 +1517,7 @@ yyreduce:
     break;
 
   case 44: /* E: E '-' E  */
-#line 186 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 186 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_SUB,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
@@ -1525,7 +1525,7 @@ yyreduce:
     break;
 
   case 45: /* E: E '/' E  */
-#line 189 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 189 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_DIV,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
@@ -1533,7 +1533,7 @@ yyreduce:
     break;
 
   case 46: /* E: E '%' E  */
-#line 192 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 192 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = createOperatorNode(OP_MOD,(yyvsp[-2].node),(yyvsp[0].node),NULL,-1);
             }
@@ -1541,7 +1541,7 @@ yyreduce:
     break;
 
   case 47: /* E: '&' ID  */
-#line 195 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 195 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
            {
                 (yyval.node) = createOperatorNode(OP_REF,(yyvsp[0].node),NULL,NULL,-1); 
             }
@@ -1549,7 +1549,7 @@ yyreduce:
     break;
 
   case 48: /* E: '*' E  */
-#line 198 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 198 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
           {
                 (yyval.node) = createOperatorNode(OP_DREF,(yyvsp[0].node),NULL,NULL,-1);
             }
@@ -1557,7 +1557,7 @@ yyreduce:
     break;
 
   case 49: /* E: '(' E ')'  */
-#line 201 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 201 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
               {
                  (yyval.node) = (yyvsp[-1].node);
               }
@@ -1565,7 +1565,7 @@ yyreduce:
     break;
 
   case 52: /* E: CSTR  */
-#line 207 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 207 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
   {
     (yyval.node) = (yyvsp[0].node);
    }
@@ -1573,7 +1573,7 @@ yyreduce:
     break;
 
   case 53: /* DeclArray: ID DeclBraceList  */
-#line 212 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 212 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                              {
                         (yyval.node) = createOperatorNode(LEAF_ARR,(yyvsp[-1].node),(yyvsp[0].node),NULL,-1);
                     }
@@ -1581,7 +1581,7 @@ yyreduce:
     break;
 
   case 54: /* DeclBraceList: DeclBraceList '[' NUM ']'  */
-#line 216 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 216 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                                           {
                                         (yyval.node) = createOperatorNode(OP_BRACELIST,(yyvsp[-3].node),(yyvsp[-1].node),NULL,-1);
                                     }
@@ -1589,7 +1589,7 @@ yyreduce:
     break;
 
   case 55: /* DeclBraceList: '[' NUM ']'  */
-#line 219 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 219 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                         {
                             (yyval.node) = (yyvsp[-1].node);
                         }
@@ -1597,7 +1597,7 @@ yyreduce:
     break;
 
   case 56: /* Array: ID BraceList  */
-#line 224 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 224 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                      {
                         (yyval.node) = createOperatorNode(LEAF_ARR,(yyvsp[-1].node),(yyvsp[0].node),NULL,-1);
                     }
@@ -1605,7 +1605,7 @@ yyreduce:
     break;
 
   case 57: /* BraceList: BraceList '[' E ']'  */
-#line 228 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 228 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                                 {
                                         (yyval.node) = createOperatorNode(OP_BRACELIST,(yyvsp[-3].node),(yyvsp[-1].node),NULL,-1);
                                     }
@@ -1613,7 +1613,7 @@ yyreduce:
     break;
 
   case 58: /* BraceList: '[' E ']'  */
-#line 231 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 231 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                       {
                             (yyval.node) = (yyvsp[-1].node);
                         }
@@ -1621,7 +1621,7 @@ yyreduce:
     break;
 
   case 60: /* Identifier: Array  */
-#line 238 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 238 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
             {
                 (yyval.node) = (yyvsp[0].node);
             }
@@ -1629,7 +1629,7 @@ yyreduce:
     break;
 
   case 61: /* Identifier: '*' E  */
-#line 241 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 241 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
                     {
                 (yyval.node) = createOperatorNode(OP_DREF,(yyvsp[0].node),NULL,NULL,-1);
             }
@@ -1830,7 +1830,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 246 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 246 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage4/exercise1/src/yacc/generateExpTree.y"
 
 
 int yyerror(const char* s){

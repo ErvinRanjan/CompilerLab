@@ -29,6 +29,12 @@
                     return STR;
                 }
 
+"do" { return DO; }
+
+"repeat" { return REPEAT; }
+
+"until" { return UNTIL; }
+
 "int" {
             yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_INT,0),-1,LEAF_TYPE_INT,NULL);
             return INT;

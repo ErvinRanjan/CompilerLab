@@ -642,7 +642,8 @@ void getArrayIndices(struct tNode* braceRoot, int* indices, int* i, struct symbo
 }
 
 struct tNode* findFirst(struct tNode* stmtList) {
-    if (stmtList == NULL || stmtList->nodeType != OP_STMTLIST) return NULL;
+    if (stmtList == NULL) return NULL;
+    if (stmtList->nodeType != OP_STMTLIST) return stmtList;
     while (stmtList->left != NULL && stmtList->left->nodeType == OP_STMTLIST) {
         stmtList = stmtList->left;
     }
@@ -815,7 +816,7 @@ void interpret(struct tNode* stmtList, struct symbol* symbolTable) {
     struct tNode* stmt = findFirst(stmtList);
     char buf[100];
     while (stmt != NULL) {
-        // printStmt(stmt);
+        printStmt(stmt);
         operatorEval(stmt, buf, symbolTable);
         stmt = findNext(stmt, symbolTable);
     }

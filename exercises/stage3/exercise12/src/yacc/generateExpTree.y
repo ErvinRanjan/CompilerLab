@@ -16,8 +16,8 @@
     struct tNode* node;
 };
 
-%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR
-%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt B E ID BREAK CONTINUE Declarations DeclList Decl Type VarList CSTR Array BraceList Identifier
+%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR REPEAT UNTIL DO
+%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt RepeatUntilStmt DoWhileStmt B E ID BREAK CONTINUE Declarations DeclList Decl Type VarList CSTR Array BraceList Identifier
 
 %nonassoc '='
 %left '%'
@@ -31,10 +31,9 @@ Program : BLOCK_BEGIN Declarations Slist BLOCK_END  {
                                 symbolTable = populateSymbolTable($<node>2,symbolTable);
                                 printSymbolTable(symbolTable);
                                 typeCheck($<node>3,symbolTable);
-                                // char cval[100];
-                                // int isString = 0;
-                                // eval($<node>3,cval,&isString,symbolTable);
-                                codeGen(out,$<node>3,symbolTable);
+                                populateParent($<node>3);
+                                interpret($<node>3,symbolTable);
+                                //codeGen(out,$<node>3,symbolTable);
                            }
         | BLOCK_BEGIN BLOCK_END {
 
@@ -97,6 +96,8 @@ Stmt : InputStmt
      | Whilestmt
      | BreakStmt
      | ContinueStmt
+     | RepeatUntilStmt 
+     | DoWhileStmt
        {   
         $<node>$ = $<node>1;
        }     
@@ -144,6 +145,18 @@ ContinueStmt : CONTINUE ';'
         }
         ;   
 
+RepeatUntilStmt  : REPEAT Slist UNTIL '(' B ')' ';' {
+                    int label = getLabel();
+                    $<node>$ = createOperatorNode(OP_REPEAT_UNTIL,$<node>2,$<node>5,NULL,label);
+                }
+                ;
+
+DoWhileStmt : DO Slist WHILE '(' B ')' ';' {
+                    int label = getLabel();
+                    $<node>$ = createOperatorNode(OP_DO_WHILE,$<node>2,$<node>5,NULL,label);
+            }
+            ;
+
 B : E '<' E {
                 $<node>$ = createOperatorNode(OP_LT,$<node>1,$<node>3,NULL,-1);
             }
@@ -181,6 +194,9 @@ E : E '+' E {
             }
   | '&' ID {
                 $<node>$ = createOperatorNode(OP_REF,$<node>2,NULL,NULL,-1); 
+            }
+  | '*' E {
+                $<node>$ = createOperatorNode(OP_DREF,$<node>2,NULL,NULL,-1);
             }
   | '(' E ')' {
                  $<node>$ = $<node>2;
@@ -221,6 +237,9 @@ Identifier : ID
             | Array 
             {
                 $<node>$ = $<node>1;
+            }
+            | '*' E {
+                $<node>$ = createOperatorNode(OP_DREF,$<node>2,NULL,NULL,-1);
             }
             ;
 
