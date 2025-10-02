@@ -87,18 +87,23 @@ struct symbol* createSymbolForIdentifier(struct tNode* varRoot, struct type* typ
     struct param* paramList = NULL;
     int numberOfParam = 0;
     switch (varRoot->nodeType) {
-    case LEAF_ID:
+    case LEAF_ID: {
+        return createSymbol(createType(type->code, type->depth + varRoot->type->depth), varRoot->varName, 1, isLocal ? -1 : getFreeMem(1), PRIMITIVE, NULL);
+    }
+    case LEAF_NUM: {
         return createSymbol(type, varRoot->varName, 1, isLocal ? -1 : getFreeMem(1), PRIMITIVE, NULL);
-    case LEAF_NUM:
-        return createSymbol(type, varRoot->varName, 1, isLocal ? -1 : getFreeMem(1), PRIMITIVE, NULL);
-    case LEAF_ARR:
+    }
+    case LEAF_ARR: {
         int depth = 0, size = 1;
         int maxSizes[100];
         getAndValidateArrayDetails(varRoot->middle, maxSizes, &depth, &size);
+        depth += varRoot->type->depth;
         return createSymbol(createType(type->code, depth), varRoot->left->varName, size, isLocal ? -1 : getFreeMem(size), ARRAY, maxSizes);
-    case LEAF_FDECL:
+    }
+    case LEAF_FDECL: {
         paramList = convertTreeToParamList(varRoot->middle, &numberOfParam, paramList);
-        return createSymbolForFunction(type, varRoot->left->varName, numberOfParam, paramList, varRoot->label);
+        return createSymbolForFunction(createType(type->code, type->depth + varRoot->type->depth), varRoot->left->varName, numberOfParam, paramList, varRoot->label);
+    }
     default:
         printf("Error: Symbol is not recognized\n");
         exit(EXIT_FAILURE);

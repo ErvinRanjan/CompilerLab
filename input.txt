@@ -1,28 +1,8 @@
 decl 
-int f(int n),sum(int a,int b),swap(int* a,int* b),gcd(int a,int b);
+int swap(int* a,int* b),g;
+str hello();
+int* getRef(int* a);
 enddecl 
-int f(int n){
-    decl 
-    int ans;
-    enddecl 
-    begin
-    if(n <= 1) then 
-        ans = 1;
-    else 
-        ans = n*f(n - 1);
-    endif
-    return ans;
-    end
-}
-int sum(int a,int b){
-    decl
-    int x; 
-    enddecl 
-    begin
-    x = a + b;
-    return x;
-    end
-}
 int swap(int* a,int* b){
     decl
     int temp; 
@@ -34,30 +14,38 @@ int swap(int* a,int* b){
     return 0;
     end
 }
-int gcd(int a,int b){
+str hello(){
     decl 
-    int ans;
+    str h;
+    enddecl
+    begin 
+    h = "hello";
+    return h; 
+    end
+}
+int* getRef(int* a){
+    decl
+    int* ans; 
     enddecl 
     begin 
-    if(b == 0) then 
-        ans = a;
-    else 
-        ans = gcd(b,a%b);
-    endif 
+    ans = a;
     return ans;
     end
 }
 int main(){
-    decl 
-    int i,a[10];
-    int* p;
+    decl
+    int a,b,temp,*p;
     enddecl
-    begin 
-    i = 0;
-    while(i < 10) do 
-        a[i] = i;
-        i = i + 1;
-    endwhile 
+    begin
+    g = 1; 
+    p = getRef(&g); // experimental function to test return types
+    *p = 3;
+    write(g);
+    a = 1;
+    b = 2;
+    temp = swap(&a,&b);
+    write(a);
+    write(b);
     return 0; 
     end
 } 

@@ -30,7 +30,7 @@ struct param* addParam(struct param* paramList, struct param* param) {
 struct param* convertTreeToParamList(struct tNode* paramRoot, int* numberOfParam, struct param* paramList) {
     if (paramRoot == NULL) return NULL;
     if (paramRoot->nodeType == OP_PARAM) {
-        paramList = addParam(paramList, makeParam(paramRoot->left->type, paramRoot->middle->varName));
+        paramList = addParam(paramList, makeParam(createType(paramRoot->left->type->code, paramRoot->left->type->depth + paramRoot->type->depth), paramRoot->middle->varName));
         *numberOfParam = *numberOfParam + 1;
         return paramList;
     }

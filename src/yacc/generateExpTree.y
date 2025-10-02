@@ -11,6 +11,7 @@
     extern char* yytext;
     FILE* out;
     struct symbol* gsymbolTable = NULL;
+    extern int lines;
 %}
 
 %union{
@@ -35,6 +36,7 @@ Program : GDeclBlock FDefBlock MainBlock
 MainBlock : INT MAIN '(' ')'  '{' LDeclBlock Body '}' { 
                                                             struct symbol* symbolTable = NULL;
                                                             symbolTable = populateSymbolTable($<node>6,symbolTable,0);
+                                                            printSymbolTable(symbolTable);
                                                             symbolTable = appendSymbolTable(symbolTable,gsymbolTable);
                                                             typeCheck($<node>7,symbolTable);
                                                             fprintf(out,"L0:\n"); 
@@ -96,10 +98,16 @@ Gid : ID
     | ID '(' ParamList ')' {
                                 int label = getLabel();
                                 $<node>$ = createOperatorNode(LEAF_FDECL,$<node>1,$<node>3,NULL,label);
+                                $<node>$->type = $<node>1->type;
                             }
     | ID '(' ')' {  
                     int label = getLabel();
                     $<node>$ = createOperatorNode(LEAF_FDECL,$<node>1,NULL,NULL,label);
+                    $<node>$->type = $<node>1->type;
+                }
+    | '*' Gid {
+                    $<node>2->type->depth = $<node>2->type->depth + 1;
+                    $<node>$ = $<node>2;
                 }
     ;
 
@@ -111,10 +119,20 @@ ParamList : ParamList ',' Param {
             }
         ;
 
-Param : Type ID {
+Param : Type Pid {
                     $<node>$ = createOperatorNode(OP_PARAM,$<node>1,$<node>2,NULL,-1);
+                    $<node>$->type = $<node>2->type;
                 }
         ;
+
+Pid : ID {
+            $<node>$ = $<node>1;
+            }
+    | '*' Pid {
+            $<node>2->type->depth = $<node>2->type->depth + 1;
+            $<node>$ = $<node>2; 
+        }
+    ;
 
 
 LDeclBlock : DECL LDeclList ENDDECL {
@@ -148,7 +166,11 @@ Lid : ID
     | DeclArray
     {
         $<node>$ = $<node>1; 
-    } 
+    }
+    | '*' Lid {
+        $<node>2->type->depth = $<node>2->type->depth + 1;
+        $<node>$ = $<node>2;
+    }
     ;
 
 FDefBlock : FDefBlock FDef 
@@ -156,7 +178,8 @@ FDefBlock : FDefBlock FDef
           {}
           ;
 
-FDef : Type ID '(' ParamList ')' '{' LDeclBlock Body '}' {
+FDef : Type Pid '(' ParamList ')' '{' LDeclBlock Body '}' {
+                                                                $<node>1->type->depth += $<node>2->type->depth;
                                                                 typeCheckFunctionParam($<node>1->type,$<node>2->varName,$<node>4,gsymbolTable);
                                                                 struct symbol* symbolTable1 = NULL;
                                                                 symbolTable1 = addParamAsSymbol($<node>2->varName,gsymbolTable,symbolTable1);
@@ -166,7 +189,8 @@ FDef : Type ID '(' ParamList ')' '{' LDeclBlock Body '}' {
                                                                 populateParent($<node>8);
                                                                 funcCodeGen(out,$<node>2->varName,$<node>8,symbolTable1);
                                                         }
-     | Type ID '('  ')' '{' LDeclBlock Body '}'  {
+     | Type Pid '('  ')' '{' LDeclBlock Body '}'  {
+        $<node>1->type->depth += $<node>2->type->depth;
         typeCheckFunctionParam($<node>1->type,$<node>2->varName,NULL,gsymbolTable);
         struct symbol* symbolTable1 = NULL;
         symbolTable1 = addParamAsSymbol($<node>2->varName,gsymbolTable,symbolTable1);
@@ -329,6 +353,7 @@ ArgList : ArgList ',' E  {
 
 DeclArray : ID DeclBraceList {
                         $<node>$ = createOperatorNode(LEAF_ARR,$<node>1,$<node>2,NULL,-1);
+                        $<node>$ = $<node>1->type;
                     }
 
 DeclBraceList : DeclBraceList '[' NUM ']' {
@@ -364,7 +389,7 @@ Identifier : ID
 %%
 
 int yyerror(const char* s){
-    printf("Error: %s\ntoken: %s",s,yytext);
+    printf("Error: %s\ntoken: %s\nline number: %d\n",s,yytext,lines); 
     return 0;
 }
 

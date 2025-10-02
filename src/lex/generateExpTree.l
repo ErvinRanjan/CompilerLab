@@ -6,15 +6,7 @@
     #include "label.h"
     #include "type.h"
 
-    int getDepth(char* str,int len){
-        int depth = 0;
-        for(int i = 0;i < len;i++){
-            if(str[i] == '*'){
-                depth++;
-            }
-        }
-        return depth;
-    }
+    int lines = 1;
 %}
 
 %%
@@ -30,16 +22,6 @@
 "return" {
             return RETURN;
         }
-
-("int")("*")+ {
-                    yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_INT,getDepth(yytext,strlen(yytext))),-1,LEAF_TYPE_INT,NULL);
-                    return INT;
-                }
-
-("str")("*")+ {
-                    yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_STR,getDepth(yytext,strlen(yytext))),-1,LEAF_TYPE_STR,NULL);
-                    return STR;
-                }
 
 "do" { return DO; }
 
@@ -150,7 +132,7 @@
         }
 
 [_a-zA-Z]+[0-9]*   {
-            yylval.node = createLeafNode(0,yytext,createType(-1,-1),-1,LEAF_ID,NULL);
+            yylval.node = createLeafNode(0,yytext,createType(-1,0),-1,LEAF_ID,NULL);
             return ID;
        }
 
@@ -158,7 +140,11 @@
             return *yytext;
         }
 
-[ \n\t\r]+ {}
+[ \t\r]+ {}
+
+[\n] {
+        lines++;
+    }
 
 %%
 
