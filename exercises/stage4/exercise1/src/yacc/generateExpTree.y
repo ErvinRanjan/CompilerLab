@@ -26,18 +26,15 @@
 
 %%
 
-Program : BLOCK_BEGIN Declarations Slist BLOCK_END  {
+Program :  Declarations Slist   {
                                 struct symbol* symbolTable = NULL;
-                                symbolTable = populateSymbolTable($<node>2,symbolTable);
+                                symbolTable = populateSymbolTable($<node>1,symbolTable);
                                 printSymbolTable(symbolTable);
-                                typeCheck($<node>3,symbolTable);
-                                populateParent($<node>3);
-                                //interpret($<node>3,symbolTable);
-                                codeGen(out,$<node>3,symbolTable);
+                                typeCheck($<node>2,symbolTable);
+                                populateParent($<node>2);
+                                //interpret($<node>2,symbolTable);
+                                codeGen(out,$<node>2,symbolTable);
                            }
-        | BLOCK_BEGIN BLOCK_END {
-
-                                }
         ;
 
 Declarations : DECL DeclList ENDDECL {
@@ -103,18 +100,18 @@ Stmt : InputStmt
        }     
      ;
 
-Ifstmt : IF '(' B ')' THEN Slist ELSE Slist ENDIF { 
+Ifstmt : IF '(' B ')' THEN Slist ELSE Slist ENDIF ';' { 
                                                         int label = getLabel();
                                                         $<node>$ = createOperatorNode(OP_IF,$<node>3,$<node>6,$<node>8,label);
                                                   }
-        |  IF '(' B ')' THEN Slist ENDIF {     
+        |  IF '(' B ')' THEN Slist ENDIF ';' {     
                                             int label = getLabel();
                                             $<node>$ = createOperatorNode(OP_IF,$<node>3,$<node>6,NULL,label);
                                         }
      ;
 
 
-Whilestmt : WHILE '(' B ')' DO Slist ENDWHILE {   
+Whilestmt : WHILE '(' B ')' DO Slist ENDWHILE ';' {   
                                                     int label = getLabel();
                                                     $<node>$ = createOperatorNode(OP_WHILE,$<node>3,$<node>6,NULL,label);
                                                 }
