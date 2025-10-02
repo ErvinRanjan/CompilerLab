@@ -5,6 +5,7 @@
     #include "symbol.h"
     #include "type.h"
     #include "label.h"
+    #include "eval.h"
     #include <stdio.h>
     #include <stdlib.h>
     extern FILE* yyin;
