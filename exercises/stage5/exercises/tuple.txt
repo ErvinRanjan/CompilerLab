@@ -1,0 +1,30 @@
+typedecl 
+tuple person(str name,int age);
+endtypedecl 
+decl 
+int personHello(str name,int age);
+enddecl 
+int personHello(str name,int age){
+    decl 
+    person p1,p2;
+    enddecl
+    begin 
+    p1.name = name;
+    p1.age = age;
+    p2 = p1;
+    write("hello");
+    write("by");
+    write(p2.name);
+    write(p2.age);
+    return 0; 
+    end
+}
+int main(){
+    decl
+    int temp;
+    enddecl
+    begin
+    temp = personHello("Ervin",10);
+    return 0; 
+    end
+} 
