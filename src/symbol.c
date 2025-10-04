@@ -153,7 +153,8 @@ struct symbol* getSymbolTable(char* varName, struct symbol* symbolTable) {
     return temp;
 }
 
-void printSymbolTable(struct symbol* symbolTable) {
+void printSymbolTable(char* name, struct symbol* symbolTable) {
+    printf("Symbol Table for %s\n", name);
     while (symbolTable != NULL) {
         printf("varName: %s\n", symbolTable->varName);
         if (symbolTable->type->typename != NULL) {

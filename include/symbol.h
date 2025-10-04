@@ -27,7 +27,7 @@ struct symbol* addSymbol(struct symbol* symbolTable, struct symbol* symbol);
 int isSymbolPresent(struct symbol* symbolTable, struct symbol* symbol);
 struct symbol* populateSymbolTable(struct tNode* declRoot, struct symbol* symbolTable, int isLocal);
 struct symbol* getSymbolTable(char* varName, struct symbol* symbolTable);
-void printSymbolTable(struct symbol* symbolTable);
+void printSymbolTable(char* name, struct symbol* symbolTable);
 struct symbol* addParamAsSymbol(char* varName, struct symbol* gsymbolTable, struct symbol* symbolTable);
 struct symbol* getLocalVarList(struct symbol* symbolTable, int paramCount);
 int getParamOffset(char* varName, struct symbol* symbolTable, int paramCount);

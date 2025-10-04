@@ -672,12 +672,3 @@ void populateParent(struct tNode* root) {
     populateParent(root->right);
 }
 
-void printNode(struct tNode* node) {
-    if (node == NULL) return;
-    printf("nodeType: %d\n", node->nodeType);
-    printf("varName: %s\n", node->varName);
-    printNode(node->left);
-    printNode(node->middle);
-    printNode(node->right);
-}
-

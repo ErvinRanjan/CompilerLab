@@ -58,99 +58,43 @@ struct type* createUserDefinedTypeWithDepth(char* typename, int depth) {
 
 struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct type* typeMiddle) {
     switch (nodeType) {
-    case OP_ADD:
-        if (typeLeft->code == LEAF_TYPE_INT && typeMiddle->code == LEAF_TYPE_INT) {
-            return createType(LEAF_TYPE_INT, 0);
-        }
-        else {
-            printf("Error: Type Mismatch\n");
-            exit(EXIT_FAILURE);
-        }
-    case OP_SUB:
-        if (typeLeft->code == LEAF_TYPE_INT && typeMiddle->code == LEAF_TYPE_INT) {
-            return createType(LEAF_TYPE_INT, 0);
-        }
-        else {
-            printf("Error: Type Mismatch\n");
-            exit(EXIT_FAILURE);
-        }
-    case OP_MUL:
-        if (typeLeft->code == LEAF_TYPE_INT && typeMiddle->code == LEAF_TYPE_INT) {
-            return createType(LEAF_TYPE_INT, 0);
-        }
-        else {
-            printf("Error: Type Mismatch\n");
-            exit(EXIT_FAILURE);
-        }
-    case OP_DIV:
-        if (typeLeft->code == LEAF_TYPE_INT && typeMiddle->code == LEAF_TYPE_INT) {
-            return createType(LEAF_TYPE_INT, 0);
-        }
-        else {
-            printf("Error: Type Mismatch\n");
-            exit(EXIT_FAILURE);
-        }
-    case OP_MOD:
-        if (typeLeft->code == LEAF_TYPE_INT && typeMiddle->code == LEAF_TYPE_INT) {
-            return createType(LEAF_TYPE_INT, 0);
-        }
-        else {
-            printf("Error: Type Mismatch\n");
-            exit(EXIT_FAILURE);
-        }
     case OP_ASSIGN:
-        if (
-            (typeLeft->typename != NULL
-                && typeMiddle->typename != NULL
-                && strcmp(typeLeft->typename, typeMiddle->typename) != 0)
-            || typeLeft->code != typeMiddle->code
-            || (typeMiddle->code != LEAF_TYPE_INT && typeLeft->depth != typeMiddle->depth)) {
-            printf("Error: Type Mismatch\n");
-            exit(EXIT_FAILURE);
+        if (((typeLeft->code == LEAF_TYPE_INT || typeLeft->depth != 0) && (typeMiddle->code == LEAF_TYPE_INT || typeMiddle->depth != 0)) // pointer-int
+            || (typeLeft->typename != NULL && typeLeft->typename == typeMiddle->typename) // primitive-user
+            || (typeLeft->code == typeMiddle->code)) { // primitive-non-user
+            return createType(-1, 0);
         }
-        return createType(-1, 0);
+        printf("Type Mismatch\n");
+        exit(EXIT_FAILURE);
+    case OP_ADD:
+    case OP_SUB:
+    case OP_MUL:
+    case OP_DIV:
+    case OP_MOD:
+        if ((typeLeft->code == LEAF_TYPE_INT || typeLeft->depth != 0) && (typeMiddle->code == LEAF_TYPE_INT || typeMiddle->depth != 0) && (typeLeft->depth == typeMiddle->depth)) {
+            return createType(LEAF_TYPE_INT, typeLeft->depth);
+        }
+        printf("Error: Type Mismatch\n");
+        exit(EXIT_FAILURE);
+        break;
     case OP_GT:
-        if (typeLeft->code != LEAF_TYPE_INT || typeMiddle->code != LEAF_TYPE_INT) {
-            printf("Error: Type Mismatch\n");
-            exit(EXIT_FAILURE);
-        }
-        return createType(-1, 0);
     case OP_LT:
-        if (typeLeft->code != LEAF_TYPE_INT || typeMiddle->code != LEAF_TYPE_INT) {
-            printf("Error: Type Mismatch\n");
-            exit(EXIT_FAILURE);
-        }
-        return createType(-1, 0);
     case OP_GE:
-        if (typeLeft->code != LEAF_TYPE_INT || typeMiddle->code != LEAF_TYPE_INT) {
-            printf("Error: Type Mismatch\n");
-            exit(EXIT_FAILURE);
-        }
-        return createType(-1, 0);
     case OP_LE:
-        if (typeLeft->code != LEAF_TYPE_INT || typeMiddle->code != LEAF_TYPE_INT) {
-            printf("Error: Type Mismatch\n");
-            exit(EXIT_FAILURE);
-        }
-        return createType(-1, 0);
     case OP_EQ:
-        if (typeLeft->code != LEAF_TYPE_INT || typeMiddle->code != LEAF_TYPE_INT) {
-            printf("Error: Type Mismatch\n");
-            exit(EXIT_FAILURE);
-        }
-        return createType(-1, 0);
     case OP_NE:
-        if (typeLeft->code != LEAF_TYPE_INT || typeMiddle->code != LEAF_TYPE_INT) {
-            printf("Error: Type Mismatch\n");
-            exit(EXIT_FAILURE);
+        if ((typeLeft->code == LEAF_TYPE_INT || typeLeft->depth != 0) && (typeMiddle->code == LEAF_TYPE_INT || typeMiddle->depth != 0)) {
+            return createType(-1, 0);
         }
-        return createType(-1, 0);
+        printf("Error: Type Mismatch\n");
+        exit(EXIT_FAILURE);
     case OP_REF:
         return typeLeft->typename == NULL ? createType(typeLeft->code, typeLeft->depth + 1) : createUserDefinedTypeWithDepth(typeLeft->typename, typeLeft->depth + 1);
     case OP_DREF:
         return typeLeft->typename == NULL ? createType(typeLeft->code, typeLeft->depth - 1) : createUserDefinedTypeWithDepth(typeLeft->typename, typeLeft->depth - 1);
     default:
     }
+
     return createType(-1, 0);
 }
 

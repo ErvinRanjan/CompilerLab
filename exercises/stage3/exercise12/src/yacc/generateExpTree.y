@@ -30,7 +30,7 @@
 Program : BLOCK_BEGIN Declarations Slist BLOCK_END  {
                                 struct symbol* symbolTable = NULL;
                                 symbolTable = populateSymbolTable($<node>2,symbolTable,1);
-                                printSymbolTable(symbolTable);
+                                printSymbolTable("main",symbolTable);
                                 typeCheck($<node>3,symbolTable);
                                 // char cval[100];
                                 // int isString = 0;

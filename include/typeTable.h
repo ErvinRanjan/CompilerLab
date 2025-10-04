@@ -21,5 +21,6 @@ int getTypeSize(struct type* type);
 void populateTypeTable(char* typename, struct param* paramList);
 int getFieldOffset(char* fieldName, struct param* paramList);
 struct type* getFieldType(char* fieldName, struct param* paramList);
+void updateTypeTable(char* typename, struct param* paramList);
 
 #endif

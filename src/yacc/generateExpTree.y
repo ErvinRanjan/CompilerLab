@@ -21,7 +21,7 @@
 };
 
 %token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR REPEAT UNTIL DO MAIN RETURN TYPEDECL ENDTYPEDECL TUPLE
-%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt RepeatUntilStmt DoWhileStmt B E ID BREAK CONTINUE Param ParamList Body ArgList FDef FDefBlock MainBlock GDeclBlock LDeclBlock GDeclList LDeclList GDecl LDecl Type GidList LidList Gid Lid CSTR Array BraceList Identifier TypeDeclBlock TypeDeclList TypeDecl
+%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt RepeatUntilStmt DoWhileStmt B E ID BREAK CONTINUE Param ParamList Body ArgList FDef FDefBlock MainBlock GDeclBlock LDeclBlock GDeclList LDeclList GDecl LDecl Type GidList LidList Gid Lid CSTR Array BraceList Identifier TypeDeclBlock TypeDeclList TypeDecl PartialTypeDecl
 
 %nonassoc '='
 %left '%'
@@ -46,17 +46,23 @@ TypeDeclList : TypeDecl TypeDeclList {}
             | TypeDecl {}
             ;
 
-TypeDecl : TUPLE ID '(' ParamList ')' ';' {
+TypeDecl : PartialTypeDecl '(' ParamList ')' ';' {
                 int numberOfParam = 0;
-                populateTypeTable($<node>2->varName,convertTreeToParamList($<node>4,&numberOfParam,NULL));
+                updateTypeTable($<node>1->varName,convertTreeToParamList($<node>3,&numberOfParam,NULL));
                 printTypeTable();
             }
         ;   
 
+PartialTypeDecl : TUPLE ID {
+                        populateTypeTable($<node>2->varName,NULL);
+                        $<node>$ = $<node>2;
+                } 
+                ;
+
 MainBlock : INT MAIN '(' ')'  '{' LDeclBlock Body '}' { 
                                                             struct symbol* symbolTable = NULL;
                                                             symbolTable = populateSymbolTable($<node>6,symbolTable,0);
-                                                            printSymbolTable(symbolTable);
+                                                            printSymbolTable("main",symbolTable);
                                                             symbolTable = appendSymbolTable(symbolTable,gsymbolTable);
                                                             typeCheck($<node>7,symbolTable);
                                                             fprintf(out,"L0:\n"); 
@@ -77,7 +83,7 @@ Body : BLOCK_BEGIN Slist RetStmt BLOCK_END  {
 GDeclBlock : DECL GDeclList ENDDECL {
                                         gsymbolTable = populateSymbolTable($<node>2,gsymbolTable,0); 
                                         gsymbolTable->isGlobal = 1;
-                                        printSymbolTable(gsymbolTable);
+                                        printSymbolTable("global",gsymbolTable);
                                     }
             | DECL ENDDECL {}
             ;
@@ -114,19 +120,15 @@ Type : INT
 
 GidList : GidList ',' Gid    {
                                 $<node>$ = createOperatorNode(OP_VARLIST,$<node>1,$<node>3,NULL,-1);
-                                printNode($<node>1);
                             }
         | Gid  {
                     $<node>$ = $<node>1;
-                    printNode($<node>1);
-                    printf("hello");
                 }
         ;
 
 Gid : ID  
     | DeclArray
     {
-        printf("%d\n",$<node>1->nodeType); 
         $<node>$ = $<node>1; 
     } 
     | ID '(' ParamList ')' {
@@ -218,7 +220,7 @@ FDef : Type Pid '(' ParamList ')' '{' LDeclBlock Body '}' {
                                                                 struct symbol* symbolTable1 = NULL;
                                                                 symbolTable1 = addParamAsSymbol($<node>2->varName,gsymbolTable,symbolTable1);
                                                                 symbolTable1 = populateSymbolTable($<node>7,symbolTable1,1);
-                                                                printSymbolTable(symbolTable1);
+                                                                printSymbolTable($<node>2->varName,symbolTable1);
                                                                 symbolTable1 = appendSymbolTable(symbolTable1,gsymbolTable);
                                                                 typeCheck($<node>8,symbolTable1);
                                                                 populateParent($<node>8);

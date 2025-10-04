@@ -62,6 +62,10 @@ void addTypeTable(struct typeTable* typeTable) {
         }
         head = head->next;
     }
+    if (strcmp(head->name, typeTable->name) == 0) {
+        printf("Error: type cannot be redeclared: %s\n", typeTable->name);
+        exit(EXIT_FAILURE);
+    }
     head->next = typeTable;
 }
 
@@ -77,6 +81,17 @@ void printTypeTable() {
 
 void populateTypeTable(char* typename, struct param* paramList) {
     addTypeTable(createTypeTable(typename, paramList));
+}
+
+void updateTypeTable(char* typename, struct param* paramList) {
+    struct typeTable* head = getTypeTable();
+    while (head != NULL) {
+        if (strcmp(typename, head->name) == 0) {
+            head->paramList = paramList;
+            break;
+        }
+        head = head->next;
+    }
 }
 
 int getFieldOffset(char* fieldName, struct param* paramList) {
