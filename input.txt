@@ -1,30 +1,40 @@
 typedecl 
-tuple person(str name,int age);
+tuple person(str name,int age,person* person);
 endtypedecl 
 decl 
 int personHello(str name,int age);
 enddecl 
 int personHello(str name,int age){
     decl 
-    person p1,p2;
+    person p1,*p2;
     enddecl
     begin 
     p1.name = name;
     p1.age = age;
-    p2 = p1;
-    write("hello");
-    write("by");
-    write(p2.name);
-    write(p2.age);
+    p2 = &p1;
+    (*p2).name = "ervin";
+    write(p1.name);
     return 0; 
     end
 }
 int main(){
     decl
     int temp;
+    person *p1,*p2,*p;
     enddecl
     begin
-    temp = personHello("Ervin",10);
+    (*p1).name = "ervin";
+    (*p1).age = 10;
+    (*p2).name = "anagh";
+    (*p2).age = 11;
+    (*p1).next = p2;
+    (*p2).next = 0;
+    p = p1;
+    while(p != 0) do 
+        write(p.name);
+        write(p.age);
+        p = (*p).next;
+    endwhile 
     return 0; 
     end
 } 

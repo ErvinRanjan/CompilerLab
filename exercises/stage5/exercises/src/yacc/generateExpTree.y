@@ -46,12 +46,17 @@ TypeDeclList : TypeDecl TypeDeclList {}
             | TypeDecl {}
             ;
 
-TypeDecl : TUPLE ID '(' ParamList ')' ';' {
+TypeDecl : PartialTypeDecl '(' ParamList ')' ';' {
                 int numberOfParam = 0;
                 populateTypeTable($<node>2->varName,convertTreeToParamList($<node>4,&numberOfParam,NULL));
                 printTypeTable();
             }
-        ;   
+        ;  
+
+PartialTypeDecl : TUPLE ID  {
+                    populateTypeTable($<node>2->varName,NULL,NULL);
+                }
+                ;
 
 MainBlock : INT MAIN '(' ')'  '{' LDeclBlock Body '}' { 
                                                             struct symbol* symbolTable = NULL;

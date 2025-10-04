@@ -104,7 +104,7 @@ struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct ty
                 && typeMiddle->typename != NULL
                 && strcmp(typeLeft->typename, typeMiddle->typename) != 0)
             || typeLeft->code != typeMiddle->code
-            || typeLeft->depth != typeMiddle->depth) {
+            || (typeMiddle->code != LEAF_TYPE_INT && typeLeft->depth != typeMiddle->depth)) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
@@ -146,9 +146,9 @@ struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct ty
         }
         return createType(-1, 0);
     case OP_REF:
-        return createType(typeLeft->code, typeLeft->depth + 1);
+        return typeLeft->typename == NULL ? createType(typeLeft->code, typeLeft->depth + 1) : createUserDefinedTypeWithDepth(typeLeft->typename, typeLeft->depth + 1);
     case OP_DREF:
-        return createType(typeLeft->code, typeLeft->depth - 1);
+        return typeLeft->typename == NULL ? createType(typeLeft->code, typeLeft->depth - 1) : createUserDefinedTypeWithDepth(typeLeft->typename, typeLeft->depth - 1);
     default:
     }
     return createType(-1, 0);
@@ -223,12 +223,8 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
         validateFunctionParams(node->middle, symbol->paramList, symbolTable, node->left->varName);
         return symbol->type;
     case LEAF_TUPLE_ACCESS: {
-        struct symbol* symbol = getSymbolTable(node->left->varName, symbolTable);
-        if (symbol == NULL) {
-            printf("Error: variable %s has not been declared\n", node->left->varName);
-            exit(EXIT_FAILURE);
-        }
-        struct typeTable* typeTable = getTypeTableWithName(symbol->type->typename);
+        node->left->type = typeCheck(node->left, symbolTable); // populate type for left expr
+        struct typeTable* typeTable = getTypeTableWithName(node->left->type->typename);
         if (typeTable == NULL) {
             printf("Error: type is used but not declared: %s\n", symbol->type->typename);
             exit(EXIT_FAILURE);
@@ -249,13 +245,15 @@ struct type* typeCheck(struct tNode* root, struct symbol* symbolTable) {
     if (root == NULL) return createType(-1, 0);
 
     if (isLeaf(root->nodeType)) {
-        return validateLeafType(root, symbolTable);
+        root->type = validateLeafType(root, symbolTable);
+        return root->type;
     }
 
     struct type* typeLeft = typeCheck(root->left, symbolTable);
     struct type* typeMiddle = typeCheck(root->middle, symbolTable);
 
-    return validateOperatorType(root->nodeType, typeLeft, typeMiddle);
+    root->type = validateOperatorType(root->nodeType, typeLeft, typeMiddle);
+    return root->type;
 }
 
 void typeCheckFunctionParam(struct type* type, char* varName, struct tNode* paramRoot, struct symbol* symbolTable) {

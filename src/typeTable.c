@@ -28,6 +28,7 @@ struct typeTable* createTypeTable(char* name, struct param* paramList) {
 }
 
 struct typeTable* getTypeTableWithName(char* name) {
+    if (name == NULL) return NULL;
     struct typeTable* head = getTypeTable();
     while (head != NULL) {
         if (strcmp(name, head->name) == 0) {
@@ -88,4 +89,14 @@ int getFieldOffset(char* fieldName, struct param* paramList) {
         paramList = paramList->next;
     }
     return size;
+}
+
+struct type* getFieldType(char* fieldName, struct param* paramList) {
+    while (paramList != NULL) {
+        if (strcmp(fieldName, paramList->name) == 0) {
+            return paramList->type;
+        }
+        paramList = paramList->next;
+    }
+    return NULL;
 }

@@ -418,7 +418,7 @@ Identifier : ID
             | '*' E {
                 $<node>$ = createOperatorNode(OP_DREF,$<node>2,NULL,NULL,-1);
             }
-            | ID '.' ID {
+            | E '.' ID {
                 $<node>$ = createOperatorNode(LEAF_TUPLE_ACCESS,$<node>1,$<node>3,NULL,-1);
             }
             ;
