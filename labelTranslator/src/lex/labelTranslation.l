@@ -6,50 +6,51 @@
     int labelToAddr[1000];
     int lines = -8;
     char filename[1000];
-    int once = 0, baseAddr = ENTRY_POINT, endAddr = -1; 
+    int second_time = 0, baseAddr = ENTRY_POINT, endAddr = -1; 
     FILE* out;
 %}
 
 %%
 
-"\n" {
+"/*"([^*]|\*+[^/])*"*/\n"    {}
 
+"\n" {
         lines++;
-        if(once){
+        if(second_time){
             fprintf(out,"%s",yytext);
         }
      }
 
-"L"[0-9]+":\n" {  
-                int labelNumber;
-                sscanf(yytext,"L%d",&labelNumber);
-                if(!once){
-                    labelToAddr[labelNumber] = baseAddr + 2*lines;
-                }
-            }
+"L"[0-9]+":\n" {
+    int labelNumber;
+    sscanf(yytext, "L%d", &labelNumber);
+    if(!second_time){
+        labelToAddr[labelNumber] = baseAddr + 2*lines;
+    }
+}
 
 "L"[0-9]+ {     
                 int labelNumber;
                 sscanf(yytext,"L%d",&labelNumber);
-                if(once){
+                if(second_time){
                     fprintf(out,"%d",labelToAddr[labelNumber]);
                 }
             }
 
 "L-1:\n" {
-            if(!once){
+            if(!second_time){
                 endAddr = baseAddr + 2*lines;
             }
         }
 
 "L-1"   {
-            if(once){
+            if(second_time){
                 fprintf(out,"%d",endAddr);
             }
         }
 
 .       {   
-            if(once){
+            if(second_time){
                 fprintf(out,"%s",yytext);
             }
         }
@@ -57,8 +58,8 @@
 %%
 
 int yywrap(){
-    if(!once){
-        once++;
+    if(!second_time){
+        second_time++;
         yyin = fopen(filename,"r");
         return 0;
     }

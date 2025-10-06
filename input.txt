@@ -6,29 +6,31 @@ int personHello(str name,int age);
 enddecl 
 int personHello(str name,int age){
     decl 
-    person p1,*p2;
+    person p1,p2;
     enddecl
     begin 
     p1.name = name;
     p1.age = age;
-    p2 = &p1;
-    (*p2).name = "ervin";
-    write(p1.name);
+    p2 = p1;
+    write("hello");
+    write("by");
+    write(p2.name);
+    write(p2.age);
     return 0; 
     end
 }
 int main(){
-    decl
-    int temp;
-    person *p1,*p2,*p;
-    person p3,p4;
+    decl 
+    person p1,p2;
     enddecl
-    begin
-    p3.name = "ervin";
-    p3.age = 14;
-    p1 = &p3;
-    write((*p1).name);
-    write((*p1).age);
+    begin 
+    p1.name = "ervin";
+    p1.age = 12;
+    p2 = p1;
+    write("hello");
+    write("by");
+    write(p2.name);
+    write(p2.age);
     return 0; 
     end
 } 

@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "typeTable.h"
+#include "eval.h"
 
 struct stack* beginLabelStack, * nextLabelStack; // keeps track of latest while begin and next labels
 extern int getArrayDepth(struct tNode* braceRoot);
@@ -195,7 +196,7 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
         break;
     case OP_ASSIGN: {
         struct symbol* symbolMiddle = getSymbolTable(node->middle->varName, symbolTable);
-        if (symbolMiddle != NULL && symbolMiddle->type->typename != NULL) {
+        if (symbolMiddle != NULL && symbolMiddle->type->typename != NULL && symbolMiddle->type->depth == 0) {
             handleAssignForUserDefinedTypes(out, node->left, reg2, symbolTable, fname);
         }
         else {
@@ -349,11 +350,11 @@ void libExit(FILE* out) {
 int isLValue(struct tNode* root) {
     if (root == NULL) return 0;
     struct tNode* prev = NULL;
-    while (root != NULL && root->nodeType != OP_ASSIGN) {
+    while (root != NULL && root->nodeType != OP_ASSIGN && root->nodeType != LEAF_TUPLE_ACCESS && root->nodeType != LEAF_ARR) {
         prev = root;
         root = root->parent;
     }
-    return root != NULL && root->left == prev;
+    return root != NULL && root->nodeType != LEAF_ARR && root->left == prev;
 }
 
 int pushFuncArgs(FILE* out, struct tNode* argList, struct symbol* symbolTable, char* fname) {
@@ -391,14 +392,11 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
         reg = getFreeReg();
         struct symbol* sym = getSymbolTable(node->varName, symbolTable);
         addr = sym->binding;
-        if (sym->type->typename != NULL) {
+        if (isLValue(node) || (sym->type->typename != NULL && sym->type->depth == 0)) {
             fprintf(out, "MOV R%d, %d\n", reg, addr);
-        }
-        else if (sym->type->depth == 0 || !isLValue(node)) {
-            fprintf(out, "MOV R%d, [%d]\n", reg, addr);
         }
         else {
-            fprintf(out, "MOV R%d, %d\n", reg, addr);
+            fprintf(out, "MOV R%d, [%d]\n", reg, addr);
         }
         break;
     case LEAF_NUM:
@@ -458,11 +456,8 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
         int reg = resolveAddr(out, node, symbolTable, NULL);
         struct typeTable* typeTable = getTypeTableWithName(node->left->type->typename);
         struct type* fieldType = getFieldType(node->middle->varName, typeTable->paramList);
-        if (fieldType->depth == 0 || !isLValue(node)) {
+        if (!isLValue(node)) {
             fprintf(out, "MOV R%d, [R%d]\n", reg, reg);
-        }
-        else {
-            fprintf(out, "MOV R%d, R%d\n", reg, reg);
         }
         return reg;
         break;
@@ -513,7 +508,7 @@ int leafCodeGenForFunction(FILE* out, char* fname, struct tNode* node, struct sy
             printf("Error: variable has not been declared: %s\n", node->varName);
             exit(EXIT_FAILURE);
         }
-        if (sym->type->typename == NULL && (sym->type->depth == 0 || !isLValue(node))) {
+        if (!isLValue(node) && (sym->type->typename == NULL || sym->type->depth != 0)) {
             fprintf(out, "MOV R%d, [R%d]\n", reg, reg);
         }
         return reg;
@@ -556,6 +551,9 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent,
             push(nextLabelStack, createGeneric(LEAF_TYPE_INT, &next));
         }
         fprintf(out, "L%d:\n", root->label);
+        fprintf(out, "/*\n");
+        fprintStmt(out, root);
+        fprintf(out, "*/\n");
     }
 
     if (isLeaf(root->nodeType)) {

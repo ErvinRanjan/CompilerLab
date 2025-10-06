@@ -88,6 +88,10 @@ void updateTypeTable(char* typename, struct param* paramList) {
     while (head != NULL) {
         if (strcmp(typename, head->name) == 0) {
             head->paramList = paramList;
+            while (paramList != NULL) {
+                head->size = head->size + getTypeSize(paramList->type);
+                paramList = paramList->next;
+            }
             break;
         }
         head = head->next;

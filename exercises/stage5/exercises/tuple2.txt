@@ -1,0 +1,36 @@
+typedecl 
+tuple person(str name,int age,person* next);
+endtypedecl 
+decl 
+int f();
+enddecl 
+int f(){
+    decl 
+    person p1,p2,*p;
+    enddecl 
+    begin
+    p1.name = "ervin";
+    p1.age = 12;
+    p1.next = &p2;
+    p2.name = "ansaf";
+    p2.age = 14;
+    p2.next = 0;
+    p = &p1;
+    while(p != 0) do 
+      write((*p).name);
+      write((*p).age);
+      p = (*p).next;
+    endwhile;
+    return 0;
+    end 
+}
+int main(){
+    decl
+    int temp,i;
+    person p1,p2,*p;
+    enddecl
+    begin
+    temp = f();
+    return 0; 
+    end
+} 

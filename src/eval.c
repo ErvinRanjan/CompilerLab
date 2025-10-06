@@ -269,7 +269,7 @@ void printStmt(struct tNode* stmt) {
         printf(")\n");
         break;
     case OP_ASSIGN:
-        printf("%s ", stmt->left->nodeType == LEAF_ARR ? stmt->left->left->varName : stmt->left->varName);
+        printExpr(stmt->left);
         printf("= ");
         printExpr(stmt->middle);
         printf("\n");
@@ -317,12 +317,26 @@ void printExpr(struct tNode* expr) {
         return;
     }
 
+    if (expr->nodeType == LEAF_STR) {
+        printf("%s ", expr->stringVal);
+        return;
+    }
+
     if (expr->nodeType == LEAF_ARR) {
         printf("%s ", expr->left->varName);
         return;
     }
 
-    printExpr(expr->left);
+    if (expr->nodeType == LEAF_TUPLE_ACCESS) {
+        printExpr(expr->left);
+        printf(". ");
+        printExpr(expr->middle);
+        return;
+    }
+
+    if (expr->nodeType != OP_DREF && expr->nodeType != OP_REF) {
+        printExpr(expr->left);
+    }
 
     struct symbol* sym = NULL;
     switch (expr->nodeType) {
@@ -361,10 +375,188 @@ void printExpr(struct tNode* expr) {
         break;
     case OP_REF:
         printf("& ");
+        printExpr(expr->left);
+        break;
+    case OP_DREF:
+        printf("* ");
+        printExpr(expr->left);
+        break;
     default:
     }
 
     printExpr(expr->middle);
+}
+
+
+void fprintStmt(FILE* out, struct tNode* stmt) {
+    if (stmt == NULL) return;
+    switch (stmt->nodeType) {
+    case OP_READ:
+        fprintf(out, "read( ");
+        fprintf(out, "%s", stmt->left->nodeType == LEAF_ARR ? stmt->left->left->varName : stmt->left->varName);
+        fprintf(out, " )\n");
+        break;
+    case OP_WRITE:
+        fprintf(out, "write( ");
+        fprintExpr(out, stmt->left);
+        fprintf(out, ")\n");
+        break;
+    case OP_ASSIGN:
+        fprintExpr(out, stmt->left);
+        fprintf(out, "= ");
+        fprintExpr(out, stmt->middle);
+        fprintf(out, "\n");
+        break;
+    case OP_IF:
+        fprintf(out, "if( ");
+        fprintExpr(out, stmt->left);
+        fprintf(out, ")\n");
+        break;
+    case OP_WHILE:
+        fprintf(out, "while( ");
+        fprintExpr(out, stmt->left);
+        fprintf(out, ")\n");
+        break;
+    case OP_DO_WHILE:
+        fprintf(out, "do-while( ");
+        fprintExpr(out, stmt->middle);
+        fprintf(out, ")\n");
+        break;
+    case OP_REPEAT_UNTIL:
+        fprintf(out, "repeat-until( ");
+        fprintExpr(out, stmt->middle);
+        fprintf(out, ")\n");
+        break;
+    case LEAF_BREAK:
+        fprintf(out, "break\n");
+        break;
+    case LEAF_CONTINUE:
+        fprintf(out, "continue\n");
+        break;
+    case OP_RETURN:
+        fprintf(out, "return ");
+        fprintExpr(out, stmt->left);
+        fprintf(out, "\n");
+    default:
+    }
+}
+
+void fprintfArr(FILE* out, struct tNode* braceRoot) {
+    if (braceRoot == NULL) return;
+
+    fprintf(out, "[ ");
+    if (braceRoot->nodeType != OP_BRACELIST) {
+        fprintExpr(out, braceRoot);
+        fprintf(out, "] ");
+        return;
+    }
+
+    fprintfArr(out, braceRoot->left);
+    fprintfArr(out, braceRoot->middle);
+}
+
+void fprintfFunc(FILE* out, struct tNode* argList) {
+    if (argList == NULL) return;
+
+    if (argList->nodeType != OP_ARGLIST) {
+        fprintExpr(out, argList);
+        return;
+    }
+
+    fprintfFunc(out, argList->left);
+    fprintfFunc(out, argList->middle);
+}
+
+void fprintExpr(FILE* out, struct tNode* expr) {
+    if (expr == NULL) return;
+
+    if (expr->nodeType == LEAF_ID) {
+        fprintf(out, "%s ", expr->varName);
+        return;
+    }
+
+    if (expr->nodeType == LEAF_NUM) {
+        fprintf(out, "%d ", expr->val);
+        return;
+    }
+
+    if (expr->nodeType == LEAF_STR) {
+        fprintf(out, "%s ", expr->stringVal);
+        return;
+    }
+
+    if (expr->nodeType == LEAF_ARR) {
+        fprintf(out, "%s ", expr->left->varName);
+        fprintfArr(out, expr->middle);
+        return;
+    }
+
+    if (expr->nodeType == LEAF_TUPLE_ACCESS) {
+        fprintExpr(out, expr->left);
+        fprintf(out, ". ");
+        fprintExpr(out, expr->middle);
+        return;
+    }
+
+    if (expr->nodeType == LEAF_FUNC) {
+        fprintExpr(out, expr->left);
+        fprintf(out, "( ");
+        fprintfFunc(out, expr->middle);
+        fprintf(out, ") ");
+        return;
+    }
+
+    if (expr->nodeType != OP_DREF && expr->nodeType != OP_REF) {
+        fprintExpr(out, expr->left);
+    }
+
+    struct symbol* sym = NULL;
+    switch (expr->nodeType) {
+    case OP_ADD:
+        fprintf(out, "+ ");
+        break;
+    case OP_SUB:
+        fprintf(out, "- ");
+        break;
+    case OP_MUL:
+        fprintf(out, "* ");
+        break;
+    case OP_DIV:
+        fprintf(out, "/ ");
+        break;
+    case OP_MOD:
+        fprintf(out, "% ");
+        break;
+    case OP_GT:
+        fprintf(out, "> ");
+        break;
+    case OP_LT:
+        fprintf(out, "< ");
+        break;
+    case OP_GE:
+        fprintf(out, ">= ");
+        break;
+    case OP_LE:
+        fprintf(out, "<= ");
+        break;
+    case OP_EQ:
+        fprintf(out, "== ");
+        break;
+    case OP_NE:
+        fprintf(out, "!= ");
+        break;
+    case OP_REF:
+        fprintf(out, "& ");
+        fprintExpr(out, expr->left);
+        break;
+    case OP_DREF:
+        fprintf(out, "* ");
+        fprintExpr(out, expr->left);
+        break;
+    default:
+    }
+
+    fprintExpr(out, expr->middle);
 }
 
 void interpret(struct tNode* stmtList, struct symbol* symbolTable) {
