@@ -39,7 +39,9 @@ Program : TypeDeclBlock GDeclBlock FDefBlock MainBlock
         ;
 
 TypeDeclBlock : TYPEDECL ENDTYPEDECL {}
-              | TYPEDECL TypeDeclList ENDTYPEDECL {}
+              | TYPEDECL TypeDeclList ENDTYPEDECL {
+                printTypeTable();
+              }
               ;
 
 TypeDeclList : TypeDecl TypeDeclList {}
@@ -49,7 +51,6 @@ TypeDeclList : TypeDecl TypeDeclList {}
 TypeDecl : PartialTypeDecl '(' ParamList ')' ';' {
                 int numberOfParam = 0;
                 updateTypeTable($<node>1->varName,convertTreeToParamList($<node>3,&numberOfParam,NULL));
-                printTypeTable();
             }
         ;   
 
@@ -113,7 +114,7 @@ Type : INT
             printf("Error: type is used but not declared: %s\n",$<node>1->varName);
             exit(EXIT_FAILURE);
         }
-        $<node>1->type = createUserDefinedType($<node>1->varName);
+        $<node>1->type = createUserDefinedTypeWithName($<node>1->varName);
         $<node>$ = $<node>1;
        }
      ;

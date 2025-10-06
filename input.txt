@@ -1,5 +1,6 @@
 typedecl 
 tuple person(str name,int age);
+tuple programmer(person person,int skill);
 endtypedecl 
 decl 
 int personHello(str name,int age);
@@ -22,15 +23,17 @@ int personHello(str name,int age){
 int main(){
     decl 
     person p1,p2;
+    programmer p3;
     enddecl
     begin 
     p1.name = "ervin";
     p1.age = 12;
-    p2 = p1;
+    p3.person = p1;
+    p3.skill = 100;
     write("hello");
     write("by");
-    write(p2.name);
-    write(p2.age);
+    write(p3.person.name);
+    write(p3.skill);
     return 0; 
     end
 } 

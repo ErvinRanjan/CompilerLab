@@ -899,7 +899,7 @@ case 11:
 YY_RULE_SETUP
 #line 44 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
 {
-            yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_INT,0),-1,LEAF_TYPE_INT,NULL);
+            yylval.node = createLeafNode(-1,NULL,createPrimitiveType(LEAF_TYPE_INT,0),-1,LEAF_TYPE_INT,NULL);
             return INT;
         }
 	YY_BREAK
@@ -907,7 +907,7 @@ case 12:
 YY_RULE_SETUP
 #line 49 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
 {
-            yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_STR,0),-1,LEAF_TYPE_STR,NULL);
+            yylval.node = createLeafNode(-1,NULL,createPrimitiveType(LEAF_TYPE_STR,0),-1,LEAF_TYPE_STR,NULL);
             return STR;
         }
 	YY_BREAK
@@ -1035,7 +1035,7 @@ YY_RULE_SETUP
 #line 122 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
 {
             int label = getLabel();
-            yylval.node = createLeafNode(0,NULL,createType(-1,-1),label,LEAF_BREAK,NULL);
+            yylval.node = createLeafNode(0,NULL,createPrimitiveType(-1,-1),label,LEAF_BREAK,NULL);
             return BREAK;
         }
 	YY_BREAK
@@ -1044,7 +1044,7 @@ YY_RULE_SETUP
 #line 128 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
 {
                 int label = getLabel();
-                yylval.node = createLeafNode(0,NULL,createType(-1,-1),label,LEAF_CONTINUE,NULL);
+                yylval.node = createLeafNode(0,NULL,createPrimitiveType(-1,-1),label,LEAF_CONTINUE,NULL);
                 return CONTINUE;
             }
 	YY_BREAK
@@ -1052,7 +1052,7 @@ case 32:
 YY_RULE_SETUP
 #line 134 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
 { 
-            yylval.node = createLeafNode(atoi(yytext),NULL,createType(LEAF_TYPE_INT,0),-1,LEAF_NUM,NULL); 
+            yylval.node = createLeafNode(atoi(yytext),NULL,createPrimitiveType(LEAF_TYPE_INT,0),-1,LEAF_NUM,NULL); 
             return NUM;
     }
 	YY_BREAK
@@ -1062,7 +1062,7 @@ YY_RULE_SETUP
 {
             char syytext[100];
             strip(syytext,yytext,'"');
-            yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_STR,0),-1,LEAF_STR,syytext);
+            yylval.node = createLeafNode(-1,NULL,createPrimitiveType(LEAF_TYPE_STR,0),-1,LEAF_STR,syytext);
             return CSTR;
         }
 	YY_BREAK
@@ -1070,7 +1070,7 @@ case 34:
 YY_RULE_SETUP
 #line 146 "/mnt/c/Users/ervin/coding/compilerLab/src/lex/generateExpTree.l"
 {
-            yylval.node = createLeafNode(0,yytext,createType(-1,0),-1,LEAF_ID,NULL);
+            yylval.node = createLeafNode(0,yytext,createPrimitiveType(-1,0),-1,LEAF_ID,NULL);
             return ID;
     }
 	YY_BREAK

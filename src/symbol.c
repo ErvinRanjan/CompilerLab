@@ -89,7 +89,7 @@ struct symbol* createSymbolForIdentifier(struct tNode* varRoot, struct type* typ
     int numberOfParam = 0;
     switch (varRoot->nodeType) {
     case LEAF_ID: {
-        struct type* t = type->typename == NULL ? createType(type->code, type->depth + varRoot->type->depth) : createUserDefinedTypeWithDepth(type->typename, type->depth + varRoot->type->depth);
+        struct type* t = type->typename == NULL ? createPrimitiveType(type->code, type->depth + varRoot->type->depth) : createUserDefinedTypeWithDepth(type->typename, type->depth + varRoot->type->depth);
         return createSymbol(t, varRoot->varName, 1, isLocal ? -1 : getFreeMem(getTypeSize(t)), PRIMITIVE, NULL);
     }
     case LEAF_NUM: {
@@ -100,19 +100,19 @@ struct symbol* createSymbolForIdentifier(struct tNode* varRoot, struct type* typ
         int maxSizes[100];
         getAndValidateArrayDetails(varRoot->middle, maxSizes, &depth, &size);
         depth += varRoot->type->depth;
-        struct type* t = type->typename == NULL ? createType(type->code, depth) : createUserDefinedTypeWithDepth(type->typename, depth);
+        struct type* t = type->typename == NULL ? createPrimitiveType(type->code, depth) : createUserDefinedTypeWithDepth(type->typename, depth);
         return createSymbol(t, varRoot->left->varName, size, isLocal ? -1 : getFreeMem(size), ARRAY, maxSizes);
     }
     case LEAF_FDECL: {
         paramList = convertTreeToParamList(varRoot->middle, &numberOfParam, paramList);
-        struct type* t = type->typename == NULL ? createType(type->code, type->depth + varRoot->type->depth) : createUserDefinedTypeWithDepth(type->typename, type->depth + varRoot->type->depth);
+        struct type* t = type->typename == NULL ? createPrimitiveType(type->code, type->depth + varRoot->type->depth) : createUserDefinedTypeWithDepth(type->typename, type->depth + varRoot->type->depth);
         return createSymbolForFunction(t, varRoot->left->varName, numberOfParam, paramList, varRoot->label);
     }
     default:
         printf("Error: Symbol is not recognized\n");
         exit(EXIT_FAILURE);
     }
-    return createSymbol(createType(-1, 0), NULL, -1, -1, -1, NULL);
+    return createSymbol(createPrimitiveType(-1, 0), NULL, -1, -1, -1, NULL);
 }
 
 struct symbol* populateSymbolTableGivenVarList(struct tNode* varRoot, struct symbol* symbolTable, struct type* type, int isLocal) {

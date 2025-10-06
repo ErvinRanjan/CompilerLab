@@ -22,22 +22,22 @@
 %%
 
 ("int")("*")+ {
-                    yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_INT,getDepth(yytext,strlen(yytext))),-1,LEAF_TYPE_INT,NULL);
+                    yylval.node = createLeafNode(-1,NULL,createPrimitiveType(LEAF_TYPE_INT,getDepth(yytext,strlen(yytext))),-1,LEAF_TYPE_INT,NULL);
                     return INT;
                 }
 
 ("str")("*")+ {
-                    yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_STR,getDepth(yytext,strlen(yytext))),-1,LEAF_TYPE_STR,NULL);
+                    yylval.node = createLeafNode(-1,NULL,createPrimitiveType(LEAF_TYPE_STR,getDepth(yytext,strlen(yytext))),-1,LEAF_TYPE_STR,NULL);
                     return STR;
                 }
 
 "int" {
-            yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_INT,0),-1,LEAF_TYPE_INT,NULL);
+            yylval.node = createLeafNode(-1,NULL,createPrimitiveType(LEAF_TYPE_INT,0),-1,LEAF_TYPE_INT,NULL);
             return INT;
         }
 
 "str"   {
-            yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_STR,0),-1,LEAF_TYPE_STR,NULL);
+            yylval.node = createLeafNode(-1,NULL,createPrimitiveType(LEAF_TYPE_STR,0),-1,LEAF_TYPE_STR,NULL);
             return STR;
         }
 
@@ -111,30 +111,30 @@
 
 "break" {
             int label = getLabel();
-            yylval.node = createLeafNode(0,NULL,createType(-1,-1),label,LEAF_BREAK,NULL);
+            yylval.node = createLeafNode(0,NULL,createPrimitiveType(-1,-1),label,LEAF_BREAK,NULL);
             return BREAK;
         }
 
 "continue" {
                 int label = getLabel();
-                yylval.node = createLeafNode(0,NULL,createType(-1,-1),label,LEAF_CONTINUE,NULL);
+                yylval.node = createLeafNode(0,NULL,createPrimitiveType(-1,-1),label,LEAF_CONTINUE,NULL);
                 return CONTINUE;
             }
 
 [0-9]+ { 
-            yylval.node = createLeafNode(atoi(yytext),NULL,createType(LEAF_TYPE_INT,0),-1,LEAF_NUM,NULL); 
+            yylval.node = createLeafNode(atoi(yytext),NULL,createPrimitiveType(LEAF_TYPE_INT,0),-1,LEAF_NUM,NULL); 
             return NUM;
        }
 
 \".*\" {
             char syytext[100];
             strip(syytext,yytext,'"');
-            yylval.node = createLeafNode(-1,NULL,createType(LEAF_TYPE_STR,0),-1,LEAF_STR,syytext);
+            yylval.node = createLeafNode(-1,NULL,createPrimitiveType(LEAF_TYPE_STR,0),-1,LEAF_STR,syytext);
             return CSTR;
         }
 
 [_a-zA-Z]+[0-9]*   {
-            yylval.node = createLeafNode(0,yytext,createType(-1,-1),-1,LEAF_ID,NULL);
+            yylval.node = createLeafNode(0,yytext,createPrimitiveType(-1,-1),-1,LEAF_ID,NULL);
             return ID;
        }
 

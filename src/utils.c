@@ -20,11 +20,8 @@ void strip(char* dest, char* src, char ch) {
 
 // mainly to be used for function names, max buffer size allowed is 100
 char* safeStrcpy(char* src) {
+    if (src == NULL) return NULL;
     char* dest = malloc(sizeof(src));
-    if (src == NULL) {
-        printf("Error: while doing safe copy: src pointer is NULL\n");
-        exit(EXIT_FAILURE);
-    }
     if (strlen(src) >= 100) {
         printf("Error: while doing safe copy: src pointer len is greater than or equal to 100\n");
         exit(EXIT_FAILURE);

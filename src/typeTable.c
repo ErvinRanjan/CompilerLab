@@ -88,8 +88,13 @@ void updateTypeTable(char* typename, struct param* paramList) {
     while (head != NULL) {
         if (strcmp(typename, head->name) == 0) {
             head->paramList = paramList;
+            head->size = 0;
             while (paramList != NULL) {
-                head->size = head->size + getTypeSize(paramList->type);
+                if (paramList->type->typename != NULL && strcmp(paramList->type->typename, typename) == 0 && paramList->type->depth == 0) {
+                    printf("Error: cannot self reference a incomplete type as a non pointer\n");
+                    exit(EXIT_FAILURE);
+                }
+                head->size += getTypeSize(paramList->type);
                 paramList = paramList->next;
             }
             break;

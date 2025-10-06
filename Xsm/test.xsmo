@@ -182,23 +182,34 @@ ADD R2, 1
 MOV [R2], R0
 L12:
 /*
-p2 = p1 
+p3 . person = p1 
 */
 MOV R0, 4096
-MOV R1, 4098
+MOV R1, 4100
 MOV R2, R1
-MOV R3, R0
 ADD R2, 0
+MOV R3, R2
+MOV R4, R0
 ADD R3, 0
-MOV R3, [R3]
-MOV [R2], R3
-MOV R2, R1
-MOV R3, R0
-ADD R2, 1
+ADD R4, 0
+MOV R4, [R4]
+MOV [R3], R4
+MOV R3, R2
+MOV R4, R0
 ADD R3, 1
-MOV R3, [R3]
-MOV [R2], R3
+ADD R4, 1
+MOV R4, [R4]
+MOV [R3], R4
 L13:
+/*
+p3 . skill = 100 
+*/
+MOV R0, 100
+MOV R1, 4100
+MOV R2, R1
+ADD R2, 2
+MOV [R2], R0
+L14:
 /*
 write( hello )
 */
@@ -217,7 +228,7 @@ POP R1
 POP R1
 POP R1
 POP R1
-L14:
+L15:
 /*
 write( by )
 */
@@ -236,35 +247,38 @@ POP R1
 POP R1
 POP R1
 POP R1
-L15:
+L16:
 /*
-write( p2 . name )
+write( p3 . person . name )
 */
-MOV R0, 4098
+MOV R0, 4100
 MOV R1, R0
 ADD R1, 0
 MOV R1, [R1]
-MOV R2, "Write"
-PUSH R2
-MOV R2, -2
-PUSH R2
 MOV R2, R1
-PUSH R2
-PUSH R2
-PUSH R2
+ADD R2, 0
+MOV R2, [R2]
+MOV R3, "Write"
+PUSH R3
+MOV R3, -2
+PUSH R3
+MOV R3, R2
+PUSH R3
+PUSH R3
+PUSH R3
 CALL 0
-POP R2
-POP R2
-POP R2
-POP R2
-POP R2
-L16:
+POP R3
+POP R3
+POP R3
+POP R3
+POP R3
+L17:
 /*
-write( p2 . age )
+write( p3 . skill )
 */
-MOV R0, 4098
+MOV R0, 4100
 MOV R1, R0
-ADD R1, 1
+ADD R1, 2
 MOV R1, [R1]
 MOV R2, "Write"
 PUSH R2
@@ -280,7 +294,7 @@ POP R2
 POP R2
 POP R2
 POP R2
-L17:
+L18:
 /*
 return 0 
 */

@@ -122,8 +122,8 @@ int getMem(char* varName, struct symbol* symbolTable) {
 }
 
 void handleAssignForUserDefinedTypes(FILE* out, struct tNode* node, int addr_reg, struct symbol* symbolTable, char* fname) {
-    struct symbol* symbol = getSymbolTable(node->varName, symbolTable);
-    struct typeTable* typeTable = getTypeTableWithName(symbol->type->typename);
+    struct type* type = typeCheck(node, symbolTable);
+    struct typeTable* typeTable = getTypeTableWithName(type->typename);
     if (typeTable == NULL) {
         printf("Error: type is used but not declared\n");
         exit(EXIT_FAILURE);

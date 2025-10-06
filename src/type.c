@@ -34,7 +34,7 @@ int getArrayDepth(struct tNode* braceRoot) {
     return braceRoot == NULL || braceRoot->nodeType != OP_BRACELIST ? braceRoot != NULL : 1 + max(getArrayDepth(braceRoot->left), getArrayDepth(braceRoot->right));
 }
 
-struct type* createType(int code, int depth) {
+struct type* createPrimitiveType(int code, int depth) {
     struct type* t = malloc(sizeof(struct type));
     t->code = code;
     t->depth = depth;
@@ -42,7 +42,7 @@ struct type* createType(int code, int depth) {
     return t;
 }
 
-struct type* createUserDefinedType(char* typename) {
+struct type* createUserDefinedTypeWithName(char* typename) {
     struct type* t = malloc(sizeof(struct type));
     t->code = -2; // user defined types equal -2 , undefined equal -1
     t->depth = 0;
@@ -51,8 +51,15 @@ struct type* createUserDefinedType(char* typename) {
 }
 
 struct type* createUserDefinedTypeWithDepth(char* typename, int depth) {
-    struct type* t = createUserDefinedType(typename);
+    struct type* t = createUserDefinedTypeWithName(typename);
     t->depth = depth;
+    return t;
+}
+
+struct type* createType(char* typename, int code, int depth) {
+    struct type* t = createUserDefinedTypeWithName(typename);
+    t->depth = depth;
+    t->code = code;
     return t;
 }
 
@@ -62,7 +69,7 @@ struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct ty
         if (((typeLeft->code == LEAF_TYPE_INT || typeLeft->depth != 0) && (typeMiddle->code == LEAF_TYPE_INT || typeMiddle->depth != 0)) // pointer-int
             || (typeLeft->typename != NULL && typeLeft->typename == typeMiddle->typename) // primitive-user
             || (typeLeft->code == typeMiddle->code)) { // primitive-non-user
-            return createType(-1, 0);
+            return createPrimitiveType(-1, 0);
         }
         printf("Type Mismatch\n");
         exit(EXIT_FAILURE);
@@ -72,7 +79,7 @@ struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct ty
     case OP_DIV:
     case OP_MOD:
         if ((typeLeft->code == LEAF_TYPE_INT || typeLeft->depth != 0) && (typeMiddle->code == LEAF_TYPE_INT || typeMiddle->depth != 0) && (typeLeft->depth == typeMiddle->depth)) {
-            return createType(LEAF_TYPE_INT, typeLeft->depth);
+            return createPrimitiveType(LEAF_TYPE_INT, typeLeft->depth);
         }
         printf("Error: Type Mismatch\n");
         exit(EXIT_FAILURE);
@@ -84,18 +91,18 @@ struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct ty
     case OP_EQ:
     case OP_NE:
         if ((typeLeft->code == LEAF_TYPE_INT || typeLeft->depth != 0) && (typeMiddle->code == LEAF_TYPE_INT || typeMiddle->depth != 0)) {
-            return createType(-1, 0);
+            return createPrimitiveType(-1, 0);
         }
         printf("Error: Type Mismatch\n");
         exit(EXIT_FAILURE);
     case OP_REF:
-        return typeLeft->typename == NULL ? createType(typeLeft->code, typeLeft->depth + 1) : createUserDefinedTypeWithDepth(typeLeft->typename, typeLeft->depth + 1);
+        return typeLeft->typename == NULL ? createPrimitiveType(typeLeft->code, typeLeft->depth + 1) : createUserDefinedTypeWithDepth(typeLeft->typename, typeLeft->depth + 1);
     case OP_DREF:
-        return typeLeft->typename == NULL ? createType(typeLeft->code, typeLeft->depth - 1) : createUserDefinedTypeWithDepth(typeLeft->typename, typeLeft->depth - 1);
+        return typeLeft->typename == NULL ? createPrimitiveType(typeLeft->code, typeLeft->depth - 1) : createUserDefinedTypeWithDepth(typeLeft->typename, typeLeft->depth - 1);
     default:
     }
 
-    return createType(-1, 0);
+    return createPrimitiveType(-1, 0);
 }
 
 void validateFunctionParamsHelper(struct tNode* argList, struct param** paramList, struct symbol* symbolTable, char* varName) {
@@ -139,7 +146,7 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
         }
         return symbol->type;
     case LEAF_NUM:
-        return createType(LEAF_TYPE_INT, 0);
+        return createPrimitiveType(LEAF_TYPE_INT, 0);
     case LEAF_ARR:
         typeCheckForArray(node->middle, symbolTable);
         struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
@@ -151,13 +158,13 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
-        return createType(sym->type->code, 0);
+        return createPrimitiveType(sym->type->code, 0);
     case LEAF_STR:
-        return createType(LEAF_TYPE_STR, 0);
+        return createPrimitiveType(LEAF_TYPE_STR, 0);
     case LEAF_TYPE_INT:
-        return createType(LEAF_TYPE_INT, 0);
+        return createPrimitiveType(LEAF_TYPE_INT, 0);
     case LEAF_TYPE_STR:
-        return createType(LEAF_TYPE_STR, 0);
+        return createPrimitiveType(LEAF_TYPE_STR, 0);
     case LEAF_FUNC:
         symbol = getSymbolTable(node->left->varName, symbolTable);
         if (symbol == NULL) {
@@ -182,11 +189,11 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
     }
     default:
     }
-    return createType(-1, 0);
+    return createPrimitiveType(-1, 0);
 }
 
 struct type* typeCheck(struct tNode* root, struct symbol* symbolTable) {
-    if (root == NULL) return createType(-1, 0);
+    if (root == NULL) return createPrimitiveType(-1, 0);
 
     if (isLeaf(root->nodeType)) {
         root->type = validateLeafType(root, symbolTable);
