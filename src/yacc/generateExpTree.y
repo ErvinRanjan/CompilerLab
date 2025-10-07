@@ -20,7 +20,7 @@
     struct tNode* node;
 };
 
-%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR REPEAT UNTIL DO MAIN RETURN TYPEDECL ENDTYPEDECL TUPLE
+%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR REPEAT UNTIL DO MAIN RETURN TYPEDECL ENDTYPEDECL TUPLE STRUCT
 %type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt RepeatUntilStmt DoWhileStmt B E ID BREAK CONTINUE Param ParamList Body ArgList FDef FDefBlock MainBlock GDeclBlock LDeclBlock GDeclList LDeclList GDecl LDecl Type GidList LidList Gid Lid CSTR Array BraceList Identifier TypeDeclBlock TypeDeclList TypeDecl PartialTypeDecl
 
 %nonassoc '='
@@ -48,16 +48,16 @@ TypeDeclList : TypeDecl TypeDeclList {}
             | TypeDecl {}
             ;
 
-TypeDecl : PartialTypeDecl '(' ParamList ')' ';' {
+TypeDecl : PartialTypeDecl '{' ParamList '}' ';' {
                 int numberOfParam = 0;
                 updateTypeTable($<node>1->varName,convertTreeToParamList($<node>3,&numberOfParam,NULL));
             }
         ;   
 
-PartialTypeDecl : TUPLE ID {
+PartialTypeDecl : STRUCT ID {
                         populateTypeTable($<node>2->varName,NULL);
                         $<node>$ = $<node>2;
-                } 
+            } 
                 ;
 
 MainBlock : INT MAIN '(' ')'  '{' LDeclBlock Body '}' { 
@@ -423,6 +423,10 @@ Identifier : ID
             }
             | E '.' ID {
                 $<node>$ = createOperatorNode(LEAF_TUPLE_ACCESS,$<node>1,$<node>3,NULL,-1);
+            }
+            | E '-' '>' ID {
+                struct tNode* temp = createOperatorNode(OP_DREF,$<node>1,NULL,NULL,-1);
+                $<node>$ = createOperatorNode(LEAF_TUPLE_ACCESS,temp,$<node>4,NULL,-1);
             }
             ;
 

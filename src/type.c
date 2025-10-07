@@ -78,7 +78,7 @@ struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct ty
     case OP_MUL:
     case OP_DIV:
     case OP_MOD:
-        if ((typeLeft->code == LEAF_TYPE_INT || typeLeft->depth != 0) && (typeMiddle->code == LEAF_TYPE_INT || typeMiddle->depth != 0) && (typeLeft->depth == typeMiddle->depth)) {
+        if (typeLeft->code == LEAF_TYPE_INT && typeMiddle->code == LEAF_TYPE_INT) {
             return createPrimitiveType(LEAF_TYPE_INT, typeLeft->depth);
         }
         printf("Error: Type Mismatch\n");
@@ -182,7 +182,7 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
         }
         struct param* param = getParam(typeTable->paramList, node->middle->varName);
         if (param == NULL) {
-            printf("Error: type %s does not have a field %s\n", symbol->type->typename, node->middle->varName);
+            printf("Error: type %s does not have a field %s\n", node->left->type->typename, node->middle->varName);
             exit(EXIT_FAILURE);
         }
         return param->type;

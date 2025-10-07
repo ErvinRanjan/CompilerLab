@@ -15,6 +15,10 @@
 
 "//"[^\n]* {}
 
+"struct" {
+            return STRUCT;
+        }
+
 "tuple" {
             return TUPLE;
             }

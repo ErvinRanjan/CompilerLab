@@ -84,7 +84,8 @@ extern int yydebug;
     RETURN = 285,                  /* RETURN  */
     TYPEDECL = 286,                /* TYPEDECL  */
     ENDTYPEDECL = 287,             /* ENDTYPEDECL  */
-    TUPLE = 288                    /* TUPLE  */
+    TUPLE = 288,                   /* TUPLE  */
+    STRUCT = 289                   /* STRUCT  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -124,6 +125,7 @@ extern int yydebug;
 #define TYPEDECL 286
 #define ENDTYPEDECL 287
 #define TUPLE 288
+#define STRUCT 289
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -133,7 +135,7 @@ union YYSTYPE
 
     struct tNode* node;
 
-#line 137 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.h"
+#line 139 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

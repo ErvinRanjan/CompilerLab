@@ -349,7 +349,8 @@ void libExit(FILE* out) {
 
 int isLValue(struct tNode* root) {
     if (root == NULL) return 0;
-    struct tNode* prev = NULL;
+    struct tNode* prev = root;
+    root = root->parent;
     while (root != NULL && root->nodeType != OP_ASSIGN && root->nodeType != LEAF_TUPLE_ACCESS && root->nodeType != LEAF_ARR) {
         prev = root;
         root = root->parent;
@@ -454,8 +455,6 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
     }
     case LEAF_TUPLE_ACCESS: {
         int reg = resolveAddr(out, node, symbolTable, NULL);
-        struct typeTable* typeTable = getTypeTableWithName(node->left->type->typename);
-        struct type* fieldType = getFieldType(node->middle->varName, typeTable->paramList);
         if (!isLValue(node)) {
             fprintf(out, "MOV R%d, [R%d]\n", reg, reg);
         }
@@ -518,11 +517,8 @@ int leafCodeGenForFunction(FILE* out, char* fname, struct tNode* node, struct sy
         int reg = resolveAddrInFunction(out, node, symbolTable, fname);
         struct typeTable* typeTable = getTypeTableWithName(node->left->type->typename);
         struct type* fieldType = getFieldType(node->middle->varName, typeTable->paramList);
-        if (fieldType->depth == 0 || !isLValue(node)) {
+        if (!isLValue(node)) {
             fprintf(out, "MOV R%d, [R%d]\n", reg, reg);
-        }
-        else {
-            fprintf(out, "MOV R%d, R%d\n", reg, reg);
         }
         return reg;
         break;

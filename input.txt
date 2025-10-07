@@ -1,39 +1,51 @@
 typedecl 
-tuple person(str name,int age);
-tuple programmer(person person,int skill);
+struct person{
+    str name,
+    int age
+};
+struct programmer{
+    person person,
+    int skill
+};
+struct seniorProgrammer{
+    programmer junior,
+    int experience
+};
 endtypedecl 
 decl 
-int personHello(str name,int age);
-enddecl 
-int personHello(str name,int age){
+int f();
+enddecl
+int f(){
     decl 
-    person p1,p2;
+    person p1;
+    programmer p2;
+    seniorProgrammer p3;
     enddecl
     begin 
-    p1.name = name;
-    p1.age = age;
-    p2 = p1;
-    write("hello");
-    write("by");
-    write(p2.name);
-    write(p2.age);
+    p1.name = "ervin";
+    p1.age = 12;
+    p2.skill = 10;
+    p2.person = p1;
+    p3.junior = p2;
+    p3.experience = 10;
+    write("junior");
+    write(p3.junior.person.name);
+    write(p3.junior.person.age);
+    write(p3.junior.skill);
+    write("senior");
+    write(p3.experience);
     return 0; 
     end
 }
 int main(){
     decl 
-    person p1,p2;
-    programmer p3;
+    person p1;
+    programmer p2;
+    seniorProgrammer p3;
+    int temp;
     enddecl
     begin 
-    p1.name = "ervin";
-    p1.age = 12;
-    p3.person = p1;
-    p3.skill = 100;
-    write("hello");
-    write("by");
-    write(p3.person.name);
-    write(p3.skill);
+    temp = f();
     return 0; 
     end
 } 
