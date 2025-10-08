@@ -73,12 +73,12 @@ run_label_without_parser: $(LABEL_BIN)
 	@$(LABEL_BIN) $(XSM_DIR)/test.xsmo $(XSM_DIR)/test.xsm
 
 run_xsm: run_label
-	@echo "=== Running XSM emulator ==="
-	@cd $(XSM_EXPL_DIR) && bash ./xsm -l ../lib/library.lib -e ../xsm/test.xsm
+	@echo "=== Running XSM emulator  ==="
+	@cd $(XSM_EXPL_DIR) && bash ./xsm -l ../lib/library2.lib -e ../xsm/test.xsm
 
 run_xsm_with_debug: 
-	@echo "=== Running XSM emulator ==="
-	@cd $(XSM_EXPL_DIR) && bash ./xsm -l ../lib/library.lib -e ../xsm/test.xsm --debug
+	@echo "=== Running XSM emulator  ==="
+	@cd $(XSM_EXPL_DIR) && bash ./xsm -l ../lib/library2.lib -e ../xsm/test.xsm --debug
 
 run: run_xsm
 	@echo "=== Full flow completed ==="

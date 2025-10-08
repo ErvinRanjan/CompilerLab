@@ -16,7 +16,7 @@ struct stack* beginLabelStack, * nextLabelStack; // keeps track of latest while 
 extern int getArrayDepth(struct tNode* braceRoot);
 
 bool isLeaf(int nodeType) {
-    return nodeType == LEAF_ID || nodeType == LEAF_NUM || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE || nodeType == LEAF_STR || nodeType == LEAF_TYPE_INT || nodeType == LEAF_TYPE_STR || nodeType == LEAF_ARR || nodeType == LEAF_FUNC || nodeType == LEAF_FDECL || nodeType == LEAF_TUPLE_ACCESS;
+    return nodeType == LEAF_ID || nodeType == LEAF_NUM || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE || nodeType == LEAF_STR || nodeType == LEAF_TYPE_INT || nodeType == LEAF_TYPE_STR || nodeType == LEAF_ARR || nodeType == LEAF_FUNC || nodeType == LEAF_FDECL || nodeType == LEAF_TUPLE_ACCESS || nodeType == OP_INITIALISE || nodeType == OP_ALLOC || nodeType == OP_FREE;
 }
 
 void resolveArrayAddrCodegen(FILE* out, struct tNode* braceRoot, struct symbol* symbolTable, int* base, char* fname) {
@@ -347,6 +347,67 @@ void libExit(FILE* out) {
     freeReg();
 }
 
+void libFree(FILE* out, int binding_reg) {
+    int reg = getFreeReg();
+
+    fprintf(out, "MOV R%d, \"Free\"\n", reg);
+    fprintf(out, "PUSH R%d\n", reg);
+    fprintf(out, "MOV R%d, R%d\n", reg, binding_reg);
+    fprintf(out, "PUSH R%d\n", reg);
+    fprintf(out, "PUSH R%d\n", reg);
+    fprintf(out, "PUSH R%d\n", reg);
+    fprintf(out, "PUSH R%d\n", reg);
+
+    fprintf(out, "CALL 0\n");
+
+    fprintf(out, "POP R%d\n", reg);
+    fprintf(out, "POP R%d\n", reg);
+    fprintf(out, "POP R%d\n", reg);
+    fprintf(out, "POP R%d\n", reg);
+    fprintf(out, "POP R%d\n", reg);
+}
+
+int libAlloc(FILE* out) {
+    int reg = getFreeReg();
+
+    fprintf(out, "MOV R%d, \"Alloc\"\n", reg);
+    fprintf(out, "PUSH R%d\n", reg);
+    fprintf(out, "PUSH R%d\n", reg);
+    fprintf(out, "PUSH R%d\n", reg);
+    fprintf(out, "PUSH R%d\n", reg);
+    fprintf(out, "PUSH R%d\n", reg);
+
+    fprintf(out, "CALL 0\n");
+
+    int reg1 = getFreeReg();
+    fprintf(out, "POP R%d\n", reg1);
+    fprintf(out, "POP R%d\n", reg);
+    fprintf(out, "POP R%d\n", reg);
+    fprintf(out, "POP R%d\n", reg);
+    fprintf(out, "POP R%d\n", reg);
+
+    return reg1;
+}
+
+void libInitialise(FILE* out) {
+    int reg = getFreeReg();
+
+    fprintf(out, "MOV R%d, \"Initialise\"\n", reg);
+    fprintf(out, "PUSH R%d\n", reg);
+    fprintf(out, "PUSH R%d\n", reg);
+    fprintf(out, "PUSH R%d\n", reg);
+    fprintf(out, "PUSH R%d\n", reg);
+    fprintf(out, "PUSH R%d\n", reg);
+
+    fprintf(out, "CALL 0\n");
+
+    fprintf(out, "POP R%d\n", reg);
+    fprintf(out, "POP R%d\n", reg);
+    fprintf(out, "POP R%d\n", reg);
+    fprintf(out, "POP R%d\n", reg);
+    fprintf(out, "POP R%d\n", reg);
+}
+
 int isLValue(struct tNode* root) {
     if (root == NULL) return 0;
     struct tNode* prev = root;
@@ -461,6 +522,21 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
         return reg;
         break;
     }
+    case OP_ALLOC: {
+        int reg = libAlloc(out);
+        int addr_reg = resolveAddr(out, node->left, symbolTable, fname);
+        fprintf(out, "MOV [R%d], R%d\n", addr_reg, reg);
+        break;
+    }
+    case OP_FREE: {
+        int addr_reg = resolveAddr(out, node->left, symbolTable, fname);
+        fprintf(out, "MOV R%d, [R%d]\n", addr_reg, addr_reg);
+        libFree(out, addr_reg);
+        break;
+    }
+    case OP_INITIALISE:
+        libInitialise(out);
+        break;
     default:
     }
     return reg;

@@ -3,49 +3,26 @@ struct person{
     str name,
     int age
 };
-struct programmer{
-    person person,
-    int skill
-};
-struct seniorProgrammer{
-    programmer junior,
-    int experience
-};
 endtypedecl 
-decl 
-int f();
-enddecl
-int f(){
-    decl 
-    person p1;
-    programmer p2;
-    seniorProgrammer p3;
-    enddecl
-    begin 
-    p1.name = "ervin";
-    p1.age = 12;
-    p2.skill = 10;
-    p2.person = p1;
-    p3.junior = p2;
-    p3.experience = 10;
-    write("junior");
-    write(p3.junior.person.name);
-    write(p3.junior.person.age);
-    write(p3.junior.skill);
-    write("senior");
-    write(p3.experience);
-    return 0; 
-    end
-}
 int main(){
     decl 
-    person p1;
-    programmer p2;
-    seniorProgrammer p3;
+    person* p1;
     int temp;
     enddecl
     begin 
-    temp = f();
+    initialise();
+    p1 = alloc();
+    p1->name = "ervin";
+    p1->age = 14;
+    write(p1->name);
+    write(p1->age);
+    free(p1);
+    p1 = alloc();
+    p1->name = "anagh";
+    p1->age = 15;
+    write(p1->name);
+    write(p1->age);
+    free(p1);
     return 0; 
     end
 } 

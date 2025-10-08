@@ -20,8 +20,8 @@
     struct tNode* node;
 };
 
-%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR REPEAT UNTIL DO MAIN RETURN TYPEDECL ENDTYPEDECL TUPLE STRUCT
-%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt RepeatUntilStmt DoWhileStmt B E ID BREAK CONTINUE Param ParamList Body ArgList FDef FDefBlock MainBlock GDeclBlock LDeclBlock GDeclList LDeclList GDecl LDecl Type GidList LidList Gid Lid CSTR Array BraceList Identifier TypeDeclBlock TypeDeclList TypeDecl PartialTypeDecl
+%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR REPEAT UNTIL DO MAIN RETURN TYPEDECL ENDTYPEDECL TUPLE STRUCT INITIALISE FREE ALLOC
+%type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt RepeatUntilStmt DoWhileStmt B E ID BREAK CONTINUE Param ParamList Body ArgList FDef FDefBlock MainBlock GDeclBlock LDeclBlock GDeclList LDeclList GDecl LDecl Type GidList LidList Gid Lid CSTR Array BraceList Identifier TypeDeclBlock TypeDeclList TypeDecl PartialTypeDecl InitialiseStmt FreeStmt AllocStmt
 
 %nonassoc '='
 %left '%'
@@ -258,10 +258,31 @@ Stmt : InputStmt
      | ContinueStmt
      | RepeatUntilStmt 
      | DoWhileStmt
+     | InitialiseStmt 
+     | FreeStmt
+     | AllocStmt
        {   
         $<node>$ = $<node>1;
        }     
      ;
+
+AllocStmt : Identifier '=' ALLOC '(' ')' ';' {
+    int label = getLabel();
+    $<node>$ = createOperatorNode(OP_ALLOC,$<node>1,NULL,NULL,label);
+}
+;
+
+InitialiseStmt : INITIALISE '(' ')' ';' {
+    int label = getLabel();
+    $<node>$ = createOperatorNode(OP_INITIALISE,NULL,NULL,NULL,label);
+}
+;
+
+FreeStmt : FREE '(' Identifier ')' ';' {
+    int label = getLabel();
+    $<node>$ = createOperatorNode(OP_FREE,$<node>3,NULL,NULL,label);
+}
+;
 
 RetStmt : RETURN E ';'{
                     int label = getLabel();

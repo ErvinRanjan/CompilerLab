@@ -63,7 +63,8 @@ struct type* createType(char* typename, int code, int depth) {
     return t;
 }
 
-struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct type* typeMiddle) {
+struct type* validateOperatorType(struct tNode* node, struct type* typeLeft, struct type* typeMiddle, struct symbol* symbolTable) {
+    int nodeType = node->nodeType;
     switch (nodeType) {
     case OP_ASSIGN:
         if (((typeLeft->code == LEAF_TYPE_INT || typeLeft->depth != 0) && (typeMiddle->code == LEAF_TYPE_INT || typeMiddle->depth != 0)) // pointer-int
@@ -99,6 +100,24 @@ struct type* validateOperatorType(int nodeType, struct type* typeLeft, struct ty
         return typeLeft->typename == NULL ? createPrimitiveType(typeLeft->code, typeLeft->depth + 1) : createUserDefinedTypeWithDepth(typeLeft->typename, typeLeft->depth + 1);
     case OP_DREF:
         return typeLeft->typename == NULL ? createPrimitiveType(typeLeft->code, typeLeft->depth - 1) : createUserDefinedTypeWithDepth(typeLeft->typename, typeLeft->depth - 1);
+    case OP_ALLOC:
+        struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
+        if (sym->type->depth == 0) {
+            printf("Error : type must be a pointer\n");
+            exit(EXIT_FAILURE);
+        }
+        if (getTypeSize(sym->type) > 8) {
+            printf("Error: user defined types are only allowed 8 fields of memory\n");
+            exit(EXIT_FAILURE);
+        }
+        break;
+    case OP_FREE: {
+        struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
+        if (sym == NULL) {
+            printf("Error : variable %s has not been declared\n", node->left->varName);
+            exit(EXIT_FAILURE);
+        }
+    }
     default:
     }
 
@@ -203,7 +222,7 @@ struct type* typeCheck(struct tNode* root, struct symbol* symbolTable) {
     struct type* typeLeft = typeCheck(root->left, symbolTable);
     struct type* typeMiddle = typeCheck(root->middle, symbolTable);
 
-    root->type = validateOperatorType(root->nodeType, typeLeft, typeMiddle);
+    root->type = validateOperatorType(root, typeLeft, typeMiddle, symbolTable);
     return root->type;
 }
 

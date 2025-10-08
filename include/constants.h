@@ -47,6 +47,9 @@
 #define LEAF_FUNC 42
 #define OP_ARGLIST 43
 #define LEAF_TUPLE_ACCESS 44
+#define OP_INITIALISE 45 
+#define OP_ALLOC 46 
+#define OP_FREE 47 
 
 // constants for types
 

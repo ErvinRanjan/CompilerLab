@@ -15,6 +15,18 @@
 
 "//"[^\n]* {}
 
+"initialise" {
+                return INITIALISE;
+        }
+
+"free" {
+    return FREE;
+}
+
+"alloc" {
+    return ALLOC;
+}
+
 "struct" {
             return STRUCT;
         }
