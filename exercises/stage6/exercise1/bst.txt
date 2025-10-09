@@ -1,0 +1,102 @@
+typedecl
+  struct bst{
+  int a,
+  bst* left,
+  bst* right
+  };
+endtypedecl 
+
+decl
+  int in,opt;
+  bst* insert(bst* h, int key);
+  int inOrder(bst* h); 
+  int preOrder(bst* h);
+  int postOrder(bst* h);           
+enddecl
+
+bst* insert(bst* h, int key)
+{
+  decl 
+  enddecl 
+  begin
+    if (h == 0) then
+        h = alloc();
+        h->a = key;
+        h->left = 0;
+        h->right = 0;
+    else 
+        if (key < h->a) then
+            h->left  = insert(h->left, key);
+        else 
+            h->right = insert(h->right, key);
+        endif;
+    endif;   
+   
+    return h;
+  end
+}
+
+int inOrder(bst* h){
+  decl 
+  enddecl   
+  begin
+  if(h != 0) then
+    in=inOrder(h->left);
+    write(h->a);
+    in=inOrder(h->right);
+  endif;
+  return 1;
+  end
+}
+
+int preOrder(bst* h){
+  decl 
+  enddecl  
+  begin
+  if(h!=0) then
+    write(h->a);
+    in=preOrder(h->left);
+    in=preOrder(h->right);
+  endif;
+  return 1;
+  end
+}
+
+int postOrder(bst* h){
+  decl 
+  enddecl 
+  begin  
+  if(h!=0) then
+    in=postOrder(h->left);
+    in=postOrder(h->right);
+    write(h->a);
+  endif;
+  return 1;
+  end
+}
+
+int main()
+{ 
+  decl
+  int val,flag;
+  bst* Root;
+  enddecl
+
+  begin
+    initialise();
+    Root = 0;
+
+    read(val);
+
+    while(val!=0) do
+      Root = insert(Root,val);
+      read(val);
+    endwhile;
+
+    in = inOrder(Root);
+    in = preOrder(Root);
+    in = postOrder(Root);
+  
+  return 0;
+  end
+}

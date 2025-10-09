@@ -47,7 +47,7 @@ int resolveAddr(FILE* out, struct tNode* node, struct symbol* symbolTable, char*
         return resolveArrayAddr(out, node, symbolTable, fname);
         break;
     case LEAF_TUPLE_ACCESS: {
-        struct typeTable* typeTable = getTypeTableWithName(node->left->type->typename);
+        struct typeTable* typeTable = getTypeTableWithName(typeCheck(node->left, symbolTable)->typename);
         int base_reg = codeGenHelper(out, node->left, -1, NULL, symbolTable, fname);
         int offs = getFieldOffset(node->middle->varName, typeTable->paramList);
         int reg = getFreeReg();
@@ -110,7 +110,7 @@ int resolveArrayAddr(FILE* out, struct tNode* node, struct symbol* symbolTable, 
 }
 
 bool isStmt(int nodeType) {
-    return nodeType == OP_READ || nodeType == OP_WRITE || nodeType == OP_ASSIGN || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE || nodeType == OP_IF || nodeType == OP_WHILE || nodeType == OP_DO_WHILE || nodeType == OP_REPEAT_UNTIL || nodeType == OP_RETURN;
+    return nodeType == OP_READ || nodeType == OP_WRITE || nodeType == OP_ASSIGN || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE || nodeType == OP_IF || nodeType == OP_WHILE || nodeType == OP_DO_WHILE || nodeType == OP_REPEAT_UNTIL || nodeType == OP_RETURN || nodeType == OP_ALLOC || nodeType == OP_INITIALISE || nodeType == OP_FREE;
 }
 
 int getMem(char* varName, struct symbol* symbolTable) {
@@ -485,11 +485,15 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
         int latestBeginWhileLabel = top(beginLabelStack).intValue;
         fprintf(out, "JMP L%d\n", latestBeginWhileLabel);
         break;
-    case LEAF_ARR:
+    case LEAF_ARR: {
         int addr_reg = resolveArrayAddr(out, node, symbolTable, fname);
-        fprintf(out, "MOV R%d, [R%d]\n", addr_reg, addr_reg);
+        struct type* type = typeCheck(node, symbolTable);
+        if (!isLValue(node) && (type->typename == NULL || type->depth != 0)) {
+            fprintf(out, "MOV R%d, [R%d]\n", addr_reg, addr_reg);
+        }
         reg = addr_reg;
         break;
+    }
     case LEAF_FUNC: {
         backup(out);
         char* calleeFname = node->left->varName;
@@ -564,7 +568,7 @@ int resolveAddrInFunction(FILE* out, struct tNode* node, struct symbol* symbolTa
         }
         else if (node->nodeType == LEAF_TUPLE_ACCESS) {
             int base_reg = codeGenHelper(out, node->left, -1, NULL, symbolTable, fname);
-            struct typeTable* typeTable = getTypeTableWithName(node->left->type->typename);
+            struct typeTable* typeTable = getTypeTableWithName(typeCheck(node->left, symbolTable)->typename);
             int offs = getFieldOffset(node->middle->varName, typeTable->paramList);
             fprintf(out, "ADD R%d, %d\n", base_reg, offs);
             return base_reg;
@@ -591,7 +595,7 @@ int leafCodeGenForFunction(FILE* out, char* fname, struct tNode* node, struct sy
     }
     case LEAF_TUPLE_ACCESS: {
         int reg = resolveAddrInFunction(out, node, symbolTable, fname);
-        struct typeTable* typeTable = getTypeTableWithName(node->left->type->typename);
+        struct typeTable* typeTable = getTypeTableWithName(typeCheck(node->left, symbolTable)->typename);
         struct type* fieldType = getFieldType(node->middle->varName, typeTable->paramList);
         if (!isLValue(node)) {
             fprintf(out, "MOV R%d, [R%d]\n", reg, reg);

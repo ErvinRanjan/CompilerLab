@@ -100,17 +100,18 @@ struct type* validateOperatorType(struct tNode* node, struct type* typeLeft, str
         return typeLeft->typename == NULL ? createPrimitiveType(typeLeft->code, typeLeft->depth + 1) : createUserDefinedTypeWithDepth(typeLeft->typename, typeLeft->depth + 1);
     case OP_DREF:
         return typeLeft->typename == NULL ? createPrimitiveType(typeLeft->code, typeLeft->depth - 1) : createUserDefinedTypeWithDepth(typeLeft->typename, typeLeft->depth - 1);
-    case OP_ALLOC:
-        struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
-        if (sym->type->depth == 0) {
+    case OP_ALLOC: {
+        struct type* type = typeCheck(node->left, symbolTable);
+        if (type->depth == 0) {
             printf("Error : type must be a pointer\n");
             exit(EXIT_FAILURE);
         }
-        if (getTypeSize(sym->type) > 8) {
+        if (getTypeSize(type) > 8) {
             printf("Error: user defined types are only allowed 8 fields of memory\n");
             exit(EXIT_FAILURE);
         }
         break;
+    }
     case OP_FREE: {
         struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
         if (sym == NULL) {
@@ -173,11 +174,12 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
             printf("variable %s is undeclared\n", node->left->varName);
             exit(EXIT_FAILURE);
         }
-        if (getArrayDepth(node->middle) != sym->type->depth) {
+        int d = getArrayDepth(node->middle);
+        if (d > sym->type->depth) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }
-        return createPrimitiveType(sym->type->code, 0);
+        return createType(sym->type->typename, sym->type->code, sym->type->depth - d);
     case LEAF_STR:
         return createPrimitiveType(LEAF_TYPE_STR, 0);
     case LEAF_TYPE_INT:
@@ -196,7 +198,7 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
         node->left->type = typeCheck(node->left, symbolTable); // populate type for left expr
         struct typeTable* typeTable = getTypeTableWithName(node->left->type->typename);
         if (typeTable == NULL) {
-            printf("Error: type is used but not declared: %s\n", symbol->type->typename);
+            printf("Error: type is used but not declared: %s\n", node->left->type->typename);
             exit(EXIT_FAILURE);
         }
         struct param* param = getParam(typeTable->paramList, node->middle->varName);

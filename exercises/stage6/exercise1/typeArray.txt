@@ -1,0 +1,31 @@
+typedecl 
+struct person{
+    str name,
+    int age
+};
+endtypedecl 
+decl 
+person* persons[10];
+enddecl 
+int main(){
+    decl 
+    int temp,i;
+    enddecl 
+    begin
+    initialise();
+    i = 0;
+    while(i < 3) do 
+        persons[i] = alloc();
+        read(persons[i]->name);
+        read(persons[i]->age);
+        i = i + 1;
+    endwhile;
+    i = 0;
+    while(i < 3) do 
+        write(persons[i]->name);
+        write(persons[i]->age);
+        i = i + 1;
+    endwhile;
+    return 0;
+    end
+}
