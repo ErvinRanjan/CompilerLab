@@ -1,101 +1,31 @@
-typedecl
-  struct node
-  {
-    int d,
-    int s,
-    int t
-  };
-  struct List
-  {
-    int a,
-    int b,
-    node* g,
-    List* next
-  };
-endtypedecl
-decl
-  node *y,*z;
-  List *head;
-  int insert(int a,int b,node *g);
-  node *gcd(int m,int n);
-enddecl
-int insert(int a,int b,node *g)
-{
-  decl
-    List *p,*q;
-    node *temp;
-  enddecl
-  begin
-      p = alloc();
-      p->a = a;
-      p->b = b;
-      temp = alloc();
-      temp->d = g->d;
-      temp->s = g->s;
-      temp->t = g->t;
-      p->g = temp;
-      if (head == 0) then
-          p->next = 0;
-          head = p;
-      else
-          p->next = head;
-          head = p;
-      endif;
-  return 0;
-  end
-}
-
-node *gcd(int m,int n){
-
-  decl
-    int q,r,temp;
-  enddecl
-
-  begin
-    if(n==0) then
-        y->d = m;
-        y->s = 1;
-        y->t = 0;
-    else
-        q = m/n;
-        r = m-q*n;
-        z = gcd(n,r);
-        temp = z->s;
-        y->s = z->t;
-        y->t = temp - (q*z->t);
-    endif;
-    temp = insert(m,n,y);
-    return y;
-  end
-}
-
-int main()
-{
-  decl
-    int a,b,c;
-    node *res;
-  enddecl
-
-  begin
+typedecl 
+struct person{
+    str name,
+    int age
+};
+endtypedecl 
+decl 
+person* persons[10];
+enddecl 
+int main(){
+    decl 
+    int temp,i;
+    enddecl 
+    begin
     initialise();
-    y = alloc();
-    read(a);
-    read(b);
-    head=0;
-    res = gcd(a,b);
-    write(res->d);
-    write(res->s);
-    write(res->t);
-    write("stack");
-    while(head != 0) do
-        write(head->a);
-        write(head->b);
-        write(head->g->d);
-        write(head->g->s);
-        write(head->g->t);
-        head = head->next;
-        write("next");
+    i = 0;
+    while(i < 3) do 
+        persons[i] = alloc();
+        read(persons[i]->name);
+        read(persons[i]->age);
+        i = i + 1;
+    endwhile;
+    i = 0;
+    while(i < 3) do 
+        write(persons[i]->name);
+        write(persons[i]->age);
+        i = i + 1;
     endwhile;
     return 0;
-  end
+    end
 }
