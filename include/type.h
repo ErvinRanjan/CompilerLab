@@ -12,7 +12,7 @@ struct type {
 };
 
 struct type* createPrimitiveType(int code, int depth);
-struct type* typeCheck(struct tNode* root, struct symbol* symbolTable);
+struct type* typeCheck(struct tNode* root, struct symbol* symbolTable, int classIndex);
 void typeCheckFunctionParam(struct type* type, char* varName, struct tNode* paramRoot, struct symbol* symbolTable);
 int isTypeEqual(struct type* t1, struct type* t2);
 struct type* createUserDefinedTypeWithName(char* typename);

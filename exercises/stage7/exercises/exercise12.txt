@@ -1,0 +1,62 @@
+class Pair{
+    decl 
+    int first,second,setFirst(int first),setSecond(int second),getFirst(),getSecond();
+    enddecl 
+    int setFirst(int first){
+        decl 
+        enddecl 
+        begin
+        self.first = first;
+        return 1; 
+        end 
+    }
+    int setSecond(int second){
+        decl 
+        enddecl 
+        begin
+        self.second = second;
+        return 1; 
+        end 
+    }
+    int getFirst(){
+        decl 
+        enddecl 
+        begin
+        return self.first; 
+        end 
+    }
+    int getSecond(){
+        decl 
+        enddecl 
+        begin
+        return self.second; 
+        end 
+    }
+}
+decl 
+Pair* makePair(int first,int second);
+enddecl 
+Pair* makePair(int first,int second){
+    decl 
+    Pair* p;
+    int temp;
+    enddecl
+    begin  
+    p = new(Pair);
+    temp = p->setFirst(first);
+    temp = p->setSecond(second);
+    return p;
+    end 
+}
+int main(){
+    decl 
+    Pair* p;
+    int temp;
+    enddecl 
+    begin
+    p = makePair(1,2);
+    write(p->getFirst());
+    write(p->getSecond());
+    return 0; 
+    end 
+}

@@ -506,6 +506,11 @@ void fprintExpr(FILE* out, struct tNode* expr) {
         return;
     }
 
+    if (expr->nodeType == LEAF_SELF) {
+        fprintf(out, "self ");
+        return;
+    }
+
     if (expr->nodeType != OP_DREF && expr->nodeType != OP_REF) {
         fprintExpr(out, expr->left);
     }

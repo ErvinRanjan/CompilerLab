@@ -50,6 +50,9 @@
 #define OP_INITIALISE 45 
 #define OP_ALLOC 46 
 #define OP_FREE 47 
+#define LEAF_METHOD 48 
+#define LEAF_SELF 49
+#define LEAF_NEW 50
 
 // constants for types
 

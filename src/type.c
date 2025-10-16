@@ -11,19 +11,19 @@
 
 extern bool isLeaf(int nodeType);
 
-void typeCheckForArray(struct tNode* braceRoot, struct symbol* symbolTable) {
+void typeCheckForArray(struct tNode* braceRoot, struct symbol* symbolTable, int classIndex) {
     if (braceRoot == NULL) return;
 
     if (braceRoot->nodeType != OP_BRACELIST) {
-        struct type* type = typeCheck(braceRoot, symbolTable);
+        struct type* type = typeCheck(braceRoot, symbolTable, classIndex);
         if (type->code != LEAF_TYPE_INT || type->depth != 0) {
             printf("Error: non int type in within braces in array\n");
             exit(EXIT_FAILURE);
         }
     }
 
-    typeCheckForArray(braceRoot->left, symbolTable);
-    typeCheckForArray(braceRoot->middle, symbolTable);
+    typeCheckForArray(braceRoot->left, symbolTable, classIndex);
+    typeCheckForArray(braceRoot->middle, symbolTable, classIndex);
 }
 
 int max(int x, int y) {
@@ -63,7 +63,7 @@ struct type* createType(char* typename, int code, int depth) {
     return t;
 }
 
-struct type* validateOperatorType(struct tNode* node, struct type* typeLeft, struct type* typeMiddle, struct symbol* symbolTable) {
+struct type* validateOperatorType(struct tNode* node, struct type* typeLeft, struct type* typeMiddle, struct symbol* symbolTable, int classIndex) {
     int nodeType = node->nodeType;
     switch (nodeType) {
     case OP_ASSIGN:
@@ -99,9 +99,13 @@ struct type* validateOperatorType(struct tNode* node, struct type* typeLeft, str
     case OP_REF:
         return typeLeft->typename == NULL ? createPrimitiveType(typeLeft->code, typeLeft->depth + 1) : createUserDefinedTypeWithDepth(typeLeft->typename, typeLeft->depth + 1);
     case OP_DREF:
+        if (typeLeft->depth == 0) {
+            printf("Error: cannot dereference primitive types\n");
+            exit(EXIT_FAILURE);
+        }
         return typeLeft->typename == NULL ? createPrimitiveType(typeLeft->code, typeLeft->depth - 1) : createUserDefinedTypeWithDepth(typeLeft->typename, typeLeft->depth - 1);
     case OP_ALLOC: {
-        struct type* type = typeCheck(node->left, symbolTable);
+        struct type* type = typeCheck(node->left, symbolTable, classIndex);
         if (type->depth == 0) {
             printf("Error : type must be a pointer\n");
             exit(EXIT_FAILURE);
@@ -125,7 +129,7 @@ struct type* validateOperatorType(struct tNode* node, struct type* typeLeft, str
     return createPrimitiveType(-1, 0);
 }
 
-void validateFunctionParamsHelper(struct tNode* argList, struct param** paramList, struct symbol* symbolTable, char* varName) {
+void validateFunctionParamsHelper(struct tNode* argList, struct param** paramList, struct symbol* symbolTable, char* varName, int classIndex) {
     if (argList == NULL) return;
     if ((*paramList) == NULL) {
         printf("Error: number of arguments does not match the declaration: %s\n", varName);
@@ -133,7 +137,7 @@ void validateFunctionParamsHelper(struct tNode* argList, struct param** paramLis
     }
 
     if (argList->nodeType != OP_ARGLIST) {
-        struct type* type = typeCheck(argList, symbolTable);
+        struct type* type = typeCheck(argList, symbolTable, classIndex);
         if (!isTypeEqual((*paramList)->type, type)) {
             printf("Error: Type Mismatch between arguments of function call and function declaration for function: %s\n", varName);
             exit(EXIT_FAILURE);
@@ -142,19 +146,19 @@ void validateFunctionParamsHelper(struct tNode* argList, struct param** paramLis
         return;
     }
 
-    validateFunctionParamsHelper(argList->left, paramList, symbolTable, varName);
-    validateFunctionParamsHelper(argList->middle, paramList, symbolTable, varName);
+    validateFunctionParamsHelper(argList->left, paramList, symbolTable, varName, classIndex);
+    validateFunctionParamsHelper(argList->middle, paramList, symbolTable, varName, classIndex);
 }
 
-void validateFunctionParams(struct tNode* argList, struct param* paramList, struct symbol* symbolTable, char* varName) {
-    validateFunctionParamsHelper(argList, &paramList, symbolTable, varName);
+void validateFunctionParams(struct tNode* argList, struct param* paramList, struct symbol* symbolTable, char* varName, int classIndex) {
+    validateFunctionParamsHelper(argList, &paramList, symbolTable, varName, classIndex);
     if (paramList != NULL) {
         printf("Error: number of arguments does not match the declaration: %s\n", varName);
         exit(EXIT_FAILURE);
     }
 }
 
-struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
+struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable, int classIndex) {
     struct symbol* symbol;
     struct param* param;
     switch (node->nodeType) {
@@ -168,7 +172,7 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
     case LEAF_NUM:
         return createPrimitiveType(LEAF_TYPE_INT, 0);
     case LEAF_ARR:
-        typeCheckForArray(node->middle, symbolTable);
+        typeCheckForArray(node->middle, symbolTable, classIndex);
         struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
         if (sym == NULL) {
             printf("variable %s is undeclared\n", node->left->varName);
@@ -192,14 +196,41 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
             printf("Error: function is called but not declared for function : %s\n", node->left->varName);
             exit(EXIT_FAILURE);
         }
-        validateFunctionParams(node->middle, symbol->paramList, symbolTable, node->left->varName);
+        validateFunctionParams(node->middle, symbol->paramList, symbolTable, node->left->varName, classIndex);
         return symbol->type;
     case LEAF_TUPLE_ACCESS: {
-        node->left->type = typeCheck(node->left, symbolTable); // populate type for left expr
+        if (node->left->nodeType == LEAF_SELF) {
+            if (classIndex == -1) {
+                printf("Error : self cannot be used outside a class\n");
+                exit(EXIT_FAILURE);
+            }
+            else {
+                struct typeTable* classContext = getClassTableWithIndex(classIndex);
+                struct symbol* symbol = getSymbolTable(node->middle->varName, classContext->symbolList);
+                if (symbol == NULL) {
+                    printf("Error: No such field exists for the class: %s\n", classContext->name);
+                    exit(EXIT_FAILURE);
+                }
+                return symbol->type;
+            }
+        }
+        node->left->type = typeCheck(node->left, symbolTable, classIndex);
         struct typeTable* typeTable = getTypeTableWithName(node->left->type->typename);
         if (typeTable == NULL) {
             printf("Error: type is used but not declared: %s\n", node->left->type->typename);
             exit(EXIT_FAILURE);
+        }
+        if (typeTable->isClass && classIndex != typeTable->classIndex) {
+            printf("Error : cannot access class members outside class, class is private\n");
+            exit(EXIT_FAILURE);
+        }
+        if (typeTable->isClass) {
+            struct symbol* symbol = getSymbolTable(node->middle->varName, typeTable->symbolList);
+            if (symbol == NULL) {
+                printf("Error : no such field : %s exists for class : %s\n", node->middle->varName, typeTable->name);
+                exit(EXIT_FAILURE);
+            }
+            return symbol->type;
         }
         struct param* param = getParam(typeTable->paramList, node->middle->varName);
         if (param == NULL) {
@@ -208,23 +239,67 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable) {
         }
         return param->type;
     }
+    case LEAF_METHOD: {
+        if (node->left->nodeType == LEAF_SELF) {
+            if (classIndex == -1) {
+                printf("Error : self cannot be used outside a class\n");
+                exit(EXIT_FAILURE);
+            }
+            else {
+                struct typeTable* classContext = getClassTableWithIndex(classIndex);
+                struct symbol* symbol = getSymbolTable(node->middle->varName, classContext->symbolList);
+                if (symbol == NULL) {
+                    printf("Error: No such field exists for the class: %s\n", classContext->name);
+                    exit(EXIT_FAILURE);
+                }
+                validateFunctionParams(node->right, symbol->paramList, symbolTable, node->middle->varName, classIndex);
+                return symbol->type;
+            }
+        }
+        node->left->type = typeCheck(node->left, symbolTable, classIndex);
+        struct typeTable* typeTable = getTypeTableWithName(node->left->type->typename);
+        if (typeTable == NULL) {
+            printf("Error: class is used but not declared: %s\n", node->left->type->typename);
+            exit(EXIT_FAILURE);
+        }
+        if ((typeTable->isClass) == 0) {
+            printf("Error : user defined types cannot invoke methods: %s\n", typeTable->name);
+            exit(EXIT_FAILURE);
+        }
+        struct symbol* symbol = getSymbolTable(node->middle->varName, typeTable->symbolList);
+        if (symbol == NULL) {
+            printf("Error: No such method exists for the class: %s\n", typeTable->name);
+            exit(EXIT_FAILURE);
+        }
+        validateFunctionParams(node->right, symbol->paramList, symbolTable, node->middle->varName, classIndex);
+        return symbol->type;
+    }
+    case LEAF_NEW: {
+        struct type* type = typeCheck(node->left, symbolTable, classIndex);
+        struct typeTable* typeTable = getTypeTableWithName(type->typename);
+        if (typeTable == NULL || !(typeTable->isClass) || strcmp(typeTable->name, node->middle->varName) != 0 || type->depth != 1) {
+            printf("Error: Type Mismatch\n");
+            exit(EXIT_FAILURE);
+        }
+        break;
+    }
     default:
     }
     return createPrimitiveType(-1, 0);
 }
 
-struct type* typeCheck(struct tNode* root, struct symbol* symbolTable) {
+struct type* typeCheck(struct tNode* root, struct symbol* symbolTable, int classIndex) {
     if (root == NULL) return createPrimitiveType(-1, 0);
 
     if (isLeaf(root->nodeType)) {
-        root->type = validateLeafType(root, symbolTable);
+        root->type = validateLeafType(root, symbolTable, classIndex);
         return root->type;
     }
 
-    struct type* typeLeft = typeCheck(root->left, symbolTable);
-    struct type* typeMiddle = typeCheck(root->middle, symbolTable);
+    struct type* typeLeft = typeCheck(root->left, symbolTable, classIndex);
+    struct type* typeMiddle = typeCheck(root->middle, symbolTable, classIndex);
 
-    root->type = validateOperatorType(root, typeLeft, typeMiddle, symbolTable);
+    root->type = validateOperatorType(root, typeLeft, typeMiddle, symbolTable, classIndex);
     return root->type;
 }
 

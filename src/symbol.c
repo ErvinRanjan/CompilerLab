@@ -165,6 +165,7 @@ void printSymbolTable(char* name, struct symbol* symbolTable) {
         printf("binding: %d\n", symbolTable->binding);
         printf("val: %d\n", symbolTable->val);
         printf("size: %d\n", symbolTable->size);
+        printf("flabel: %d\n", symbolTable->flabel);
         struct param* p = symbolTable->paramList;
         if (p != NULL) {
             printf("parameters\n");

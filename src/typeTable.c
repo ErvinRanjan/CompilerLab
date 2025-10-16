@@ -12,20 +12,18 @@ struct typeTable* getTypeTable() {
     return typeTableList;
 }
 
-struct typeTable* createTypeTable(char* name, struct param* paramList) {
+struct typeTable* createTypeTable(char* name, int isClass) {
     struct typeTable* typeTable = malloc(sizeof(struct typeTable));
     if (name == NULL || strlen(name) >= 100) {
         printf("Error: could not create type table entry, either type-name is null or type-name is too long\n");
         exit(EXIT_FAILURE);
     }
     strcpy(typeTable->name, name);
-    typeTable->paramList = paramList; // passing ref, no deep copy
-    while (paramList != NULL) {
-        typeTable->size = typeTable->size + getTypeSize(paramList->type);
-        paramList = paramList->next;
-    }
+    typeTable->isClass = isClass;
+    typeTable->parent = NULL;
     return typeTable;
 }
+
 
 struct typeTable* getTypeTableWithName(char* name) {
     if (name == NULL) return NULL;
@@ -49,27 +47,32 @@ int getTypeSize(struct type* type) {
     return typeTable->size;
 }
 
-void addTypeTable(struct typeTable* typeTable) {
+int addTypeTable(struct typeTable* typeTable) {
     if (getTypeTable() == NULL) {
         setTypeTable(typeTable);
-        return;
+        return 0;
     }
     struct typeTable* head = getTypeTable();
+    int index = 0;
     while (head->next != NULL) {
         if (strcmp(head->name, typeTable->name) == 0) {
             printf("Error: type cannot be redeclared: %s\n", typeTable->name);
             exit(EXIT_FAILURE);
         }
         head = head->next;
+        index++;
     }
     if (strcmp(head->name, typeTable->name) == 0) {
         printf("Error: type cannot be redeclared: %s\n", typeTable->name);
         exit(EXIT_FAILURE);
     }
     head->next = typeTable;
+    typeTable->classIndex = index + 1;
+    return typeTable->classIndex;
 }
 
 void printTypeTable() {
+    printf("===  TypeTable  ===\n");
     struct typeTable* head = getTypeTable();
     while (head != NULL) {
         printf("typename: %s\n", head->name);
@@ -77,25 +80,39 @@ void printTypeTable() {
         printf("size : %d\n", head->size);
         head = head->next;
     }
+    printf("=== === ===\n");
 }
 
-void populateTypeTable(char* typename, struct param* paramList) {
-    addTypeTable(createTypeTable(typename, paramList));
+int populateTypeTable(char* typename, int isClass) {
+    return addTypeTable(createTypeTable(typename, isClass));
 }
 
-void updateTypeTable(char* typename, struct param* paramList) {
+void updateTypeTable(char* typename, struct param* paramList, struct symbol* symbolList) {
     struct typeTable* head = getTypeTable();
     while (head != NULL) {
         if (strcmp(typename, head->name) == 0) {
             head->paramList = paramList;
             head->size = 0;
-            while (paramList != NULL) {
-                if (paramList->type->typename != NULL && strcmp(paramList->type->typename, typename) == 0 && paramList->type->depth == 0) {
-                    printf("Error: cannot self reference a incomplete type as a non pointer\n");
-                    exit(EXIT_FAILURE);
+            if (head->isClass) {
+                head->symbolList = symbolList;
+                while (symbolList != NULL) {
+                    if (symbolList->type->typename != NULL && strcmp(symbolList->type->typename, typename) == 0 && symbolList->type->depth == 0) {
+                        printf("Error: cannot self reference a incomplete type as a non pointer\n");
+                        exit(EXIT_FAILURE);
+                    }
+                    head->size += getTypeSize(symbolList->type);
+                    symbolList = symbolList->next;
                 }
-                head->size += getTypeSize(paramList->type);
-                paramList = paramList->next;
+            }
+            else {
+                while (paramList != NULL) {
+                    if (paramList->type->typename != NULL && strcmp(paramList->type->typename, typename) == 0 && paramList->type->depth == 0) {
+                        printf("Error: cannot self reference a incomplete type as a non pointer\n");
+                        exit(EXIT_FAILURE);
+                    }
+                    head->size += getTypeSize(paramList->type);
+                    paramList = paramList->next;
+                }
             }
             break;
         }
@@ -103,7 +120,11 @@ void updateTypeTable(char* typename, struct param* paramList) {
     }
 }
 
-int getFieldOffset(char* fieldName, struct param* paramList) {
+int getFieldOffset(char* fieldName, struct typeTable* typeTable) {
+    if (typeTable->isClass) {
+        return getFieldOffsetForClasses(fieldName, typeTable->symbolList);
+    }
+    struct param* paramList = typeTable->paramList;
     int size = 0;
     while (paramList != NULL) {
         if (strcmp(fieldName, paramList->name) == 0) {
@@ -115,12 +136,48 @@ int getFieldOffset(char* fieldName, struct param* paramList) {
     return size;
 }
 
+int getFieldOffsetForClasses(char* fieldName, struct symbol* symbolList) {
+    int size = 0;
+    while (symbolList != NULL) {
+        if (strcmp(fieldName, symbolList->varName) == 0) {
+            return size;
+        }
+        size += getTypeSize(symbolList->type);
+        symbolList = symbolList->next;
+    }
+    return size;
+}
+
 struct type* getFieldType(char* fieldName, struct param* paramList) {
     while (paramList != NULL) {
         if (strcmp(fieldName, paramList->name) == 0) {
             return paramList->type;
         }
         paramList = paramList->next;
+    }
+    return NULL;
+}
+
+void printClassTable() {
+    printf("===  ClassTable ===\n");
+    struct typeTable* head = getTypeTable();
+    while (head != NULL) {
+        if (head->isClass) {
+            printSymbolTable(head->name, head->symbolList);
+            printf("size : %d\n", head->size);
+        }
+        head = head->next;
+    }
+    printf("=== === ===\n");
+}
+
+struct typeTable* getClassTableWithIndex(int classIndex) {
+    struct typeTable* typeTable = getTypeTable();
+    while (typeTable != NULL) {
+        if (typeTable->classIndex == classIndex) {
+            return typeTable;
+        }
+        typeTable = typeTable->next;
     }
     return NULL;
 }

@@ -89,7 +89,10 @@ extern int yydebug;
     INITIALISE = 290,              /* INITIALISE  */
     FREE = 291,                    /* FREE  */
     ALLOC = 292,                   /* ALLOC  */
-    ARROW = 293                    /* ARROW  */
+    ARROW = 293,                   /* ARROW  */
+    CLASS = 294,                   /* CLASS  */
+    SELF = 295,                    /* SELF  */
+    NEW = 296                      /* NEW  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -134,16 +137,19 @@ extern int yydebug;
 #define FREE 291
 #define ALLOC 292
 #define ARROW 293
+#define CLASS 294
+#define SELF 295
+#define NEW 296
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 19 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 20 "/mnt/c/Users/ervin/coding/compilerLab/exercises/stage7/exercise1/src/yacc/generateExpTree.y"
 
     struct tNode* node;
 
-#line 147 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.h"
+#line 153 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
