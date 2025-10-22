@@ -33,6 +33,56 @@ class Pair{
         end 
     }
 }
+class Triple{
+    decl 
+    Pair* p;
+    int third;
+    int setFirstSecond(int first,int second);
+    int setThird(int third);
+    int getFirst();
+    int getSecond();
+    int getThird();
+    enddecl 
+    int setFirstSecond(int first,int second){
+        decl 
+        int temp;
+        enddecl 
+        begin
+        self.p = makePair(first,second);
+        return 0; 
+        end 
+    }
+    int setThird(int third){
+        decl 
+        int temp;
+        enddecl 
+        begin
+        self.third = third;
+        return 0; 
+        end 
+    }
+    int getFirst(){
+        decl 
+        enddecl 
+        begin 
+        return self.p->getFirst();
+        end
+    }
+    int getSecond(){
+        decl 
+        enddecl 
+        begin 
+        return self.p->getSecond();
+        end 
+    }
+    int getThird(){
+        decl 
+        enddecl 
+        begin 
+        return self.third;
+        end
+    }
+}
 decl 
 Pair* makePair(int first,int second);
 enddecl 
@@ -50,13 +100,17 @@ Pair* makePair(int first,int second){
 }
 int main(){
     decl 
-    Pair* p;
+    Triple* t;
     int temp;
     enddecl 
     begin
-    p = makePair(1,2);
-    write(p->getFirst());
-    write(p->getSecond());
+    initialise();
+    t = new(Triple);
+    temp = t->setFirstSecond(1,2);
+    temp = t->setThird(3);
+    write(t->getFirst());
+    write(t->getSecond());
+    write(t->getThird());
     return 0; 
     end 
 }
