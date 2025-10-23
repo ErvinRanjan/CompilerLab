@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+int lines = -8;
+
 void strip(char* dest, char* src, char ch) {
     int i = 0;
     int n = strlen(src);
@@ -29,4 +31,19 @@ char* safeStrcpy(char* src) {
     strcpy(dest, src);
     return dest;
 }
+
+void cprintf(FILE* out, char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    int n = strlen(fmt);
+    for (int i = 0;i < n;i++) {
+        if (fmt[i] == '\n') lines++;
+    }
+    vfprintf(out, fmt, args);
+}
+
+int getLines() {
+    return lines;
+}
+
 

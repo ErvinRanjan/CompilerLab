@@ -9,11 +9,12 @@
     #include <stdlib.h>
     #include "typeTable.h"
     #include "param.h"
+    #include "out.h"
+    #include "utils.h"
     extern FILE* yyin;
     extern char* yytext;
     FILE* out;
     struct symbol* gsymbolTable = NULL;
-    extern int lines;
     int latestClassIndex = 0;
 %}
 
@@ -21,7 +22,7 @@
     struct tNode* node;
 };
 
-%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR REPEAT UNTIL DO MAIN RETURN TYPEDECL ENDTYPEDECL TUPLE STRUCT INITIALISE FREE ALLOC ARROW CLASS SELF NEW
+%token NUM ID BLOCK_BEGIN BLOCK_END READ WRITE IF THEN ELSE ENDIF WHILE DO ENDWHILE GE LE NE EQ BREAK CONTINUE DECL ENDDECL INT STR CSTR REPEAT UNTIL DO MAIN RETURN TYPEDECL ENDTYPEDECL TUPLE STRUCT INITIALISE FREE ALLOC ARROW CLASS SELF NEW EXTENDS
 %type <node> NUM Program Slist Stmt InputStmt AsgStmt OutputStmt Ifstmt Whilestmt BreakStmt ContinueStmt RepeatUntilStmt DoWhileStmt B E ID BREAK CONTINUE Param ParamList Body ArgList FDef FDefBlock MainBlock GDeclBlock LDeclBlock GDeclList LDeclList GDecl LDecl Type GidList LidList Gid Lid CSTR Array BraceList Identifier TypeDeclBlock TypeDeclList TypeDecl PartialTypeDecl InitialiseStmt FreeStmt AllocStmt ClassDeclList ClassDecl MethodDefBlock MethodDef ClassGDeclBlock ClassDeclBlock NewStmt
 
 %nonassoc '='
@@ -57,11 +58,25 @@ ClassDecl : LeftClassDecl MethodDefBlock '}' {}
           | LeftClassDecl '}' {}
           ;
 
-LeftClassDecl : PartialLeftClassDecl '{' ClassGDeclBlock {
-                                            struct symbol* symbolTable = NULL;
-                                            symbolTable = populateSymbolTable($<node>3,symbolTable,1); // setting isLocal flag to not allocate mem
-                                            updateTypeTable($<node>1->varName,NULL,symbolTable);
-                                        }
+LeftClassDecl : PartialLeftClassDecl '{' ClassGDeclBlock
+                {
+                    struct symbol* symbolTable = NULL;
+                    symbolTable = populateSymbolTable($<node>3,symbolTable,1); // setting isLocal flag to not allocate mem
+                    updateTypeTable($<node>1->varName,NULL,symbolTable);
+                }
+                | PartialLeftClassDecl EXTENDS ID '{' ClassGDeclBlock 
+                 {
+                    struct symbol* symbolTable = NULL;
+                    symbolTable = populateSymbolTable($<node>5,symbolTable,1); // setting isLocal flag to not allocate mem
+                    struct typeTable* typeTable = updateTypeTable($<node>1->varName,NULL,symbolTable);
+                    struct typeTable* parentTypeTable = getTypeTableWithName($<node>3->varName);
+                    if(parentTypeTable == NULL){
+                        printf("Error: class %s has not been declared but is used as a parent class to %s\n",$<node>3->varName,$<node>1->varName);
+                        exit(EXIT_FAILURE);
+                    } 
+                    typeTable->parent = parentTypeTable;
+                    typeTable->symbolList = combineChildSymbolListWithParentSymbolList(typeTable->symbolList,parentTypeTable->symbolList);
+                }
               ;
 
 PartialLeftClassDecl : CLASS ID {
@@ -137,7 +152,7 @@ MainBlock : INT MAIN '(' ')'  '{' LDeclBlock Body '}' {
                                                             printSymbolTable("main",symbolTable);
                                                             symbolTable = appendSymbolTable(symbolTable,gsymbolTable);
                                                             typeCheck($<node>7,symbolTable,-1);
-                                                            fprintf(out,"L0:\n"); 
+                                                            cprintf(out,"L0:\n"); 
                                                             populateParent($<node>7);
                                                             codeGen(out,$<node>7,symbolTable);
                                                         }
@@ -207,13 +222,11 @@ Gid : ID
         $<node>$ = $<node>1; 
     } 
     | ID '(' ParamList ')' {
-                                int label = getLabel();
-                                $<node>$ = createOperatorNode(LEAF_FDECL,$<node>1,$<node>3,NULL,label);
+                                $<node>$ = createOperatorNode(LEAF_FDECL,$<node>1,$<node>3,NULL,10);
                                 $<node>$->type = $<node>1->type;
                             }
     | ID '(' ')' {  
-                    int label = getLabel();
-                    $<node>$ = createOperatorNode(LEAF_FDECL,$<node>1,NULL,NULL,label);
+                    $<node>$ = createOperatorNode(LEAF_FDECL,$<node>1,NULL,NULL,10);
                     $<node>$->type = $<node>1->type;
                 }
     | '*' Gid {
@@ -550,7 +563,7 @@ Identifier : ID
 %%
 
 int yyerror(const char* s){
-    printf("Error: %s\ntoken: %s\nline number: %d\n",s,yytext,lines); 
+    printf("Error: %s\ntoken: %s\n",s,yytext); 
     return 0;
 }
 
@@ -558,12 +571,13 @@ int main(int argc,char** argv){
     if(argc > 2){
         yyin = fopen(argv[1],"r"); 
         out = fopen(argv[2],"w");
+        setOutputStream(out);
     } else{
         printf("Insufficient Args: <exe> <input> <output>\n");
         exit(EXIT_FAILURE);
     }
     initCompiler(out);
-    fprintf(out,"JMP L0\n");
+    cprintf(out,"JMP L0\n");
     yyparse();
     return 0;
 }

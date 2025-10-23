@@ -5,8 +5,6 @@
     #include <stdlib.h>
     #include "label.h"
     #include "type.h"
-
-    int lines = 1;
 %}
 
 %%
@@ -14,6 +12,10 @@
 "/*"([^*]|\*+[^/])*"*/"    {}
 
 "//"[^\n]* {}
+
+"extends" {
+    return EXTENDS;
+}
 
 "new" {
         return NEW;
@@ -188,7 +190,6 @@
 [ \t\r]+ {}
 
 [\n] {
-        lines++;
     }
 
 %%

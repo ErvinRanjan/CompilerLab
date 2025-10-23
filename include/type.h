@@ -18,5 +18,6 @@ int isTypeEqual(struct type* t1, struct type* t2);
 struct type* createUserDefinedTypeWithName(char* typename);
 struct type* createUserDefinedTypeWithDepth(char* typename, int depth);
 struct type* createType(char* typename, int code, int depth);
+int handleInheritance(char* leftTypeName, char* middleTypeName);
 
 #endif

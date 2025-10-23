@@ -7,6 +7,8 @@
 #include "type.h"
 #include "param.h"
 #include "typeTable.h"
+#include "out.h"
+#include "utils.h"
 
 extern bool isLeaf(int nodeType);
 
@@ -59,6 +61,8 @@ struct symbol* addSymbol(struct symbol* symbolTable, struct symbol* symbol) {
     if (symbolTable == NULL) {
         return symbol;
     }
+    struct symbol* next = symbol->next;
+    symbol->next = NULL;
     struct symbol* head = symbolTable;
     while (symbolTable->next != NULL) {
         if (strcmp(symbolTable->varName, symbol->varName) == 0) {
@@ -68,6 +72,7 @@ struct symbol* addSymbol(struct symbol* symbolTable, struct symbol* symbol) {
         symbolTable = symbolTable->next;
     }
     symbolTable->next = symbol;
+    symbol->next = next;
     return head;
 }
 
@@ -90,7 +95,12 @@ struct symbol* createSymbolForIdentifier(struct tNode* varRoot, struct type* typ
     switch (varRoot->nodeType) {
     case LEAF_ID: {
         struct type* t = type->typename == NULL ? createPrimitiveType(type->code, type->depth + varRoot->type->depth) : createUserDefinedTypeWithDepth(type->typename, type->depth + varRoot->type->depth);
-        return createSymbol(t, varRoot->varName, 1, isLocal ? -1 : getFreeMem(getTypeSize(t)), PRIMITIVE, NULL);
+        struct symbol* sym = createSymbol(t, varRoot->varName, 1, isLocal ? -1 : getFreeMem(getTypeSize(t)), PRIMITIVE, NULL);
+        struct typeTable* typeTable = getTypeTableWithName(type->typename);
+        if (typeTable != NULL && typeTable->isClass) {
+            sym->vFuncTableBaseBinding = getFreeMem(8);
+        }
+        return sym;
     }
     case LEAF_NUM: {
         return createSymbol(type, varRoot->varName, 1, isLocal ? -1 : getFreeMem(1), PRIMITIVE, NULL);
@@ -166,6 +176,7 @@ void printSymbolTable(char* name, struct symbol* symbolTable) {
         printf("val: %d\n", symbolTable->val);
         printf("size: %d\n", symbolTable->size);
         printf("flabel: %d\n", symbolTable->flabel);
+        printf("vFuncTableBaseBinding: %d\n", symbolTable->vFuncTableBaseBinding);
         struct param* p = symbolTable->paramList;
         if (p != NULL) {
             printf("parameters\n");
@@ -262,4 +273,123 @@ struct symbol* appendSymbolTable(struct symbol* s1, struct symbol* s2) {
     }
     s1->next = s2;
     return head;
+}
+
+struct symbol* handlePolymorphism(int vFuncTableBaseBinding, struct symbol* parentSymbolList, struct symbol* childSymbolList) {
+    FILE* out = getOutputStream();
+    int reg = getFreeReg();
+    // virtual function table base binding  - vftbb
+    int vftbb = vFuncTableBaseBinding;
+    int offs = 0;
+    while (parentSymbolList != NULL) {
+        if (parentSymbolList->flabel == -1) {
+            parentSymbolList = parentSymbolList->next;
+            continue;
+        }
+        struct symbol* symbol = getSymbolTable(parentSymbolList->varName, childSymbolList);
+        int flabel = 0;
+        if (symbol == NULL) {
+            flabel = parentSymbolList->flabel;
+        }
+        else {
+            flabel = symbol->flabel;
+        }
+        fprintf(out, "MOV R%d, %d\n", reg, flabel);
+        fprintf(out, "MOV [%d], R%d\n", vftbb + offs, reg);
+        offs++;
+        parentSymbolList = parentSymbolList->next;
+    }
+    freeReg();
+}
+
+struct symbol* combineChildSymbolListWithParentSymbolList(struct symbol* childSymbolList, struct symbol* parentSymbolList) {
+    struct symbol* symbolList = NULL;
+    struct symbol* childSymbolListHead = childSymbolList;
+    int combinedMethodCount = 0;
+    int combinedAttributeCount = 0;
+    while (childSymbolList != NULL) {
+        struct symbol* symbol = getSymbolTable(childSymbolList->varName, parentSymbolList);
+        if (childSymbolList->flabel == -1 && symbol != NULL) {
+            printf("Error: cannot redeclare class attributes\n");
+            exit(EXIT_FAILURE);
+        }
+        symbolList = addSymbol(symbolList, childSymbolList);
+        if (childSymbolList->flabel == -1) {
+            combinedAttributeCount++;
+        }
+        else {
+            combinedMethodCount++;
+        }
+        childSymbolList = childSymbolList->next;
+    }
+    while (parentSymbolList != NULL) {
+        struct symbol* symbol = getSymbolTable(parentSymbolList->varName, childSymbolListHead);
+        if (symbol == NULL || parentSymbolList->flabel == -1) {
+            symbolList = addSymbol(symbolList, parentSymbolList);
+        }
+        if (parentSymbolList->flabel == -1) {
+            combinedAttributeCount++;
+        }
+        else {
+            combinedMethodCount++;
+        }
+        parentSymbolList = parentSymbolList->next;
+    }
+    if (combinedMethodCount > 8) {
+        printf("Error: Child Class can have at max only 8 methods\n");
+        exit(EXIT_FAILURE);
+    }
+    else if (combinedAttributeCount > 8) {
+        printf("Error: Child Class can have at max only 8 attributes\n");
+        exit(EXIT_FAILURE);
+    }
+    return symbolList;
+}
+
+void populateVirtualFunctionTable(int virtualFunctionTableBaseBinding, struct symbol* symbolList) {
+    FILE* out = getOutputStream();
+    int offset = 0;
+    int reg = getFreeReg();
+    while (symbolList != NULL) {
+        if (symbolList->flabel != -1) {
+            cprintf(out, "MOV R%d, %d\n", reg, symbolList->flabel);
+            cprintf(out, "MOV [%d], R%d\n", virtualFunctionTableBaseBinding + offset, reg);
+            offset++;
+        }
+        symbolList = symbolList->next;
+    }
+    freeReg();
+}
+
+void populateVirtualFunctionTableForSymbolTable(struct symbol* symbolTable, int isGlobal) {
+    if (isGlobal) {
+        while (symbolTable != NULL) {
+            struct typeTable* t = getTypeTableWithName(symbolTable->type->typename);
+            if (t != NULL && t->isClass) {
+                populateVirtualFunctionTable(symbolTable->vFuncTableBaseBinding, t->symbolList);
+            }
+            symbolTable = symbolTable->next;
+        }
+    }
+    else {
+        while (symbolTable != NULL && !(symbolTable->isGlobal)) {
+            struct typeTable* t = getTypeTableWithName(symbolTable->type->typename);
+            if (t != NULL && t->isClass) {
+                populateVirtualFunctionTable(symbolTable->vFuncTableBaseBinding, t->symbolList);
+            }
+            symbolTable = symbolTable->next;
+        }
+    }
+}
+
+int getFunctionOffset(struct symbol* symbolTable, char* fName) {
+    int offs = 0;
+    while (symbolTable != NULL) {
+        if (strcmp(fName, symbolTable->varName) == 0) {
+            return offs;
+        }
+        if (symbolTable->flabel != -1) offs++;
+        symbolTable = symbolTable->next;
+    }
+    return -1;
 }

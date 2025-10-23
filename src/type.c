@@ -63,17 +63,27 @@ struct type* createType(char* typename, int code, int depth) {
     return t;
 }
 
+int handleInheritance(char* leftTypeName, char* middleTypeName) {
+    struct typeTable* leftTypeTable = getTypeTableWithName(leftTypeName);
+    if (leftTypeTable == NULL) return 0;
+    struct typeTable* middleTypeTable = getTypeTableWithName(middleTypeName);
+    if (middleTypeName == NULL) return 0;
+    return leftTypeTable->isClass && middleTypeTable->isClass && middleTypeTable->parent == leftTypeTable;
+}
+
 struct type* validateOperatorType(struct tNode* node, struct type* typeLeft, struct type* typeMiddle, struct symbol* symbolTable, int classIndex) {
     int nodeType = node->nodeType;
     switch (nodeType) {
-    case OP_ASSIGN:
+    case OP_ASSIGN: {
         if (((typeLeft->code == LEAF_TYPE_INT || typeLeft->depth != 0) && (typeMiddle->code == LEAF_TYPE_INT || typeMiddle->depth != 0)) // pointer-int
             || (typeLeft->typename != NULL && typeLeft->typename == typeMiddle->typename) // primitive-user
-            || (typeLeft->code == typeMiddle->code)) { // primitive-non-user
+            || (typeLeft->code == typeMiddle->code)
+            || handleInheritance(typeLeft->typename, typeMiddle->typename)) { // primitive-non-user
             return createPrimitiveType(-1, 0);
         }
         printf("Type Mismatch\n");
         exit(EXIT_FAILURE);
+    }
     case OP_ADD:
     case OP_SUB:
     case OP_MUL:
@@ -162,13 +172,14 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable, in
     struct symbol* symbol;
     struct param* param;
     switch (node->nodeType) {
-    case LEAF_ID:
+    case LEAF_ID: {
         symbol = getSymbolTable(node->varName, symbolTable);
         if (symbol == NULL) {
             printf("Error: variable %s has not been declared\n", node->varName);
             exit(EXIT_FAILURE);
         }
         return symbol->type;
+    }
     case LEAF_NUM:
         return createPrimitiveType(LEAF_TYPE_INT, 0);
     case LEAF_ARR:
@@ -277,7 +288,7 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable, in
     case LEAF_NEW: {
         struct type* type = typeCheck(node->left, symbolTable, classIndex);
         struct typeTable* typeTable = getTypeTableWithName(type->typename);
-        if (typeTable == NULL || !(typeTable->isClass) || strcmp(typeTable->name, node->middle->varName) != 0 || type->depth != 1) {
+        if (typeTable == NULL || !(typeTable->isClass) || (strcmp(typeTable->name, node->middle->varName) != 0 && !handleInheritance(typeTable->name, node->middle->varName)) || type->depth != 1) {
             printf("Error: Type Mismatch\n");
             exit(EXIT_FAILURE);
         }

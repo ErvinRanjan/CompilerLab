@@ -92,7 +92,8 @@ extern int yydebug;
     ARROW = 293,                   /* ARROW  */
     CLASS = 294,                   /* CLASS  */
     SELF = 295,                    /* SELF  */
-    NEW = 296                      /* NEW  */
+    NEW = 296,                     /* NEW  */
+    EXTENDS = 297                  /* EXTENDS  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -140,16 +141,17 @@ extern int yydebug;
 #define CLASS 294
 #define SELF 295
 #define NEW 296
+#define EXTENDS 297
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 20 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
+#line 21 "/mnt/c/Users/ervin/coding/compilerLab/src/yacc/generateExpTree.y"
 
     struct tNode* node;
 
-#line 153 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.h"
+#line 155 "/mnt/c/Users/ervin/coding/compilerLab/src/y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

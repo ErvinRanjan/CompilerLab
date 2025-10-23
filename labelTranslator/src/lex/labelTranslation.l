@@ -3,6 +3,7 @@
     #include <string.h>
     #include <stdlib.h>
     #include "constants.h"
+    #include "utils.h"
     int labelToAddr[1000];
     int lines = -8;
     char filename[1000];

@@ -27,7 +27,7 @@ int getTypeSize(struct type* type);
 int populateTypeTable(char* typename, int isClass);
 int getFieldOffset(char* fieldName, struct typeTable* typeTable);
 struct type* getFieldType(char* fieldName, struct param* paramList);
-void updateTypeTable(char* typename, struct param* paramList, struct symbol* symbolList);
+struct typeTable* updateTypeTable(char* typename, struct param* paramList, struct symbol* symbolList);
 struct typeTable* getClassTableWithIndex(int classIndex);
 
 #endif

@@ -19,6 +19,7 @@ struct symbol {
     struct param* paramList;
     int flabel;
     int isGlobal;
+    int vFuncTableBaseBinding;
 };
 
 struct symbol* createSymbol(struct type* type, char* varName, int size, int binding, int symbolType, int* maxSizes);
@@ -35,5 +36,10 @@ int getLocalVarOffset(char* varName, struct symbol* localVarList);
 int isParam(char* varName, struct symbol* symbolTable, int paramCount);
 int getParamLenForFunction(char* fname, struct symbol* symbolTable);
 struct symbol* appendSymbolTable(struct symbol* s1, struct symbol* s2);
+struct symbol* combineChildSymbolListWithParentSymbolList(struct symbol* childSymbolList, struct symbol* parentSymbolList);
+void populateVirtualFunctionTable(int virtualFunctionTableBaseBinding, struct symbol* symbolList);
+int getFunctionOffset(struct symbol* symbolTable, char* fName);
+struct symbol* handlePolymorphism(int vFuncTableBaseBinding, struct symbol* parentSymbolList, struct symbol* childSymbolList);
+void populateVirtualFunctionTableForSymbolTable(struct symbol* symbolTable, int isGlobal);
 
 #endif

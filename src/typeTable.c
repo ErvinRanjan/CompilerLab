@@ -1,4 +1,5 @@
 #include "typeTable.h"
+#include "mem.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -87,7 +88,7 @@ int populateTypeTable(char* typename, int isClass) {
     return addTypeTable(createTypeTable(typename, isClass));
 }
 
-void updateTypeTable(char* typename, struct param* paramList, struct symbol* symbolList) {
+struct typeTable* updateTypeTable(char* typename, struct param* paramList, struct symbol* symbolList) {
     struct typeTable* head = getTypeTable();
     while (head != NULL) {
         if (strcmp(typename, head->name) == 0) {
@@ -114,7 +115,7 @@ void updateTypeTable(char* typename, struct param* paramList, struct symbol* sym
                     paramList = paramList->next;
                 }
             }
-            break;
+            return head;
         }
         head = head->next;
     }

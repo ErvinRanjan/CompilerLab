@@ -1,118 +1,57 @@
-class Pair{
+class Animal{
     decl 
-    int first,second,setFirst(int first),setSecond(int second),getFirst(),getSecond();
+    int makeSound();
     enddecl 
-    int setFirst(int first){
+    int makeSound(){
         decl 
         enddecl 
         begin
-        self.first = first;
-        return 1; 
-        end 
-    }
-    int setSecond(int second){
-        decl 
-        enddecl 
-        begin
-        self.second = second;
-        return 1; 
-        end 
-    }
-    int getFirst(){
-        decl 
-        enddecl 
-        begin
-        return self.first; 
-        end 
-    }
-    int getSecond(){
-        decl 
-        enddecl 
-        begin
-        return self.second; 
-        end 
-    }
-}
-class Triple{
-    decl 
-    Triple* t;
-    Pair* p;
-    int third;
-    int setFirstSecond(int first,int second);
-    int setThird(int third);
-    int getFirst();
-    int getSecond();
-    int getThird();
-    enddecl 
-    int setFirstSecond(int first,int second){
-        decl 
-        int temp;
-        enddecl 
-        begin
-        self.t = new(Triple);
-        self.t->p = new(Pair);
-        temp = self.t->p->setFirst(1);
-        temp = self.t->p->setSecond(2);
-        write(self.t->p->getFirst());
-        write(self.t->p->getSecond());
+        write("sound");
         return 0; 
         end 
     }
-    int setThird(int third){
+}
+class Dog extends Animal{
+    decl 
+    int makeSound();
+    enddecl 
+    int makeSound(){
         decl 
-        int temp;
         enddecl 
         begin
-        self.third = third;
+        write("bark");
         return 0; 
         end 
     }
-    int getFirst(){
+}
+class Horse extends Animal{
+    decl 
+    int makeSound();
+    enddecl 
+    int makeSound(){
         decl 
         enddecl 
-        begin 
-        return self.p->getFirst();
-        end
-    }
-    int getSecond(){
-        decl 
-        enddecl 
-        begin 
-        return self.p->getSecond();
+        begin
+        write("neigh");
+        return 0; 
         end 
     }
-    int getThird(){
-        decl 
-        enddecl 
-        begin 
-        return self.third;
-        end
-    }
-}
-decl 
-Pair* makePair(int first,int second);
-enddecl 
-Pair* makePair(int first,int second){
-    decl 
-    Pair* p;
-    int temp;
-    enddecl
-    begin  
-    p = new(Pair);
-    temp = p->setFirst(first);
-    temp = p->setSecond(second);
-    return p;
-    end 
 }
 int main(){
     decl 
-    Triple* t;
+    Animal* a;
     int temp;
     enddecl 
-    begin
-    initialise();
-    t = new(Triple);
-    temp = t->setFirstSecond(1,2);
-    return 0; 
-    end 
+    begin 
+    temp = a->makeSound();
+    read(temp);
+    if(temp == 0) then 
+        a = new(Dog);
+    else 
+        a = new(Horse);
+    endif;
+    temp = a->makeSound();
+    return 0;
+    end
 }
+
