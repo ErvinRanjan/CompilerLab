@@ -1,0 +1,25 @@
+decl 
+int sum(int a,int b),sum(int a,int b,int c);
+enddecl 
+int sum(int a,int b){
+    decl 
+    enddecl 
+    begin 
+    return a + b;
+    end 
+}
+int sum(int a,int b,int c){
+    decl 
+    enddecl 
+    begin 
+    return a + sum(b,c);
+    end 
+}
+int main(){
+    decl 
+    enddecl 
+    begin
+    write(sum(1,2,sum(1,2,sum(1,2))));
+    return 0; 
+    end 
+}

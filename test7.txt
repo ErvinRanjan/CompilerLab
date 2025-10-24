@@ -1,0 +1,26 @@
+decl 
+int fact(int n);
+enddecl 
+int fact(int n){
+    decl
+    int temp; 
+    enddecl 
+    begin
+    if(n <= 1) then 
+        temp = n;
+    else 
+        temp = n*fact(n - 1);
+    endif;
+    return temp;
+    end 
+}
+int main(){
+    decl 
+    int n;
+    enddecl 
+    begin
+    read(n);
+    write(fact(n));
+    return 0; 
+    end 
+}

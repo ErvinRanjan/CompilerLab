@@ -171,7 +171,7 @@
             return NUM;
     }
 
-\".*\" {
+\"[^\"]+\" {
             char syytext[100];
             strip(syytext,yytext,'"');
             yylval.node = createLeafNode(-1,NULL,createPrimitiveType(LEAF_TYPE_STR,0),-1,LEAF_STR,syytext);

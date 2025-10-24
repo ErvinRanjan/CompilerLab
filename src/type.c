@@ -69,7 +69,12 @@ int handleInheritance(char* leftTypeName, char* middleTypeName) {
     if (leftTypeTable == NULL) return 0;
     struct typeTable* middleTypeTable = getTypeTableWithName(middleTypeName);
     if (middleTypeName == NULL) return 0;
-    return leftTypeTable->isClass && middleTypeTable->isClass && middleTypeTable->parent == leftTypeTable;
+    struct typeTable* temp = middleTypeTable;
+    while (temp != NULL && temp->parent != leftTypeTable) {
+        temp = temp->parent;
+    }
+    if (temp == NULL) return 0;
+    return leftTypeTable->isClass && middleTypeTable->isClass;
 }
 
 struct type* validateOperatorType(struct tNode* node, struct type* typeLeft, struct type* typeMiddle, struct symbol* symbolTable, int classIndex) {

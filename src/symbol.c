@@ -76,6 +76,23 @@ struct symbol* addSymbolHelper(struct symbol* symbolTable, struct symbol* symbol
     return head;
 }
 
+struct symbol* reorderClassSymbolTable(struct symbol* symbolTable) {
+    struct symbol* attrSymbolTable = NULL;
+    struct symbol* methodSymbolTable = NULL;
+    while (symbolTable != NULL) {
+        if (symbolTable->flabel == -1) {
+            attrSymbolTable = addSymbol(attrSymbolTable, symbolTable);
+        }
+        else {
+            methodSymbolTable = addSymbol(methodSymbolTable, symbolTable);
+        }
+        struct symbol* prev = symbolTable;
+        symbolTable = symbolTable->next;
+        free(prev);
+    }
+    return appendSymbolTable(attrSymbolTable, methodSymbolTable);
+}
+
 struct symbol* deepCopySymbol(struct symbol* symbol) {
     struct symbol* newSymbol = malloc(sizeof(struct symbol));
     newSymbol->binding = symbol->binding;
@@ -288,6 +305,21 @@ int getParamLenForFunction(char* fname, struct param* paramList, struct symbol* 
 
 struct symbol* appendSymbolTable(struct symbol* s1, struct symbol* s2) {
     if (s1 == NULL) return s2;
+    if (s2 == NULL) return s1;
+    struct symbol* combinedSymbolList = NULL;
+    while (s1 != NULL) {
+        combinedSymbolList = addSymbol(combinedSymbolList, s1);
+        s1 = s1->next;
+    }
+    while (s2 != NULL) {
+        combinedSymbolList = addSymbol(combinedSymbolList, s2);
+        s2 = s2->next;
+    }
+    return combinedSymbolList;
+}
+
+struct symbol* attachSymbolTable(struct symbol* s1, struct symbol* s2) {
+    if (s1 == NULL) return s2;
     struct symbol* head = s1;
     while (s1->next != NULL) {
         s1 = s1->next;
@@ -315,7 +347,7 @@ struct symbol* handlePolymorphism(int vFuncTableBaseBinding, struct symbol* pare
         else {
             flabel = symbol->flabel;
         }
-        fprintf(out, "MOV R%d, %d\n", reg, flabel);
+        fprintf(out, "MOV R%d, L%d\n", reg, flabel);
         fprintf(out, "MOV [%d], R%d\n", vftbb + offs, reg);
         offs++;
         parentSymbolList = parentSymbolList->next;
@@ -323,38 +355,52 @@ struct symbol* handlePolymorphism(int vFuncTableBaseBinding, struct symbol* pare
     freeReg();
 }
 
-struct symbol* combineChildSymbolListWithParentSymbolList(struct symbol* childSymbolList, struct symbol* parentSymbolList) {
-    struct symbol* symbolList = NULL;
-    struct symbol* childSymbolListHead = childSymbolList;
+struct symbol* combineChildSymbolListWithParentSymbolList(struct symbol* childSymbolList, struct typeTable* parentTypeTable) {
+    struct symbol* parentSymbolList = parentTypeTable->symbolList;
+    struct symbol* combinedAttrSymbolList = NULL;
+    struct symbol* combinedMethodSymbolList = NULL;
+    struct symbol* parentMethodList = NULL;
+    struct symbol* parentSymbolListHead = parentSymbolList;
     int combinedMethodCount = 0;
     int combinedAttributeCount = 0;
-    while (childSymbolList != NULL) {
-        struct symbol* symbol = childSymbolList->flabel != -1 ? getFSymbol(childSymbolList->varName, childSymbolList->paramList, parentSymbolList) : getSymbolTable(childSymbolList->varName, parentSymbolList);
-        if (childSymbolList->flabel == -1 && symbol != NULL) {
-            printf("Error: cannot redeclare class attributes\n");
-            exit(EXIT_FAILURE);
-        }
-        symbolList = addSymbol(symbolList, childSymbolList);
-        if (childSymbolList->flabel == -1) {
-            combinedAttributeCount++;
-        }
-        else {
-            combinedMethodCount++;
-        }
-        childSymbolList = childSymbolList->next;
-    }
     while (parentSymbolList != NULL) {
-        struct symbol* symbol = parentSymbolList->flabel != -1 ? getFSymbol(parentSymbolList->varName, parentSymbolList->paramList, childSymbolListHead) : getSymbolTable(parentSymbolList->varName, childSymbolListHead);
-        if (symbol == NULL || parentSymbolList->flabel == -1) {
-            symbolList = addSymbol(symbolList, parentSymbolList);
-        }
-        if (parentSymbolList->flabel == -1) {
-            combinedAttributeCount++;
+        struct symbol* symbol = parentSymbolList->flabel != -1 ? getFSymbol(parentSymbolList->varName, parentSymbolList->paramList, childSymbolList) : getSymbolTable(parentSymbolList->varName, childSymbolList);
+        if (parentSymbolList->flabel == -1) { // symbol is attr
+            if (symbol != NULL) { // attr in both parent and child
+                printf("Error: cannot redeclare class attributes\n");
+                exit(EXIT_FAILURE);
+            }
+            else {
+                combinedAttrSymbolList = addSymbol(combinedAttrSymbolList, parentSymbolList);
+                combinedAttributeCount++;
+            }
         }
         else {
+            if (symbol != NULL) {
+                combinedMethodSymbolList = addSymbol(combinedMethodSymbolList, symbol);
+            }
+            else {
+                combinedMethodSymbolList = addSymbol(combinedMethodSymbolList, parentSymbolList);
+            }
+            parentMethodList = addSymbol(parentMethodList, parentSymbolList);
             combinedMethodCount++;
         }
         parentSymbolList = parentSymbolList->next;
+    }
+    parentTypeTable->symbolList = appendSymbolTable(combinedAttrSymbolList, parentMethodList);
+    while (childSymbolList != NULL) {
+        struct symbol* symbol = childSymbolList->flabel != -1 ? getFSymbol(childSymbolList->varName, childSymbolList->paramList, parentSymbolListHead) : getSymbolTable(childSymbolList->varName, parentSymbolListHead);
+        if (childSymbolList->flabel == -1) { // symbol is attr
+            combinedAttrSymbolList = addSymbol(combinedAttrSymbolList, childSymbolList);
+            combinedAttributeCount++;
+        }
+        else {
+            if (symbol == NULL) {
+                combinedMethodSymbolList = addSymbol(combinedMethodSymbolList, childSymbolList);
+            }
+            combinedMethodCount++;
+        }
+        childSymbolList = childSymbolList->next;
     }
     if (combinedMethodCount > 8) {
         printf("Error: Child Class can have at max only 8 methods\n");
@@ -364,7 +410,12 @@ struct symbol* combineChildSymbolListWithParentSymbolList(struct symbol* childSy
         printf("Error: Child Class can have at max only 8 attributes\n");
         exit(EXIT_FAILURE);
     }
-    return symbolList;
+    while (parentSymbolListHead != NULL) {
+        struct symbol* prev = parentSymbolListHead;
+        parentSymbolListHead = parentSymbolListHead->next;
+        free(prev);
+    }
+    return appendSymbolTable(combinedAttrSymbolList, combinedMethodSymbolList);
 }
 
 void populateVirtualFunctionTable(int virtualFunctionTableBaseBinding, struct symbol* symbolList) {
@@ -373,7 +424,7 @@ void populateVirtualFunctionTable(int virtualFunctionTableBaseBinding, struct sy
     int reg = getFreeReg();
     while (symbolList != NULL) {
         if (symbolList->flabel != -1) {
-            cprintf(out, "MOV R%d, %d\n", reg, symbolList->flabel);
+            cprintf(out, "MOV R%d, L%d\n", reg, symbolList->flabel);
             cprintf(out, "MOV [%d], R%d\n", virtualFunctionTableBaseBinding + offset, reg);
             offset++;
         }

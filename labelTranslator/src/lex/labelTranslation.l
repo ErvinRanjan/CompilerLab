@@ -3,7 +3,6 @@
     #include <string.h>
     #include <stdlib.h>
     #include "constants.h"
-    #include "utils.h"
     int labelToAddr[1000];
     int lines = -8;
     char filename[1000];
@@ -22,29 +21,31 @@
         }
      }
 
-"L"[0-9]+":\n" {
+[L][0-9]+":\n" {
     int labelNumber;
-    sscanf(yytext, "L%d", &labelNumber);
+    char ch;
+    sscanf(yytext, "%c%d", &ch,&labelNumber);
     if(!second_time){
         labelToAddr[labelNumber] = baseAddr + 2*lines;
     }
 }
 
-"L"[0-9]+ {     
+[L][0-9]+ {     
                 int labelNumber;
-                sscanf(yytext,"L%d",&labelNumber);
+                char ch;
+                sscanf(yytext, "%c%d", &ch,&labelNumber);
                 if(second_time){
                     fprintf(out,"%d",labelToAddr[labelNumber]);
                 }
             }
 
-"L-1:\n" {
+[L]"-1:\n" {
             if(!second_time){
                 endAddr = baseAddr + 2*lines;
             }
         }
 
-"L-1"   {
+[L]"-1"   {
             if(second_time){
                 fprintf(out,"%d",endAddr);
             }

@@ -3,6 +3,7 @@
 
 #include "tree.h"
 #include "type.h"
+#include "typeTable.h"
 
 struct symbol {
     struct type* type;
@@ -35,14 +36,16 @@ int getParamOffset(char* varName, struct symbol* symbolTable, int paramCount);
 int getLocalVarOffset(char* varName, struct symbol* localVarList);
 int isParam(char* varName, struct symbol* symbolTable, int paramCount);
 int getParamLenForFunction(char* fname, struct param* paramList, struct symbol* symbolTable);
+struct symbol* attachSymbolTable(struct symbol* s1, struct symbol* s2);
 struct symbol* appendSymbolTable(struct symbol* s1, struct symbol* s2);
-struct symbol* combineChildSymbolListWithParentSymbolList(struct symbol* childSymbolList, struct symbol* parentSymbolList);
+struct symbol* combineChildSymbolListWithParentSymbolList(struct symbol* childSymbolList, struct typeTable* parentTypeTable);
 void populateVirtualFunctionTable(int virtualFunctionTableBaseBinding, struct symbol* symbolList);
 int getFunctionOffset(struct symbol* symbolTable, struct symbol* fsymbol);
 struct symbol* handlePolymorphism(int vFuncTableBaseBinding, struct symbol* parentSymbolList, struct symbol* childSymbolList);
 void populateVirtualFunctionTableForSymbolTable(struct symbol* symbolTable, int isGlobal);
 struct symbol* addFunctionSymbol(struct symbol* fsymbol, struct symbol* symbolTable);
 struct symbol* getFSymbol(char* varName, struct param* paramList, struct symbol* symbolTable);
+struct symbol* reorderClassSymbolTable(struct symbol* symbolTable);
 
 
 #endif

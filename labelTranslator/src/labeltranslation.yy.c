@@ -765,7 +765,8 @@ YY_RULE_SETUP
 #line 24 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/lex/labelTranslation.l"
 {
     int labelNumber;
-    sscanf(yytext, "L%d", &labelNumber);
+    char ch;
+    sscanf(yytext, "%c%d", &ch,&labelNumber);
     if(!second_time){
         labelToAddr[labelNumber] = baseAddr + 2*lines;
     }
@@ -773,10 +774,11 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 32 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/lex/labelTranslation.l"
+#line 33 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/lex/labelTranslation.l"
 {     
                 int labelNumber;
-                sscanf(yytext,"L%d",&labelNumber);
+                char ch;
+                sscanf(yytext, "%c%d", &ch,&labelNumber);
                 if(second_time){
                     fprintf(out,"%d",labelToAddr[labelNumber]);
                 }
@@ -785,7 +787,7 @@ YY_RULE_SETUP
 case 5:
 /* rule 5 can match eol */
 YY_RULE_SETUP
-#line 40 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/lex/labelTranslation.l"
+#line 42 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/lex/labelTranslation.l"
 {
             if(!second_time){
                 endAddr = baseAddr + 2*lines;
@@ -794,7 +796,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 46 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/lex/labelTranslation.l"
+#line 48 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/lex/labelTranslation.l"
 {
             if(second_time){
                 fprintf(out,"%d",endAddr);
@@ -803,7 +805,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 52 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/lex/labelTranslation.l"
+#line 54 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/lex/labelTranslation.l"
 {   
             if(second_time){
                 fprintf(out,"%s",yytext);
@@ -812,10 +814,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 58 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/lex/labelTranslation.l"
+#line 60 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/lex/labelTranslation.l"
 ECHO;
 	YY_BREAK
-#line 819 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/labeltranslation.yy.c"
+#line 821 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/labeltranslation.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1820,7 +1822,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 58 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/lex/labelTranslation.l"
+#line 60 "/mnt/c/Users/ervin/coding/compilerLab/labelTranslator/src/lex/labelTranslation.l"
 
 
 int yywrap(){

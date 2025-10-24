@@ -62,6 +62,7 @@ LeftClassDecl : PartialLeftClassDecl '{' ClassGDeclBlock
                 {
                     struct symbol* symbolTable = NULL;
                     symbolTable = populateSymbolTable($<node>3,symbolTable,1); // setting isLocal flag to not allocate mem
+                    symbolTable = reorderClassSymbolTable(symbolTable);
                     updateTypeTable($<node>1->varName,NULL,symbolTable);
                 }
                 | PartialLeftClassDecl EXTENDS ID '{' ClassGDeclBlock 
@@ -75,7 +76,7 @@ LeftClassDecl : PartialLeftClassDecl '{' ClassGDeclBlock
                         exit(EXIT_FAILURE);
                     } 
                     typeTable->parent = parentTypeTable;
-                    typeTable->symbolList = combineChildSymbolListWithParentSymbolList(typeTable->symbolList,parentTypeTable->symbolList);
+                    typeTable->symbolList = combineChildSymbolListWithParentSymbolList(typeTable->symbolList,parentTypeTable);
                 }
               ;
 
@@ -108,7 +109,7 @@ MethodDef : Type Pid '(' ParamList ')' '{' LDeclBlock Body '}' {
                                                                 symbolTable1 = populateSymbolTable($<node>7,symbolTable1,1);
                                                                 printSymbolTable($<node>2->varName,symbolTable1);
                                                                 typeCheck($<node>8,symbolTable1,latestClassIndex);
-                                                                symbolTable1 = appendSymbolTable(symbolTable1,symbolTable2);
+                                                                symbolTable1 = attachSymbolTable(symbolTable1,symbolTable2);
                                                                 populateParent($<node>8);
                                                                 funcCodeGen(out,$<node>2->varName,paramList,$<node>8,symbolTable1,latestClassIndex);
                                                         }
@@ -120,7 +121,7 @@ MethodDef : Type Pid '(' ParamList ')' '{' LDeclBlock Body '}' {
                         struct symbol* symbolTable1 = NULL;
                         symbolTable1 = populateSymbolTable($<node>6,symbolTable1,1);
                         typeCheck($<node>7,symbolTable1,latestClassIndex);
-                        symbolTable1 = appendSymbolTable(symbolTable1,symbolTable2);
+                        symbolTable1 = attachSymbolTable(symbolTable1,symbolTable2);
                         populateParent($<node>7);
                         funcCodeGen(out,$<node>2->varName,NULL,$<node>7,symbolTable1,latestClassIndex);
           }
@@ -151,8 +152,8 @@ PartialTypeDecl : STRUCT ID {
 MainBlock : INT MAIN '(' ')'  '{' LDeclBlock Body '}' { 
                                                             struct symbol* symbolTable = NULL;
                                                             symbolTable = populateSymbolTable($<node>6,symbolTable,0);
+                                                            symbolTable = attachSymbolTable(symbolTable,gsymbolTable);
                                                             printSymbolTable("main",symbolTable);
-                                                            symbolTable = appendSymbolTable(symbolTable,gsymbolTable);
                                                             typeCheck($<node>7,symbolTable,-1);
                                                             cprintf(out,"L0:\n"); 
                                                             populateParent($<node>7);
@@ -224,11 +225,13 @@ Gid : ID
         $<node>$ = $<node>1; 
     } 
     | ID '(' ParamList ')' {
-                                $<node>$ = createOperatorNode(LEAF_FDECL,$<node>1,$<node>3,NULL,10);
+                                int label = getLabel();
+                                $<node>$ = createOperatorNode(LEAF_FDECL,$<node>1,$<node>3,NULL,label);
                                 $<node>$->type = $<node>1->type;
                             }
     | ID '(' ')' {  
-                    $<node>$ = createOperatorNode(LEAF_FDECL,$<node>1,NULL,NULL,10);
+                    int label = getLabel();
+                    $<node>$ = createOperatorNode(LEAF_FDECL,$<node>1,NULL,NULL,label);
                     $<node>$->type = $<node>1->type;
                 }
     | '*' Gid {
@@ -314,7 +317,7 @@ FDef : Type Pid '(' ParamList ')' '{' LDeclBlock Body '}' {
                                                                 symbolTable1 = addParamAsSymbol(paramList,symbolTable1);
                                                                 symbolTable1 = populateSymbolTable($<node>7,symbolTable1,1);
                                                                 printSymbolTable($<node>2->varName,symbolTable1);
-                                                                symbolTable1 = appendSymbolTable(symbolTable1,gsymbolTable);
+                                                                symbolTable1 = attachSymbolTable(symbolTable1,gsymbolTable);
                                                                 typeCheck($<node>8,symbolTable1,-1);
                                                                 populateParent($<node>8);
                                                                 funcCodeGen(out,$<node>2->varName,paramList,$<node>8,symbolTable1,-1);
@@ -324,7 +327,7 @@ FDef : Type Pid '(' ParamList ')' '{' LDeclBlock Body '}' {
         typeCheckFunctionParam($<node>1->type,$<node>2->varName,NULL,gsymbolTable);
         struct symbol* symbolTable1 = NULL;
         symbolTable1 = populateSymbolTable($<node>6,symbolTable1,1);
-        symbolTable1 = appendSymbolTable(symbolTable1,gsymbolTable);
+        symbolTable1 = attachSymbolTable(symbolTable1,gsymbolTable);
         typeCheck($<node>7,symbolTable1,-1);
         populateParent($<node>7);
         funcCodeGen(out,$<node>2->varName,NULL,$<node>7,symbolTable1,-1);
@@ -511,7 +514,7 @@ E : E '+' E {
    }
   ;
 
-ArgList : ArgList ',' E  {
+ArgList : ArgList ',' E  {  
                             $<node>$ = createOperatorNode(OP_ARGLIST,$<node>1,$<node>3,NULL,-1);
                         }
         | E {
