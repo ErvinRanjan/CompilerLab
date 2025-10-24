@@ -16,9 +16,9 @@
 struct stack* beginLabelStack, * nextLabelStack; // keeps track of latest while begin and next labels
 extern int getArrayDepth(struct tNode* braceRoot);
 
-int getMethodLabel(struct symbol* classInstance, char* varName) {
+int getMethodLabel(struct symbol* classInstance, struct symbol* fsymbol) {
     struct typeTable* typeTable = getTypeTableWithName(classInstance->type->typename);
-    int offs = getFunctionOffset(typeTable->symbolList, varName);
+    int offs = getFunctionOffset(typeTable->symbolList, fsymbol);
     int baseBinding = classInstance->vFuncTableBaseBinding;
     return baseBinding + offs;
 }
@@ -27,23 +27,23 @@ bool isLeaf(int nodeType) {
     return nodeType == LEAF_ID || nodeType == LEAF_NUM || nodeType == LEAF_BREAK || nodeType == LEAF_CONTINUE || nodeType == LEAF_STR || nodeType == LEAF_TYPE_INT || nodeType == LEAF_TYPE_STR || nodeType == LEAF_ARR || nodeType == LEAF_FUNC || nodeType == LEAF_FDECL || nodeType == LEAF_TUPLE_ACCESS || nodeType == OP_INITIALISE || nodeType == OP_ALLOC || nodeType == OP_FREE || nodeType == LEAF_METHOD || nodeType == LEAF_NEW;
 }
 
-void resolveArrayAddrCodegen(FILE* out, struct tNode* braceRoot, struct symbol* symbolTable, int* base, char* fname, int classIndex) {
+void resolveArrayAddrCodegen(FILE* out, struct tNode* braceRoot, struct symbol* symbolTable, int* base, char* fname, struct param* paramList, int classIndex) {
     if (braceRoot == NULL) return;
 
     if (braceRoot->nodeType != OP_BRACELIST) {
-        int reg = codeGenHelper(out, braceRoot, -1, NULL, symbolTable, fname, classIndex);
+        int reg = codeGenHelper(out, braceRoot, -1, NULL, symbolTable, fname, paramList, classIndex);
         cprintf(out, "MOV [%d], R%d\n", *base, reg);
         (*base) = (*base) + 1;
         return;
     }
 
-    resolveArrayAddrCodegen(out, braceRoot->left, symbolTable, base, fname, classIndex);
-    resolveArrayAddrCodegen(out, braceRoot->middle, symbolTable, base, fname, classIndex);
+    resolveArrayAddrCodegen(out, braceRoot->left, symbolTable, base, fname, paramList, classIndex);
+    resolveArrayAddrCodegen(out, braceRoot->middle, symbolTable, base, fname, paramList, classIndex);
 }
 
-int resolveAddr(FILE* out, struct tNode* node, struct symbol* symbolTable, char* fname, int classIndex) {
+int resolveAddr(FILE* out, struct tNode* node, struct symbol* symbolTable, char* fname, struct param* paramList, int classIndex) {
     if (fname != NULL && (node->nodeType == LEAF_ID || node->nodeType == LEAF_TUPLE_ACCESS)) {
-        return resolveAddrInFunction(out, node, symbolTable, fname, classIndex);
+        return resolveAddrInFunction(out, node, symbolTable, fname, paramList, classIndex);
     }
     switch (node->nodeType) {
     case LEAF_ID:
@@ -52,11 +52,11 @@ int resolveAddr(FILE* out, struct tNode* node, struct symbol* symbolTable, char*
         return reg;
         break;
     case LEAF_ARR:
-        return resolveArrayAddr(out, node, symbolTable, fname, classIndex);
+        return resolveArrayAddr(out, node, symbolTable, fname, paramList, classIndex);
         break;
     case LEAF_TUPLE_ACCESS: {
         struct typeTable* typeTable = getTypeTableWithName(typeCheck(node->left, symbolTable, classIndex)->typename);
-        int base_reg = codeGenHelper(out, node->left, -1, NULL, symbolTable, fname, classIndex);
+        int base_reg = codeGenHelper(out, node->left, -1, NULL, symbolTable, fname, paramList, classIndex);
         int offs = getFieldOffset(node->middle->varName, typeTable);
         int reg = getFreeReg();
         cprintf(out, "MOV R%d, R%d\n", reg, base_reg);
@@ -68,12 +68,12 @@ int resolveAddr(FILE* out, struct tNode* node, struct symbol* symbolTable, char*
     return -1;
 }
 
-int resolveArrayAddr(FILE* out, struct tNode* node, struct symbol* symbolTable, char* fname, int classIndex) {
+int resolveArrayAddr(FILE* out, struct tNode* node, struct symbol* symbolTable, char* fname, struct param* paramList, int classIndex) {
     int depth = getArrayDepth(node->middle);
     int indices[100];
     int base = getFreeMem(depth);
     int x = base;
-    resolveArrayAddrCodegen(out, node->middle, symbolTable, &x, fname, classIndex);
+    resolveArrayAddrCodegen(out, node->middle, symbolTable, &x, fname, paramList, classIndex);
     struct symbol* sym = getSymbolTable(node->left->varName, symbolTable);
     int maxSizesBase = getFreeMem(depth);
     for (int i = 0;i < depth;i++) {
@@ -129,20 +129,20 @@ int getMem(char* varName, struct symbol* symbolTable) {
     return sym == NULL ? -1 : sym->binding;
 }
 
-void handleAssignForUserDefinedTypes(FILE* out, struct tNode* node, int addr_reg, struct symbol* symbolTable, char* fname, int classIndex) {
+void handleAssignForUserDefinedTypes(FILE* out, struct tNode* node, int addr_reg, struct symbol* symbolTable, char* fname, struct param* paramList, int classIndex) {
     struct type* type = typeCheck(node, symbolTable, classIndex);
     struct typeTable* typeTable = getTypeTableWithName(type->typename);
     if (typeTable == NULL) {
         printf("Error: type is used but not declared\n");
         exit(EXIT_FAILURE);
     }
-    int base_reg = resolveAddr(out, node, symbolTable, fname, classIndex);
-    struct param* paramList = typeTable->paramList;
+    int base_reg = resolveAddr(out, node, symbolTable, fname, paramList, classIndex);
+    struct param* typeTableParamList = typeTable->paramList;
     int size = 0;
     int reg1 = getFreeReg();
     int reg2 = getFreeReg();
-    while (paramList != NULL) {
-        int totalTypeSizeIncludingCur = size + getTypeSize(paramList->type);
+    while (typeTableParamList != NULL) {
+        int totalTypeSizeIncludingCur = size + getTypeSize(typeTableParamList->type);
         while (size < totalTypeSizeIncludingCur) {
             cprintf(out, "MOV R%d, R%d\n", reg1, base_reg);
             cprintf(out, "MOV R%d, R%d\n", reg2, addr_reg);
@@ -152,7 +152,7 @@ void handleAssignForUserDefinedTypes(FILE* out, struct tNode* node, int addr_reg
             cprintf(out, "MOV [R%d], R%d\n", reg1, reg2);
             size++;
         }
-        paramList = paramList->next;
+        typeTableParamList = typeTableParamList->next;
     }
 }
 
@@ -170,9 +170,9 @@ void handleAssignForUserDefinedTypes(FILE* out, struct tNode* node, int addr_reg
  * @param next next instructions label
  * @param parentNodeType type of parent node
  */
-void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next, struct tNode* parent, struct symbol* symbolTable, char* fname, int classIndex) {
+void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next, struct tNode* parent, struct symbol* symbolTable, char* fname, struct param* paramList, int classIndex) {
     int addr_reg = -1;
-    int paramCount = getParamLenForFunction(fname, symbolTable);
+    int paramCount = getParamLenForFunction(fname, paramList, symbolTable);
     switch (node->nodeType) {
     case OP_ADD:
         cprintf(out, "ADD R%d, R%d\n", reg1, reg2);
@@ -195,7 +195,7 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
         freeReg();
         break;
     case OP_READ:
-        addr_reg = resolveAddr(out, node->left, symbolTable, fname, classIndex);
+        addr_reg = resolveAddr(out, node->left, symbolTable, fname, paramList, classIndex);
         libRead(out, XSM_STDIN, addr_reg);
         break;
     case OP_WRITE:
@@ -213,10 +213,10 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
             handlePolymorphism(symbolLeft->vFuncTableBaseBinding, typeTableLeft->symbolList, typeTableMiddle->symbolList);
         }
         if (symbolMiddle != NULL && symbolMiddle->type->typename != NULL && symbolMiddle->type->depth == 0) {
-            handleAssignForUserDefinedTypes(out, node->left, reg2, symbolTable, fname, classIndex);
+            handleAssignForUserDefinedTypes(out, node->left, reg2, symbolTable, fname, paramList, classIndex);
         }
         else {
-            addr_reg = node->left->nodeType == OP_DREF ? reg1 : resolveAddr(out, node->left, symbolTable, fname, classIndex);
+            addr_reg = node->left->nodeType == OP_DREF ? reg1 : resolveAddr(out, node->left, symbolTable, fname, paramList, classIndex);
             cprintf(out, "MOV [R%d], R%d\n", addr_reg, reg2);
             freeReg();
         }
@@ -254,7 +254,7 @@ void operatorCodeGen(FILE* out, struct tNode* node, int reg1, int reg2, int next
         freeReg();
         break;
     case OP_REF:
-        addr_reg = resolveAddr(out, node->left, symbolTable, fname, classIndex);
+        addr_reg = resolveAddr(out, node->left, symbolTable, fname, paramList, classIndex);
         cprintf(out, "MOV R%d, R%d\n", reg1, addr_reg);
         //!TODO: freeReg
         break;
@@ -435,18 +435,18 @@ int isLValue(struct tNode* root) {
     return root != NULL && root->nodeType != LEAF_ARR && root->left == prev;
 }
 
-int pushFuncArgs(FILE* out, struct tNode* argList, struct symbol* symbolTable, char* fname, int classIndex) {
+int pushFuncArgs(FILE* out, struct tNode* argList, struct symbol* symbolTable, char* fname, struct param* paramList, int classIndex) {
     if (argList == NULL) return 0;
 
     if (argList->nodeType != OP_ARGLIST) {
-        int reg = codeGenHelper(out, argList, -1, NULL, symbolTable, fname, classIndex);
+        int reg = codeGenHelper(out, argList, -1, NULL, symbolTable, fname, paramList, classIndex);
         cprintf(out, "PUSH R%d\n", reg);
         return 1;
     }
 
     // we need to push in reverse so first middle then left
-    int numOfRegInMiddle = pushFuncArgs(out, argList->middle, symbolTable, fname, classIndex);
-    int numOfRegInLeft = pushFuncArgs(out, argList->left, symbolTable, fname, classIndex);
+    int numOfRegInMiddle = pushFuncArgs(out, argList->middle, symbolTable, fname, paramList, classIndex);
+    int numOfRegInLeft = pushFuncArgs(out, argList->left, symbolTable, fname, paramList, classIndex);
 
     return numOfRegInLeft + numOfRegInMiddle;
 }
@@ -459,15 +459,31 @@ struct tNode* getVarDescendant(struct tNode* node) {
     return node;
 }
 
+struct param* convertArgTreeToParamList(struct tNode* argRoot, struct param* paramList, struct symbol* symbolTable, int classIndex) {
+    if (argRoot == NULL) {
+        return paramList;
+    }
+
+    if (argRoot->nodeType != OP_ARGLIST) {
+        struct type* type = typeCheck(argRoot, symbolTable, classIndex);
+        paramList = addType(paramList, makeParam(type, "arg"));
+        return;
+    }
+
+    paramList = convertArgTreeToParamList(argRoot->left, paramList, symbolTable, classIndex);
+    paramList = convertArgTreeToParamList(argRoot->middle, paramList, symbolTable, classIndex);
+
+    return paramList;
+}
 /**
  * @brief generates machine code for leafs of Abstract syntax tree
  * @param out output file pointer
  * @param varName optional - only for identifiers
  * @param val optional - value for numbers
  */
-int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTable, char* fname, int classIndex) {
+int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTable, char* fname, struct param* paramList, int classIndex) {
     if (fname != NULL && (node->nodeType == LEAF_ID || node->nodeType == LEAF_TUPLE_ACCESS)) {
-        return leafCodeGenForFunction(out, fname, node, symbolTable, classIndex);
+        return leafCodeGenForFunction(out, fname, node, symbolTable, paramList, classIndex);
     }
     int reg = -1;
     struct symbol* sym = NULL;
@@ -510,7 +526,7 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
         cprintf(out, "JMP L%d\n", latestBeginWhileLabel);
         break;
     case LEAF_ARR: {
-        int addr_reg = resolveArrayAddr(out, node, symbolTable, fname, classIndex);
+        int addr_reg = resolveArrayAddr(out, node, symbolTable, fname, paramList, classIndex);
         struct type* type = typeCheck(node, symbolTable, classIndex);
         if (!isLValue(node) && (type->typename == NULL || type->depth != 0)) {
             cprintf(out, "MOV R%d, [R%d]\n", addr_reg, addr_reg);
@@ -521,12 +537,14 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
     case LEAF_FUNC: {
         backup(out);
         char* calleeFname = node->left->varName;
-        struct symbol* fsymbol = getSymbolTable(calleeFname, symbolTable);
+        struct param* calleeParamList = NULL;
+        calleeParamList = convertArgTreeToParamList(node->middle, calleeParamList, symbolTable, classIndex);
+        struct symbol* fsymbol = getFSymbol(calleeFname, calleeParamList, symbolTable);
         if (fsymbol == NULL) {
             printf("Error: no such function: %s\n", calleeFname);
             exit(EXIT_FAILURE);
         }
-        int args = pushFuncArgs(out, node->middle, symbolTable, fname, classIndex);
+        int args = pushFuncArgs(out, node->middle, symbolTable, fname, paramList, classIndex);
         cprintf(out, "PUSH R0\n"); // return value
         cprintf(out, "CALL %d\n", fsymbol->flabel);
         if (getReg() == MAX_REG) {
@@ -543,7 +561,7 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
         break;
     }
     case LEAF_TUPLE_ACCESS: {
-        int reg = resolveAddr(out, node, symbolTable, NULL, classIndex);
+        int reg = resolveAddr(out, node, symbolTable, NULL, paramList, classIndex);
         if (!isLValue(node)) {
             cprintf(out, "MOV R%d, [R%d]\n", reg, reg);
         }
@@ -559,12 +577,12 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
     }
     case OP_ALLOC: {
         int reg = libAlloc(out);
-        int addr_reg = resolveAddr(out, node->left, symbolTable, fname, classIndex);
+        int addr_reg = resolveAddr(out, node->left, symbolTable, fname, paramList, classIndex);
         cprintf(out, "MOV [R%d], R%d\n", addr_reg, reg);
         break;
     }
     case OP_FREE: {
-        int addr_reg = resolveAddr(out, node->left, symbolTable, fname, classIndex);
+        int addr_reg = resolveAddr(out, node->left, symbolTable, fname, paramList, classIndex);
         cprintf(out, "MOV R%d, [R%d]\n", addr_reg, addr_reg);
         libFree(out, addr_reg);
         break;
@@ -583,30 +601,32 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
         else {
             typeTable = getClassTableWithIndex(classIndex);
         }
-        struct symbol* fsymbol = getSymbolTable(calleeFname, typeTable->symbolList);
+        struct param* calleeParamList = NULL;
+        calleeParamList = convertArgTreeToParamList(node->right, calleeParamList, symbolTable, classIndex);
+        struct symbol* fsymbol = getFSymbol(calleeFname, calleeParamList, typeTable->symbolList);
         if (fsymbol == NULL) {
             printf("Error: no such function: %s\n", calleeFname);
             exit(EXIT_FAILURE);
         }
         int reg;
         if (node->left->nodeType != LEAF_SELF) {
-            reg = codeGenHelper(out, node->left, -1, NULL, symbolTable, fname, classIndex);
+            reg = codeGenHelper(out, node->left, -1, NULL, symbolTable, fname, paramList, classIndex);
         }
         else {
             reg = getFreeReg();
             cprintf(out, "MOV R%d, BP\n", reg);
-            cprintf(out, "SUB R%d, %d\n", reg, getParamLenForFunction(fsymbol->varName, typeTable->symbolList) + 3);
+            cprintf(out, "SUB R%d, %d\n", reg, getParamLen(calleeParamList) + 3);
             cprintf(out, "MOV R%d, [R%d]\n", reg, reg);
         }
         cprintf(out, "PUSH R%d\n", reg);
-        int args = pushFuncArgs(out, node->right, symbolTable, fname, classIndex);
+        int args = pushFuncArgs(out, node->right, symbolTable, fname, paramList, classIndex);
         cprintf(out, "PUSH R0\n"); // return value
         if (node->left->nodeType == LEAF_SELF) {
             cprintf(out, "CALL %d\n", fsymbol->flabel);
         }
         else {
             int reg = getFreeReg();
-            cprintf(out, "MOV R%d, [%d]\n", reg, getMethodLabel(getSymbolTable(getVarDescendant(node)->varName, symbolTable), calleeFname));
+            cprintf(out, "MOV R%d, [%d]\n", reg, getMethodLabel(getSymbolTable(getVarDescendant(node)->varName, symbolTable), fsymbol));
             cprintf(out, "CALL R%d\n", reg);
             freeReg();
         }
@@ -630,9 +650,9 @@ int leafCodeGen(FILE* out, struct tNode* node, int next, struct symbol* symbolTa
     return reg;
 }
 
-int resolveAddrInFunction(FILE* out, struct tNode* node, struct symbol* symbolTable, char* fname, int classIndex) {
+int resolveAddrInFunction(FILE* out, struct tNode* node, struct symbol* symbolTable, char* fname, struct param* paramList, int classIndex) {
     int reg = getFreeReg();
-    int paramCount = getParamLenForFunction(fname, symbolTable);
+    int paramCount = getParamLenForFunction(fname, paramList, symbolTable);
     if (isParam(node->varName, symbolTable, paramCount)) {
         int offs = getParamOffset(node->varName, symbolTable, paramCount);
         cprintf(out, "MOV R%d, BP\n", reg);
@@ -644,7 +664,7 @@ int resolveAddrInFunction(FILE* out, struct tNode* node, struct symbol* symbolTa
         if (node->nodeType == LEAF_ID) {
             offs = getLocalVarOffset(node->varName, getLocalVarList(symbolTable, paramCount));
             if (offs == -1) {
-                return resolveAddr(out, node, symbolTable, NULL, classIndex); // global
+                return resolveAddr(out, node, symbolTable, NULL, paramList, classIndex); // global
             }
             cprintf(out, "MOV R%d, BP\n", reg);
             cprintf(out, "ADD R%d, %d\n", reg, offs);
@@ -660,7 +680,7 @@ int resolveAddrInFunction(FILE* out, struct tNode* node, struct symbol* symbolTa
                 typeTable = getClassTableWithIndex(classIndex);
             }
             else {
-                base_reg = codeGenHelper(out, node->left, -1, NULL, symbolTable, fname, classIndex);
+                base_reg = codeGenHelper(out, node->left, -1, NULL, symbolTable, fname, paramList, classIndex);
                 typeTable = getTypeTableWithName(typeCheck(node->left, symbolTable, classIndex)->typename);
             }
             offs = getFieldOffset(node->middle->varName, typeTable);
@@ -675,10 +695,10 @@ int resolveAddrInFunction(FILE* out, struct tNode* node, struct symbol* symbolTa
     return reg;
 }
 
-int leafCodeGenForFunction(FILE* out, char* fname, struct tNode* node, struct symbol* symbolTable, int classIndex) {
+int leafCodeGenForFunction(FILE* out, char* fname, struct tNode* node, struct symbol* symbolTable, struct param* paramList, int classIndex) {
     switch (node->nodeType) {
     case LEAF_ID: {
-        int reg = resolveAddrInFunction(out, node, symbolTable, fname, classIndex);
+        int reg = resolveAddrInFunction(out, node, symbolTable, fname, paramList, classIndex);
         struct symbol* sym = getSymbolTable(node->varName, symbolTable);
         if (sym == NULL) {
             printf("Error: variable has not been declared: %s\n", node->varName);
@@ -691,7 +711,7 @@ int leafCodeGenForFunction(FILE* out, char* fname, struct tNode* node, struct sy
         break;
     }
     case LEAF_TUPLE_ACCESS: {
-        int reg = resolveAddrInFunction(out, node, symbolTable, fname, classIndex);
+        int reg = resolveAddrInFunction(out, node, symbolTable, fname, paramList, classIndex);
         if (!isLValue(node)) {
             cprintf(out, "MOV R%d, [R%d]\n", reg, reg);
         }
@@ -709,7 +729,7 @@ int leafCodeGenForFunction(FILE* out, char* fname, struct tNode* node, struct sy
  * @param root root of AST
  * @return register where result is stored
  */
-int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent, struct symbol* symbolTable, char* fname, int classIndex) {
+int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent, struct symbol* symbolTable, char* fname, struct param* paramList, int classIndex) {
     if (root == NULL) {
         return -1;
     }
@@ -724,21 +744,21 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent,
     }
 
     if (isLeaf(root->nodeType)) {
-        return leafCodeGen(out, root, next, symbolTable, fname, classIndex);
+        return leafCodeGen(out, root, next, symbolTable, fname, paramList, classIndex);
     }
 
 
     int reg1 = -1;
     // to prevent printing extra assembly instruction
     if (root->nodeType != OP_ASSIGN || root->left->nodeType == OP_DREF) {
-        reg1 = codeGenHelper(out, root->left, root->nodeType == OP_STMTLIST ? root->middle->label : (root->nodeType == OP_REPEAT_UNTIL || root->nodeType == OP_DO_WHILE) ? root->label : next, root, symbolTable, fname, classIndex);
+        reg1 = codeGenHelper(out, root->left, root->nodeType == OP_STMTLIST ? root->middle->label : (root->nodeType == OP_REPEAT_UNTIL || root->nodeType == OP_DO_WHILE) ? root->label : next, root, symbolTable, fname, paramList, classIndex);
     }
 
     if (root->nodeType == OP_IF || root->nodeType == OP_WHILE) {
-        operatorCodeGen(out, root, reg1, -1, next, parent, symbolTable, fname, classIndex);
+        operatorCodeGen(out, root, reg1, -1, next, parent, symbolTable, fname, paramList, classIndex);
     }
 
-    int reg2 = codeGenHelper(out, root->middle, root->nodeType == OP_WHILE ? root->label : next, root, symbolTable, fname, classIndex);
+    int reg2 = codeGenHelper(out, root->middle, root->nodeType == OP_WHILE ? root->label : next, root, symbolTable, fname, paramList, classIndex);
 
     if (root->nodeType == OP_IF) {
         cprintf(out, "JMP L%d\n", next);
@@ -747,14 +767,14 @@ int codeGenHelper(FILE* out, struct tNode* root, int next, struct tNode* parent,
         cprintf(out, "JMP L%d\n", root->label);
     }
 
-    codeGenHelper(out, root->right, next, root, symbolTable, fname, classIndex);
+    codeGenHelper(out, root->right, next, root, symbolTable, fname, paramList, classIndex);
 
     if (root->nodeType == OP_IF) {
         cprintf(out, "JMP L%d\n", next);
     }
 
     if (root->nodeType != OP_IF && root->nodeType != OP_WHILE) {
-        operatorCodeGen(out, root, reg1, reg2, next, parent, symbolTable, fname, classIndex);
+        operatorCodeGen(out, root, reg1, reg2, next, parent, symbolTable, fname, paramList, classIndex);
     }
 
     if (root->nodeType == OP_WHILE || root->nodeType == OP_REPEAT_UNTIL || root->nodeType == OP_DO_WHILE) {
@@ -778,7 +798,6 @@ void initDataStructures() {
  */
 void initParams(FILE* out) {
     cprintf(out, "MOV SP, %d\n", INIT_SP);
-    printf("here: %d\n", getLines());
 }
 
 void initCompiler(FILE* out) {
@@ -794,13 +813,13 @@ void initCompiler(FILE* out) {
  */
 void codeGen(FILE* out, struct tNode* root, struct symbol* symbolTable) {
     populateVirtualFunctionTableForSymbolTable(symbolTable, 1);
-    codeGenHelper(out, root, -1, NULL, symbolTable, NULL, -1);
+    codeGenHelper(out, root, -1, NULL, symbolTable, NULL, NULL, -1);
     cprintf(out, "L%d:\n", -1);
     libExit(out);
 }
 
-void pushOrPopLocalVariables(FILE* out, char* funcName, struct symbol* symbolTable, int pushOrPop) {
-    struct symbol* fsymbol = getSymbolTable(funcName, symbolTable);
+void pushOrPopLocalVariables(FILE* out, char* funcName, struct param* paramList, struct symbol* symbolTable, int pushOrPop) {
+    struct symbol* fsymbol = getFSymbol(funcName, paramList, symbolTable);
     if (fsymbol == NULL) {
         printf("Error: no such function has been declared\n");
         exit(EXIT_FAILURE);
@@ -815,15 +834,15 @@ void pushOrPopLocalVariables(FILE* out, char* funcName, struct symbol* symbolTab
     }
 }
 
-void funcCodeGen(FILE* out, char* funcName, struct tNode* root, struct symbol* symbolTable, int classIndex) {
-    struct symbol* fsymbol = getSymbolTable(funcName, symbolTable);
+void funcCodeGen(FILE* out, char* funcName, struct param* paramList, struct tNode* root, struct symbol* symbolTable, int classIndex) {
+    struct symbol* fsymbol = getFSymbol(funcName, paramList, symbolTable);
     fsymbol->flabel = 2 * getLines() + ENTRY_POINT;
     populateVirtualFunctionTableForSymbolTable(symbolTable, 0);
     cprintf(out, "PUSH BP\n");
     cprintf(out, "MOV BP, SP\n");
-    pushOrPopLocalVariables(out, funcName, symbolTable, 1);
-    codeGenHelper(out, root, -1, NULL, symbolTable, funcName, classIndex);
-    pushOrPopLocalVariables(out, funcName, symbolTable, 0);
+    pushOrPopLocalVariables(out, funcName, paramList, symbolTable, 1);
+    codeGenHelper(out, root, -1, NULL, symbolTable, funcName, paramList, classIndex);
+    pushOrPopLocalVariables(out, funcName, paramList, symbolTable, 0);
     cprintf(out, "POP BP\n");
     cprintf(out, "RET\n");
 }

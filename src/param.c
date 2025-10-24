@@ -26,6 +26,16 @@ struct param* addParam(struct param* paramList, struct param* param) {
     return head;
 }
 
+struct param* addType(struct param* paramList, struct param* param) {
+    if (paramList == NULL) return param;
+    struct param* head = paramList;
+    while (paramList->next != NULL) {
+        paramList = paramList->next;
+    }
+    paramList->next = param;
+    return head;
+}
+
 
 struct param* convertTreeToParamList(struct tNode* paramRoot, int* numberOfParam, struct param* paramList) {
     if (paramRoot == NULL) return NULL;

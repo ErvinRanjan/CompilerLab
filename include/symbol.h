@@ -29,17 +29,20 @@ int isSymbolPresent(struct symbol* symbolTable, struct symbol* symbol);
 struct symbol* populateSymbolTable(struct tNode* declRoot, struct symbol* symbolTable, int isLocal);
 struct symbol* getSymbolTable(char* varName, struct symbol* symbolTable);
 void printSymbolTable(char* name, struct symbol* symbolTable);
-struct symbol* addParamAsSymbol(char* varName, struct symbol* gsymbolTable, struct symbol* symbolTable);
+struct symbol* addParamAsSymbol(struct param* paramList, struct symbol* symbolTable);
 struct symbol* getLocalVarList(struct symbol* symbolTable, int paramCount);
 int getParamOffset(char* varName, struct symbol* symbolTable, int paramCount);
 int getLocalVarOffset(char* varName, struct symbol* localVarList);
 int isParam(char* varName, struct symbol* symbolTable, int paramCount);
-int getParamLenForFunction(char* fname, struct symbol* symbolTable);
+int getParamLenForFunction(char* fname, struct param* paramList, struct symbol* symbolTable);
 struct symbol* appendSymbolTable(struct symbol* s1, struct symbol* s2);
 struct symbol* combineChildSymbolListWithParentSymbolList(struct symbol* childSymbolList, struct symbol* parentSymbolList);
 void populateVirtualFunctionTable(int virtualFunctionTableBaseBinding, struct symbol* symbolList);
-int getFunctionOffset(struct symbol* symbolTable, char* fName);
+int getFunctionOffset(struct symbol* symbolTable, struct symbol* fsymbol);
 struct symbol* handlePolymorphism(int vFuncTableBaseBinding, struct symbol* parentSymbolList, struct symbol* childSymbolList);
 void populateVirtualFunctionTableForSymbolTable(struct symbol* symbolTable, int isGlobal);
+struct symbol* addFunctionSymbol(struct symbol* fsymbol, struct symbol* symbolTable);
+struct symbol* getFSymbol(char* varName, struct param* paramList, struct symbol* symbolTable);
+
 
 #endif

@@ -8,6 +8,7 @@
 #include "param.h"
 #include "utils.h"
 #include "typeTable.h"
+#include "codegen.h"
 
 extern bool isLeaf(int nodeType);
 
@@ -201,14 +202,17 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable, in
         return createPrimitiveType(LEAF_TYPE_INT, 0);
     case LEAF_TYPE_STR:
         return createPrimitiveType(LEAF_TYPE_STR, 0);
-    case LEAF_FUNC:
-        symbol = getSymbolTable(node->left->varName, symbolTable);
+    case LEAF_FUNC: {
+        struct param* paramList = NULL;
+        paramList = convertArgTreeToParamList(node->middle, paramList, symbolTable, classIndex);
+        symbol = getFSymbol(node->left->varName, paramList, symbolTable);
         if (symbol == NULL) {
             printf("Error: function is called but not declared for function : %s\n", node->left->varName);
             exit(EXIT_FAILURE);
         }
         validateFunctionParams(node->middle, symbol->paramList, symbolTable, node->left->varName, classIndex);
         return symbol->type;
+    }
     case LEAF_TUPLE_ACCESS: {
         if (node->left->nodeType == LEAF_SELF) {
             if (classIndex == -1) {
@@ -258,7 +262,9 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable, in
             }
             else {
                 struct typeTable* classContext = getClassTableWithIndex(classIndex);
-                struct symbol* symbol = getSymbolTable(node->middle->varName, classContext->symbolList);
+                struct param* paramList = NULL;
+                paramList = convertArgTreeToParamList(node->right, paramList, symbolTable, classIndex);
+                struct symbol* symbol = getFSymbol(node->middle->varName, paramList, classContext->symbolList);
                 if (symbol == NULL) {
                     printf("Error: No such field exists for the class: %s\n", classContext->name);
                     exit(EXIT_FAILURE);
@@ -277,7 +283,9 @@ struct type* validateLeafType(struct tNode* node, struct symbol* symbolTable, in
             printf("Error : user defined types cannot invoke methods: %s\n", typeTable->name);
             exit(EXIT_FAILURE);
         }
-        struct symbol* symbol = getSymbolTable(node->middle->varName, typeTable->symbolList);
+        struct param* paramList = NULL;
+        paramList = convertArgTreeToParamList(node->right, paramList, symbolTable, classIndex);
+        struct symbol* symbol = getFSymbol(node->middle->varName, paramList, typeTable->symbolList);
         if (symbol == NULL) {
             printf("Error: No such method exists for the class: %s\n", typeTable->name);
             exit(EXIT_FAILURE);
@@ -318,7 +326,7 @@ void typeCheckFunctionParam(struct type* type, char* varName, struct tNode* para
     int numberOfParam = 0;
     struct param* paramList = NULL;
     paramList = convertTreeToParamList(paramRoot, &numberOfParam, paramList);
-    struct symbol* sym = getSymbolTable(varName, symbolTable);
+    struct symbol* sym = getFSymbol(varName, paramList, symbolTable);
     if (sym == NULL) {
         printf("Error: function %s has not been declared\n", varName);
         exit(EXIT_FAILURE);
@@ -343,6 +351,6 @@ void typeCheckFunctionParam(struct type* type, char* varName, struct tNode* para
 }
 
 int isTypeEqual(struct type* t1, struct type* t2) {
-    return t1 != NULL && t2 != NULL && t1->code == t2->code && t1->depth == t2->depth;
+    return t1 != NULL && t2 != NULL && (t1->code == t2->code || (t1->typename != NULL && t2->typename != NULL && strcmp(t1->typename, t2->typename) == 0)) && t1->depth == t2->depth;
 }
 

@@ -15,7 +15,7 @@ void libExit(FILE* out);
 void codeGen(FILE* out, struct tNode* root, struct symbol* symbolTable);
 void populateParent(struct tNode* root);
 void initCompiler(FILE* out);
-void funcCodeGen(FILE* out, char* funcName, struct tNode* root, struct symbol* symbolTable, int classIndex);
-void printNode(struct tNode* node);
+void funcCodeGen(FILE* out, char* funcName, struct param* paramList, struct tNode* root, struct symbol* symbolTable, int classIndex);
+struct param* convertArgTreeToParamList(struct tNode* argRoot, struct param* paramList, struct symbol* symbolTable, int classIndex);
 
 #endif

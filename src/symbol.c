@@ -57,12 +57,13 @@ struct symbol* createSymbolForFunction(struct type* type, char* varName, int siz
     return sym;
 }
 
-struct symbol* addSymbol(struct symbol* symbolTable, struct symbol* symbol) {
+struct symbol* addSymbolHelper(struct symbol* symbolTable, struct symbol* symbol) {
+    if (symbol->flabel != -1) {
+        return addFunctionSymbol(symbol, symbolTable);
+    }
     if (symbolTable == NULL) {
         return symbol;
     }
-    struct symbol* next = symbol->next;
-    symbol->next = NULL;
     struct symbol* head = symbolTable;
     while (symbolTable->next != NULL) {
         if (strcmp(symbolTable->varName, symbol->varName) == 0) {
@@ -72,9 +73,35 @@ struct symbol* addSymbol(struct symbol* symbolTable, struct symbol* symbol) {
         symbolTable = symbolTable->next;
     }
     symbolTable->next = symbol;
-    symbol->next = next;
     return head;
 }
+
+struct symbol* deepCopySymbol(struct symbol* symbol) {
+    struct symbol* newSymbol = malloc(sizeof(struct symbol));
+    newSymbol->binding = symbol->binding;
+    newSymbol->flabel = symbol->flabel;
+    newSymbol->isGlobal = symbol->isGlobal;
+    newSymbol->type = symbol->type;
+    for (int i = 0;i < symbol->type->depth;i++) {
+        newSymbol->maxSizes[i] = symbol->maxSizes[i];
+    }
+    newSymbol->next = NULL;
+    newSymbol->size = symbol->size;
+    strcpy(newSymbol->varName, symbol->varName);
+    newSymbol->paramList = symbol->paramList;
+    newSymbol->vFuncTableBaseBinding = symbol->vFuncTableBaseBinding;
+    newSymbol->acval = symbol->acval;
+    newSymbol->aval = symbol->aval;
+    strcpy(newSymbol->cval, symbol->cval);
+    newSymbol->symbolType = symbol->symbolType;
+    newSymbol->val = symbol->val;
+    return newSymbol;
+}
+
+struct symbol* addSymbol(struct symbol* symbolTable, struct symbol* symbol) {
+    return addSymbolHelper(symbolTable, deepCopySymbol(symbol));
+}
+
 
 int isSymbolPresent(struct symbol* symbolTable, struct symbol* symbol) {
     if (symbolTable == NULL) {
@@ -189,13 +216,7 @@ void printSymbolTable(char* name, struct symbol* symbolTable) {
     }
 }
 
-struct symbol* addParamAsSymbol(char* varName, struct symbol* gsymbolTable, struct symbol* symbolTable) {
-    struct symbol* functionSymbol = getSymbolTable(varName, gsymbolTable);
-    if (functionSymbol == NULL) {
-        printf("Error: function has not been declared : %s\n", varName);
-        exit(EXIT_FAILURE);
-    }
-    struct param* paramList = functionSymbol->paramList;
+struct symbol* addParamAsSymbol(struct param* paramList, struct symbol* symbolTable) {
     while (paramList != NULL) {
         symbolTable = addSymbol(symbolTable, createSymbol(paramList->type, paramList->name, 1, -1, PRIMITIVE, NULL));
         paramList = paramList->next;
@@ -254,9 +275,9 @@ int isParam(char* varName, struct symbol* symbolTable, int paramCount) {
     return 0;
 }
 
-int getParamLenForFunction(char* fname, struct symbol* symbolTable) {
+int getParamLenForFunction(char* fname, struct param* paramList, struct symbol* symbolTable) {
     if (fname == NULL) return 0;
-    struct symbol* fsymbol = getSymbolTable(fname, symbolTable);
+    struct symbol* fsymbol = getFSymbol(fname, paramList, symbolTable);
     if (fsymbol == NULL) {
         printf("Error: no such function: %s\n", fname);
         exit(EXIT_FAILURE);
@@ -286,7 +307,7 @@ struct symbol* handlePolymorphism(int vFuncTableBaseBinding, struct symbol* pare
             parentSymbolList = parentSymbolList->next;
             continue;
         }
-        struct symbol* symbol = getSymbolTable(parentSymbolList->varName, childSymbolList);
+        struct symbol* symbol = parentSymbolList->flabel != -1 ? getFSymbol(parentSymbolList->varName, parentSymbolList->paramList, childSymbolList) : getSymbolTable(parentSymbolList->varName, childSymbolList);
         int flabel = 0;
         if (symbol == NULL) {
             flabel = parentSymbolList->flabel;
@@ -308,7 +329,7 @@ struct symbol* combineChildSymbolListWithParentSymbolList(struct symbol* childSy
     int combinedMethodCount = 0;
     int combinedAttributeCount = 0;
     while (childSymbolList != NULL) {
-        struct symbol* symbol = getSymbolTable(childSymbolList->varName, parentSymbolList);
+        struct symbol* symbol = childSymbolList->flabel != -1 ? getFSymbol(childSymbolList->varName, childSymbolList->paramList, parentSymbolList) : getSymbolTable(childSymbolList->varName, parentSymbolList);
         if (childSymbolList->flabel == -1 && symbol != NULL) {
             printf("Error: cannot redeclare class attributes\n");
             exit(EXIT_FAILURE);
@@ -323,7 +344,7 @@ struct symbol* combineChildSymbolListWithParentSymbolList(struct symbol* childSy
         childSymbolList = childSymbolList->next;
     }
     while (parentSymbolList != NULL) {
-        struct symbol* symbol = getSymbolTable(parentSymbolList->varName, childSymbolListHead);
+        struct symbol* symbol = parentSymbolList->flabel != -1 ? getFSymbol(parentSymbolList->varName, parentSymbolList->paramList, childSymbolListHead) : getSymbolTable(parentSymbolList->varName, childSymbolListHead);
         if (symbol == NULL || parentSymbolList->flabel == -1) {
             symbolList = addSymbol(symbolList, parentSymbolList);
         }
@@ -382,14 +403,62 @@ void populateVirtualFunctionTableForSymbolTable(struct symbol* symbolTable, int 
     }
 }
 
-int getFunctionOffset(struct symbol* symbolTable, char* fName) {
+int getFunctionOffset(struct symbol* symbolTable, struct symbol* fsymbol) {
     int offs = 0;
     while (symbolTable != NULL) {
-        if (strcmp(fName, symbolTable->varName) == 0) {
+        if (symbolTable->flabel != -1 && areFunctionSymbolsEqual(fsymbol->varName, fsymbol->paramList, symbolTable)) {
             return offs;
         }
         if (symbolTable->flabel != -1) offs++;
         symbolTable = symbolTable->next;
     }
     return -1;
+}
+
+int areFunctionSymbolsEqual(char* varName, struct param* paramList, struct symbol* fsymbol) {
+    if (strcmp(varName, fsymbol->varName) != 0) {
+        return 0;
+    }
+    struct param* paramList1 = paramList;
+    struct param* paramList2 = fsymbol->paramList;
+    while (paramList1 != NULL && paramList2 != NULL) {
+        if (!isTypeEqual(paramList1->type, paramList2->type)) {
+            return 0;
+        }
+        paramList1 = paramList1->next;
+        paramList2 = paramList2->next;
+    }
+    return paramList1 == NULL && paramList2 == NULL;
+}
+
+struct symbol* addFunctionSymbolHelper(struct symbol* fsymbol, struct symbol* symbolTable) {
+    if (symbolTable == NULL) return fsymbol;
+    struct symbol* head = symbolTable;
+    while (symbolTable->next != NULL) {
+        if (symbolTable->flabel != -1 && areFunctionSymbolsEqual(fsymbol->varName, fsymbol->paramList, symbolTable)) {
+            printf("Error: cannot redeclare function %s\n", fsymbol->varName);
+            exit(EXIT_FAILURE);
+        }
+        symbolTable = symbolTable->next;
+    }
+    if (symbolTable->flabel != -1 && areFunctionSymbolsEqual(fsymbol->varName, fsymbol->paramList, symbolTable)) {
+        printf("Error: cannot redeclare function %s\n", fsymbol->varName);
+        exit(EXIT_FAILURE);
+    }
+    symbolTable->next = fsymbol;
+    return head;
+}
+
+struct symbol* addFunctionSymbol(struct symbol* fsymbol, struct symbol* symbolTable) {
+    return addFunctionSymbolHelper(deepCopySymbol(fsymbol), symbolTable);
+}
+
+struct symbol* getFSymbol(char* varName, struct param* paramList, struct symbol* symbolTable) {
+    while (symbolTable != NULL) {
+        if (symbolTable->flabel != -1 && areFunctionSymbolsEqual(varName, paramList, symbolTable)) {
+            return symbolTable;
+        }
+        symbolTable = symbolTable->next;
+    }
+    return NULL;
 }

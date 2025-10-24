@@ -101,13 +101,16 @@ MethodDef : Type Pid '(' ParamList ')' '{' LDeclBlock Body '}' {
                                                                 symbolTable2->isGlobal = 1;
                                                                 typeCheckFunctionParam($<node>1->type,$<node>2->varName,$<node>4,symbolTable2);
                                                                 struct symbol* symbolTable1 = NULL;
-                                                                symbolTable1 = addParamAsSymbol($<node>2->varName,symbolTable2,symbolTable1);
+                                                                int numberOfParam = 0;
+                                                                struct param* paramList = NULL;
+                                                                paramList = convertTreeToParamList($<node>4,&numberOfParam,paramList);
+                                                                symbolTable1 = addParamAsSymbol(paramList,symbolTable1);
                                                                 symbolTable1 = populateSymbolTable($<node>7,symbolTable1,1);
                                                                 printSymbolTable($<node>2->varName,symbolTable1);
                                                                 typeCheck($<node>8,symbolTable1,latestClassIndex);
                                                                 symbolTable1 = appendSymbolTable(symbolTable1,symbolTable2);
                                                                 populateParent($<node>8);
-                                                                funcCodeGen(out,$<node>2->varName,$<node>8,symbolTable1,latestClassIndex);
+                                                                funcCodeGen(out,$<node>2->varName,paramList,$<node>8,symbolTable1,latestClassIndex);
                                                         }
           | Type Pid '(' ')' '{' LDeclBlock Body '}' {
                         $<node>1->type->depth += $<node>2->type->depth;
@@ -115,12 +118,11 @@ MethodDef : Type Pid '(' ParamList ')' '{' LDeclBlock Body '}' {
                         symbolTable2->isGlobal = 1;
                         typeCheckFunctionParam($<node>1->type,$<node>2->varName,NULL,symbolTable2);
                         struct symbol* symbolTable1 = NULL;
-                        symbolTable1 = addParamAsSymbol($<node>2->varName,symbolTable2,symbolTable1);
                         symbolTable1 = populateSymbolTable($<node>6,symbolTable1,1);
                         typeCheck($<node>7,symbolTable1,latestClassIndex);
                         symbolTable1 = appendSymbolTable(symbolTable1,symbolTable2);
                         populateParent($<node>7);
-                        funcCodeGen(out,$<node>2->varName,$<node>7,symbolTable1,latestClassIndex);
+                        funcCodeGen(out,$<node>2->varName,NULL,$<node>7,symbolTable1,latestClassIndex);
           }
           ;
 
@@ -306,24 +308,26 @@ FDef : Type Pid '(' ParamList ')' '{' LDeclBlock Body '}' {
                                                                 $<node>1->type->depth += $<node>2->type->depth;
                                                                 typeCheckFunctionParam($<node>1->type,$<node>2->varName,$<node>4,gsymbolTable);
                                                                 struct symbol* symbolTable1 = NULL;
-                                                                symbolTable1 = addParamAsSymbol($<node>2->varName,gsymbolTable,symbolTable1);
+                                                                struct param* paramList = NULL;
+                                                                int numberOfParam = 0;
+                                                                paramList = convertTreeToParamList($<node>4,&numberOfParam,paramList);
+                                                                symbolTable1 = addParamAsSymbol(paramList,symbolTable1);
                                                                 symbolTable1 = populateSymbolTable($<node>7,symbolTable1,1);
                                                                 printSymbolTable($<node>2->varName,symbolTable1);
                                                                 symbolTable1 = appendSymbolTable(symbolTable1,gsymbolTable);
                                                                 typeCheck($<node>8,symbolTable1,-1);
                                                                 populateParent($<node>8);
-                                                                funcCodeGen(out,$<node>2->varName,$<node>8,symbolTable1,-1);
+                                                                funcCodeGen(out,$<node>2->varName,paramList,$<node>8,symbolTable1,-1);
                                                         }
      | Type Pid '('  ')' '{' LDeclBlock Body '}'  {
         $<node>1->type->depth += $<node>2->type->depth;
         typeCheckFunctionParam($<node>1->type,$<node>2->varName,NULL,gsymbolTable);
         struct symbol* symbolTable1 = NULL;
-        symbolTable1 = addParamAsSymbol($<node>2->varName,gsymbolTable,symbolTable1);
         symbolTable1 = populateSymbolTable($<node>6,symbolTable1,1);
         symbolTable1 = appendSymbolTable(symbolTable1,gsymbolTable);
         typeCheck($<node>7,symbolTable1,-1);
         populateParent($<node>7);
-        funcCodeGen(out,$<node>2->varName,$<node>7,symbolTable1,-1);
+        funcCodeGen(out,$<node>2->varName,NULL,$<node>7,symbolTable1,-1);
      }    
     ;
 

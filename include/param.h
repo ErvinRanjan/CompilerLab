@@ -15,5 +15,6 @@ struct param* convertTreeToParamList(struct tNode* paramRoot, int* numberOfParam
 struct param* getParam(struct param* paramList, char* varName);
 int getParamLen(struct param* paramList);
 void printParamList(struct param* paramList);
+struct param* addType(struct param* paramList, struct param* param);
 
 #endif 
